@@ -1,12 +1,10 @@
 <!doctype html>
 
 <html lang="ru">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-```
 <title>1Minute — Teams</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -15,727 +13,698 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
 <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
->
+href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+rel="stylesheet">
 
 <link rel="stylesheet" href="style.css">
-```
-
 </head>
 
 <body>
 
-```
 <div class="glow glow-a"></div>
 <div class="glow glow-b"></div>
 
-
-<!-- HEADER -->
-
 <header class="topbar">
 
-    <a class="brand" href="#teams">
-        <span>1</span>Minute
-    </a>
+<a class="brand" href="#teams">
+<span>1</span>Minute
+</a>
 
+<nav>
 
-    <nav>
+<a class="active" href="#teams">
+Команды
+</a>
 
-        <a class="active" href="#teams">
-            Команда
-        </a>
+<a href="#rating">
+Рейтинг
+</a>
 
-        <a href="#rating">
-            Рейтинг
-        </a>
+<a href="#matches">
+Матчи
+</a>
 
-        <a href="#matches">
-            Матчи
-        </a>
+<a href="#tournaments">
+Турниры
+</a>
 
-        <a href="#tournaments">
-            Турниры
-        </a>
+</nav>
 
-    </nav>
+<button
+class="login"
+onclick="openLoginModal()"
 
+>
 
-    <button
-        class="login"
-        onclick="openLoginModal()"
-    >
-        Войти
-    </button>
+Войти </button>
 
+<button
+class="mobile-menu"
+onclick="document.body.classList.toggle('menu-open')"
 
-    <button
-        class="mobile-menu"
-        onclick="document.body.classList.toggle('menu-open')"
-    >
-        ☰
-    </button>
+>
+
+☰ </button>
 
 </header>
 
-
-
-<!-- MAIN -->
-
 <main>
 
+<!-- КОМАНДЫ -->
 
-    <!-- TEAM PAGE -->
+<section
+id="teams"
+class="screen"
+>
 
-    <section
-        id="teams"
-        class="screen"
-    >
+<div class="hero">
 
-        <div class="hero">
+<div class="eyebrow">
+1MINUTE
+</div>
 
-            <div class="eyebrow">
-                1MINUTE
-            </div>
+<h1>
+Команда, которая<br>
+<span>играет на победу.</span>
+</h1>
 
+<p>
+Профили состава, матчи и статистика 1Minute — всё в одном месте.
+</p>
 
-            <h1>
-                Команда, которая<br>
-                <span>играет на победу.</span>
-            </h1>
+<div class="hero-actions">
 
+<a
+href="#teams-list"
+class="primary"
 
-            <p>
-                Профили состава, матчи и статистика 1Minute — всё в одном месте.
-            </p>
+>
 
+Смотреть команду <b>↓</b> </a>
 
-            <div class="hero-actions">
+<a
+href="#rating"
+class="secondary"
 
-                <a
-                    href="#teams-list"
-                    class="primary"
-                >
-                    Смотреть команду <b>↓</b>
-                </a>
+>
 
+Рейтинг → </a>
 
-                <a
-                    href="#rating"
-                    class="secondary"
-                >
-                    Рейтинг →
-                </a>
+</div>
 
-            </div>
+</div>
 
-        </div>
+<div
+id="teams-list"
+class="section-head"
+>
 
+<div>
 
+<div class="eyebrow">
+TEAM
+</div>
 
-        <!-- TEAM TITLE -->
+<h2>
+1Minute
+</h2>
 
-        <div
-            id="teams-list"
-            class="section-head"
-        >
+</div>
 
-            <div>
+<div class="filters">
 
-                <div class="eyebrow">
-                    TEAM
-                </div>
+<button
+class="selected"
+onclick="filterTeams('all',this)"
 
+>
 
-                <h2>
-                    1Minute
-                </h2>
+Все </button>
 
-            </div>
+<button
+onclick="filterTeams('active',this)"
 
-        </div>
+>
 
+Активные </button>
 
+<button
+onclick="filterTeams('inactive',this)"
 
-        <!-- TEAM CARD -->
+>
 
-        <div
-            id="grid"
-            class="team-grid"
-        ></div>
+Неактивные </button>
 
-    </section>
+</div>
 
+</div>
 
+<div
+id="grid"
+class="team-grid"
+></div>
 
-    <!-- TEAM PROFILE -->
+</section>
 
-    <section
-        id="teamPage"
-        class="screen hidden"
-    >
+<!-- СТРАНИЦА КОМАНДЫ -->
 
-        <button
-            class="back"
-            onclick="closeTeam()"
-        >
-            ← Команда
-        </button>
+<section
+id="teamPage"
+class="screen hidden"
+>
 
+<button
+class="back"
+onclick="closeTeam()"
 
-        <div id="teamProfile"></div>
+>
 
-    </section>
+← Все команды </button>
 
+<div id="teamProfile"></div>
 
+</section>
 
-    <!-- PLAYER PROFILE -->
+<!-- СТРАНИЦА ИГРОКА -->
 
-    <section
-        id="playerPage"
-        class="screen hidden"
-    >
+<section
+id="playerPage"
+class="screen hidden"
+>
 
-        <button
-            class="back"
-            onclick="closePlayer()"
-        >
-            ← Команда
-        </button>
+<button
+class="back"
+onclick="closePlayer()"
 
+>
 
-        <div id="playerProfile"></div>
+← Команда </button>
 
-    </section>
+<div id="playerProfile"></div>
 
+</section>
 
+<!-- РЕЙТИНГ -->
 
-    <!-- RATING -->
+<section
+id="rating"
+class="screen page-section"
+>
 
-    <section
-        id="rating"
-        class="screen page-section"
-    >
+<div class="section-head">
 
-        <div class="section-head">
+<div>
 
-            <div>
+<div class="eyebrow">
+RANKING
+</div>
 
-                <div class="eyebrow">
-                    RANKING
-                </div>
+<h2>
+Рейтинг команд
+</h2>
 
+</div>
 
-                <h2>
-                    Рейтинг
-                </h2>
+</div>
 
-            </div>
+<div class="glass table-wrap">
 
-        </div>
+<table>
 
+<thead>
 
-        <div class="glass table-wrap">
+<tr>
 
-            <table>
+<th>#</th>
 
-                <thead>
+<th>
+Команда
+</th>
 
-                    <tr>
+<th>
+Матчи
+</th>
 
-                        <th>
-                            #
-                        </th>
+<th>
+Победы
+</th>
 
-                        <th>
-                            Команда
-                        </th>
+<th>
+ELO
+</th>
 
-                        <th>
-                            Матчи
-                        </th>
+</tr>
 
-                        <th>
-                            Победы
-                        </th>
+</thead>
 
-                        <th>
-                            ELO
-                        </th>
+<tbody id="ratingRows"></tbody>
 
-                    </tr>
+</table>
 
-                </thead>
+</div>
 
+</section>
 
-                <tbody id="ratingRows"></tbody>
+<!-- МАТЧИ -->
 
-            </table>
+<section
+id="matches"
+class="screen page-section"
+>
 
-        </div>
+<div class="section-head">
 
-    </section>
+<div>
 
+<div class="eyebrow">
+MATCHES
+</div>
 
+<h2>
+Последние матчи
+</h2>
 
-    <!-- MATCHES -->
+</div>
 
-    <section
-        id="matches"
-        class="screen page-section"
-    >
+</div>
 
-        <div class="section-head">
+<div
+id="matchesList"
+class="matches"
+></div>
 
-            <div>
+</section>
 
-                <div class="eyebrow">
-                    MATCHES
-                </div>
+<!-- ТУРНИРЫ -->
 
+<section
+id="tournaments"
+class="screen page-section"
+>
 
-                <h2>
-                    Матчи
-                </h2>
+<div class="section-head">
 
-            </div>
+<div>
 
-        </div>
+<div class="eyebrow">
+TOURNAMENTS
+</div>
 
+<h2>
+Турниры
+</h2>
 
-        <div
-            id="matchesList"
-            class="matches"
-        ></div>
+</div>
 
-    </section>
+</div>
 
+<div
+id="tournamentsGrid"
+class="tournament-grid"
+></div>
 
-
-    <!-- TOURNAMENTS -->
-
-    <section
-        id="tournaments"
-        class="screen page-section"
-    >
-
-        <div class="section-head">
-
-            <div>
-
-                <div class="eyebrow">
-                    TOURNAMENTS
-                </div>
-
-
-                <h2>
-                    Турниры
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <div
-            id="tournamentsGrid"
-            class="tournament-grid"
-        ></div>
-
-    </section>
+</section>
 
 </main>
 
-
-
-<!-- TEAM EDITOR -->
+<!-- РЕДАКТОР КОМАНДЫ -->
 
 <div
-    id="editModal"
-    class="modal hidden"
+id="editModal"
+class="modal hidden"
 >
 
-    <div class="modal-card">
+<div class="modal-card">
 
-        <button
-            class="modal-close"
-            onclick="closeEditor()"
-        >
-            ×
-        </button>
+<button
+class="modal-close"
+onclick="closeEditor()"
 
+>
 
-        <div class="eyebrow">
-            TEAM EDITOR
-        </div>
+× </button>
 
+<div class="eyebrow">
+TEAM EDITOR
+</div>
 
-        <h2>
-            Редактировать команду
-        </h2>
+<h2>
+Редактировать команду
+</h2>
 
+<form id="editForm">
 
-        <form id="editForm">
+<input
+type="hidden"
+id="editName"
 
-            <input
-                type="hidden"
-                id="editName"
-            >
+>
 
+<label>
+Название
 
-            <label>
-                Название
+<input
+id="editTitle"
+required
 
-                <input
-                    id="editTitle"
-                    required
-                >
-            </label>
+>
 
+</label>
 
-            <label>
-                Тег
+<label>
+Тег
 
-                <input
-                    id="editTag"
-                    maxlength="5"
-                    required
-                >
-            </label>
+<input
+id="editTag"
+maxlength="5"
+required
 
+>
 
-            <label>
-                Страна
+</label>
 
-                <input
-                    id="editCountry"
-                    required
-                >
-            </label>
+<label>
+Страна
 
+<input
+id="editCountry"
+required
 
-            <label>
-                Логотип URL
+>
 
-                <input
-                    id="editLogo"
-                    placeholder="https://..."
-                >
-            </label>
+</label>
 
+<label>
+Логотип URL
 
-            <label>
-                FACEIT URL
+<input
+id="editLogo"
+placeholder="https://..."
 
-                <input
-                    id="editFaceit"
-                    placeholder="https://www.faceit.com/..."
-                >
-            </label>
+>
 
+</label>
 
-            <label>
-                Steam URL
+<label>
+FACEIT URL
 
-                <input
-                    id="editSteam"
-                    placeholder="https://steamcommunity.com/..."
-                >
-            </label>
+<input
+id="editFaceit"
+placeholder="https://www.faceit.com/..."
 
+>
 
-            <label>
-                Описание
+</label>
 
-                <textarea
-                    id="editDescription"
-                    rows="3"
-                ></textarea>
+<label>
+Steam URL
 
-            </label>
+<input
+id="editSteam"
+placeholder="https://steamcommunity.com/..."
 
+>
 
-            <button
-                class="primary save"
-                type="submit"
-            >
-                Сохранить изменения
-            </button>
+</label>
 
-        </form>
+<label>
+Описание
 
-    </div>
+<textarea
+id="editDescription"
+rows="3"
+></textarea>
+
+</label>
+
+<button
+class="primary save"
+type="submit"
+
+>
+
+Сохранить изменения </button>
+
+</form>
 
 </div>
 
+</div>
 
-
-<!-- PLAYER EDITOR -->
+<!-- РЕДАКТОР ИГРОКА -->
 
 <div
-    id="playerEditModal"
-    class="modal hidden"
+id="playerEditModal"
+class="modal hidden"
 >
 
-    <div class="modal-card">
+<div class="modal-card">
 
-        <button
-            class="modal-close"
-            onclick="closePlayerEditor()"
-        >
-            ×
-        </button>
+<button
+class="modal-close"
+onclick="closePlayerEditor()"
 
+>
 
-        <div class="eyebrow">
-            PLAYER EDITOR
-        </div>
+× </button>
 
+<div class="eyebrow">
+PLAYER EDITOR
+</div>
 
-        <h2>
-            Профиль игрока
-        </h2>
+<h2>
+Профиль игрока
+</h2>
 
+<form id="playerEditForm">
 
-        <form id="playerEditForm">
+<input
+type="hidden"
+id="playerEditOldName"
 
-            <input
-                type="hidden"
-                id="playerEditOldName"
-            >
+>
 
+<input
+type="hidden"
+id="playerEditTeam"
 
-            <input
-                type="hidden"
-                id="playerEditTeam"
-                value="1Minute"
-            >
+>
 
+<label>
+Никнейм
 
-            <label>
-                Никнейм
+<input
+id="playerEditName"
+required
+placeholder="Например: XXXOLDAR"
 
-                <input
-                    id="playerEditName"
-                    required
-                    placeholder="Например: XXXOLDAR"
-                >
-            </label>
+>
 
+</label>
 
-            <label>
-                Страна
+<label>
+Страна
 
-                <input
-                    id="playerEditCountry"
-                    placeholder="Russia"
-                >
-            </label>
+<input
+id="playerEditCountry"
+placeholder="Russia"
 
+>
 
-            <label>
-                Роль
+</label>
 
-                <select id="playerEditRole">
+<label>
+Роль
 
-                    <option>
-                        Игрок
-                    </option>
+<select id="playerEditRole">
 
-                    <option>
-                        Капитан
-                    </option>
+<option>
+Игрок
+</option>
 
-                    <option>
-                        AWPer
-                    </option>
+<option>
+Капитан
+</option>
 
-                    <option>
-                        Sniper
-                    </option>
+<option>
+AWPer
+</option>
 
-                    <option>
-                        Rifler
-                    </option>
+<option>
+Sniper
+</option>
 
-                    <option>
-                        Rifle
-                    </option>
+<option>
+Rifler
+</option>
 
-                    <option>
-                        Entry
-                    </option>
+<option>
+Rifle
+</option>
 
-                    <option>
-                        Anchor
-                    </option>
+<option>
+Entry
+</option>
 
-                    <option>
-                        Support
-                    </option>
+<option>
+Anchor
+</option>
 
-                    <option>
-                        IGL
-                    </option>
+<option>
+Support
+</option>
 
-                    <option>
-                        IGL + support
-                    </option>
+<option>
+IGL
+</option>
 
-                </select>
+<option>
+IGL + support
+</option>
 
-            </label>
+</select>
 
+</label>
 
-            <label>
-                Аватар URL
+<label>
+Аватар URL
 
-                <input
-                    id="playerEditAvatar"
-                    placeholder="https://..."
-                >
-            </label>
+<input
+id="playerEditAvatar"
+placeholder="https://..."
 
+>
 
-            <label>
-                FACEIT URL
+</label>
 
-                <input
-                    id="playerEditFaceit"
-                    placeholder="https://www.faceit.com/..."
-                >
-            </label>
+<label>
+FACEIT URL
 
+<input
+id="playerEditFaceit"
+placeholder="https://www.faceit.com/..."
 
-            <label>
-                Steam URL
+>
 
-                <input
-                    id="playerEditSteam"
-                    placeholder="https://steamcommunity.com/..."
-                >
-            </label>
+</label>
 
+<label>
+Steam URL
 
-            <button
-                class="primary save"
-                type="submit"
-            >
-                Сохранить игрока
-            </button>
+<input
+id="playerEditSteam"
+placeholder="https://steamcommunity.com/..."
 
-        </form>
+>
 
-    </div>
+</label>
+
+<button
+class="primary save"
+type="submit"
+
+>
+
+Сохранить игрока </button>
+
+</form>
 
 </div>
 
+</div>
 
-
-<!-- LOGIN -->
+<!-- ВХОД -->
 
 <div
-    id="loginModal"
-    class="modal hidden"
-    onclick="if(event.target===this)closeLoginModal()"
+id="loginModal"
+class="modal hidden"
+onclick="if(event.target===this)closeLoginModal()"
 >
 
-    <div class="modal-card login-card">
+<div class="modal-card login-card">
 
-        <button
-            class="modal-close"
-            onclick="closeLoginModal()"
-        >
-            ×
-        </button>
+<button
+class="modal-close"
+onclick="closeLoginModal()"
 
+>
 
-        <div class="eyebrow">
-            1MINUTE ACCOUNT
-        </div>
+× </button>
 
+<div class="eyebrow">
+1MINUTE ACCOUNT
+</div>
 
-        <div class="login-icon">
-            1
-        </div>
+<div class="login-icon">
+1
+</div>
 
+<h2>
+Авторизация будет позже
+</h2>
 
-        <h2>
-            Авторизация будет позже
-        </h2>
+<p style="
+color:#858c98;
+line-height:1.7;
+font-size:14px;
+margin:10px 0 22px
+">
+Система авторизации пока находится в разработке.
+Скоро здесь можно будет войти в аккаунт и управлять
+своим профилем.
+</p>
 
+<button
+class="primary save"
+type="button"
+onclick="closeLoginModal()"
 
-        <p style="
-            color:#858c98;
-            line-height:1.7;
-            font-size:14px;
-            margin:10px 0 22px
-        ">
-            Система авторизации пока находится
-            в разработке. Скоро здесь можно будет
-            войти в аккаунт и управлять своим профилем.
-        </p>
+>
 
-
-        <button
-            class="primary save"
-            type="button"
-            onclick="closeLoginModal()"
-        >
-            Понятно
-        </button>
-
-    </div>
+Понятно </button>
 
 </div>
 
-
-
-<!-- FOOTER -->
+</div>
 
 <footer>
-    © 2026 1Minute · Teams database
+© 2026 1Minute · Teams database
 </footer>
-
-
-
-<!-- APP -->
 
 <script src="app.js"></script>
 
-
 <script>
 
-    function openLoginModal() {
+function openLoginModal(){
 
-        const modal =
-            document.getElementById("loginModal");
+const modal =
+document.getElementById("loginModal");
 
-        if (!modal) return;
+if(!modal) return;
 
-        modal.classList.remove("hidden");
+modal.classList.remove("hidden");
 
-        document.body.style.overflow =
-            "hidden";
-    }
+document.body.style.overflow =
+"hidden";
+
+}
 
 
-    function closeLoginModal() {
+function closeLoginModal(){
 
-        const modal =
-            document.getElementById("loginModal");
+const modal =
+document.getElementById("loginModal");
 
-        if (!modal) return;
+if(!modal) return;
 
-        modal.classList.add("hidden");
+modal.classList.add("hidden");
 
-        document.body.style.overflow =
-            "";
-    }
+document.body.style.overflow =
+"";
+
+}
 
 </script>
-```
 
 </body>
-
 </html>
