@@ -1048,3 +1048,6 @@ footer {
         min-height: auto;
     }
 }
+.team-profile-header .eyebrow {
+    font-weight: 900;
+}
