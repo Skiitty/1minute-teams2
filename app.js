@@ -1147,11 +1147,6 @@ async function loadTeam() {
         let result;
 
 
-        /*
-         * Сначала ищем команду по ID,
-         * если ID уже известен.
-         */
-
         if (teamDatabaseId) {
 
             result =
@@ -1165,11 +1160,6 @@ async function loadTeam() {
                     .maybeSingle();
 
         } else {
-
-            /*
-             * Первый запуск:
-             * ищем 1Minute.
-             */
 
             result =
                 await supabaseClient
@@ -1205,10 +1195,6 @@ async function loadTeam() {
         const data =
             result.data;
 
-
-        /*
-         * Запоминаем ID.
-         */
 
         if (data.id) {
 
@@ -1356,40 +1342,40 @@ async function saveTeamFromForm(event) {
         let query;
 
 
-        /*
-         * Если знаем ID команды —
-         * обновляем именно её.
-         */
+        const updateData = {
+
+            name:
+                title,
+
+            tag:
+                tag,
+
+            country:
+                country,
+
+            logo:
+                logo,
+
+            faceit:
+                faceit,
+
+            steam:
+                steam,
+
+            description:
+                description
+
+        };
+
 
         if (teamDatabaseId) {
 
             query =
                 supabaseClient
                     .from("teams")
-                    .update({
-
-                        name:
-                            title,
-
-                        tag:
-                            tag,
-
-                        country:
-                            country,
-
-                        logo:
-                            logo,
-
-                        faceit:
-                            faceit,
-
-                        steam:
-                            steam,
-
-                        description:
-                            description
-
-                    })
+                    .update(
+                        updateData
+                    )
                     .eq(
                         "id",
                         teamDatabaseId
@@ -1399,38 +1385,12 @@ async function saveTeamFromForm(event) {
 
         } else {
 
-            /*
-             * Если ID ещё неизвестен,
-             * ищем старое имя.
-             */
-
             query =
                 supabaseClient
                     .from("teams")
-                    .update({
-
-                        name:
-                            title,
-
-                        tag:
-                            tag,
-
-                        country:
-                            country,
-
-                        logo:
-                            logo,
-
-                        faceit:
-                            faceit,
-
-                        steam:
-                            steam,
-
-                        description:
-                            description
-
-                    })
+                    .update(
+                        updateData
+                    )
                     .eq(
                         "name",
                         TEAM_NAME
@@ -1466,10 +1426,6 @@ async function saveTeamFromForm(event) {
         }
 
 
-        /*
-         * Обновляем ID.
-         */
-
         if (result.data.id) {
 
             teamDatabaseId =
@@ -1480,10 +1436,6 @@ async function saveTeamFromForm(event) {
 
         }
 
-
-        /*
-         * Обновляем локальные данные.
-         */
 
         team.name =
             result.data.name ||
@@ -1521,7 +1473,7 @@ async function saveTeamFromForm(event) {
 
 
         team.description =
-            result.data.description ||
+            result.data.description ??
             description;
 
 
@@ -1836,6 +1788,8 @@ function renderTeams() {
 
 /* =========================================================
    PLAYER CARD
+   MAIN = BLUE
+   ЗАМЕНА = YELLOW
 ========================================================= */
 
 function playerCard(
@@ -1860,6 +1814,46 @@ function playerCard(
 
     const safeName =
         safeJSString(name);
+
+
+    /*
+     * Для основного состава:
+     * MAIN — синим.
+     *
+     * Для замены:
+     * ЗАМЕНА — жёлтым.
+     */
+
+    const rosterBadge =
+        isSubstitute
+            ?
+            `
+            <div
+                style="
+                    margin-top:6px;
+                    color:#ffd84d;
+                    font-size:11px;
+                    font-weight:800;
+                    letter-spacing:.08em;
+                "
+            >
+                ЗАМЕНА
+            </div>
+            `
+            :
+            `
+            <div
+                style="
+                    margin-top:6px;
+                    color:#4da3ff;
+                    font-size:11px;
+                    font-weight:800;
+                    letter-spacing:.08em;
+                "
+            >
+                MAIN
+            </div>
+            `;
 
 
     return `
@@ -1904,19 +1898,9 @@ function playerCard(
                     ${escapeHTML(role)}
                 </span>
 
-            </div>
+                ${rosterBadge}
 
-            ${
-                isSubstitute
-                    ?
-                    `
-                    <div class="player-badge">
-                        ЗАМЕНА
-                    </div>
-                    `
-                    :
-                    ""
-            }
+            </div>
 
         </div>
 
@@ -2903,11 +2887,6 @@ async function savePlayer(event) {
 
     try {
 
-        /*
-         * Если указана Steam-ссылка —
-         * автоматически получаем аватар.
-         */
-
         if (steam) {
 
             showToast(
@@ -2942,33 +2921,38 @@ async function savePlayer(event) {
         let query;
 
 
+        const updateData = {
+
+            name:
+                newName,
+
+            country:
+                country || "",
+
+            role:
+                role ||
+                "Игрок",
+
+            avatar:
+                avatar || "",
+
+            faceit:
+                faceit || "",
+
+            steam:
+                steam || ""
+
+        };
+
+
         if (player?.id) {
 
             query =
                 supabaseClient
                     .from("players")
-                    .update({
-
-                        name:
-                            newName,
-
-                        country:
-                            country || "",
-
-                        role:
-                            role ||
-                            "Игрок",
-
-                        avatar:
-                            avatar || "",
-
-                        faceit:
-                            faceit || "",
-
-                        steam:
-                            steam || ""
-
-                    })
+                    .update(
+                        updateData
+                    )
                     .eq(
                         "id",
                         player.id
@@ -2981,28 +2965,9 @@ async function savePlayer(event) {
             query =
                 supabaseClient
                     .from("players")
-                    .update({
-
-                        name:
-                            newName,
-
-                        country:
-                            country || "",
-
-                        role:
-                            role ||
-                            "Игрок",
-
-                        avatar:
-                            avatar || "",
-
-                        faceit:
-                            faceit || "",
-
-                        steam:
-                            steam || ""
-
-                    })
+                    .update(
+                        updateData
+                    )
                     .eq(
                         "name",
                         oldName
@@ -3469,10 +3434,6 @@ async function addPlayer(event) {
 
 
     try {
-
-        /*
-         * Автоматически получаем Steam аватар.
-         */
 
         if (steam) {
 
@@ -4238,8 +4199,6 @@ function hideOtherPages() {
 
 /* =========================================================
    FILTER
-   Оставляем функцию для совместимости,
-   но вкладки фильтра больше не используются.
 ========================================================= */
 
 function filterTeams(
@@ -4612,13 +4571,6 @@ async function init() {
     await checkAuth();
 
 
-    /*
-     * ВАЖНО:
-     * сначала загружаем команду,
-     * чтобы после F5 подтянулись
-     * сохранённые данные.
-     */
-
     await loadTeam();
 
 
@@ -4700,10 +4652,6 @@ document.addEventListener(
     "DOMContentLoaded",
     function() {
 
-        /*
-         * PLAYER EDIT FORM
-         */
-
         const playerForm =
             document.getElementById(
                 "playerEditForm"
@@ -4719,10 +4667,6 @@ document.addEventListener(
 
         }
 
-
-        /*
-         * LOGIN FORM
-         */
 
         const loginForm =
             document.getElementById(
@@ -4740,10 +4684,6 @@ document.addEventListener(
         }
 
 
-        /*
-         * TEAM EDIT FORM
-         */
-
         const editForm =
             document.getElementById(
                 "editForm"
@@ -4759,10 +4699,6 @@ document.addEventListener(
 
         }
 
-
-        /*
-         * START
-         */
 
         init();
 
