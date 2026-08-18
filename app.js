@@ -1,7 +1,6 @@
 /* =========================================================
    1MINUTE — APP.JS
-   TEAM DATABASE + SUPABASE + ADMIN
-   FINAL VERSION
+   TEAM DATABASE + SUPABASE + ADMIN + STEAM AVATAR
 ========================================================= */
 
 
@@ -17,6 +16,15 @@ const SUPABASE_KEY =
 
 const TEAM_NAME = "1Minute";
 
+/*
+   Название Supabase Edge Function.
+
+   Если функция называется steam-avatar,
+   оставляем так.
+*/
+const STEAM_AVATAR_FUNCTION =
+    "steam-avatar";
+
 
 /* =========================================================
    GLOBAL STATE
@@ -26,7 +34,6 @@ let players = [];
 let currentUser = null;
 let isAdmin = false;
 let supabaseClient = null;
-let currentPlayer = null;
 
 
 /* =========================================================
@@ -68,7 +75,7 @@ function showNotification(
 
     let container =
         document.getElementById(
-            "siteNotifications"
+            "notificationContainer"
         );
 
     if (!container) {
@@ -79,19 +86,34 @@ function showNotification(
             );
 
         container.id =
-            "siteNotifications";
+            "notificationContainer";
 
-        container.style.cssText = `
-            position:fixed;
-            top:22px;
-            right:22px;
-            z-index:99999;
-            display:flex;
-            flex-direction:column;
-            gap:10px;
-            pointer-events:none;
-            max-width:360px;
-        `;
+        container.style.position =
+            "fixed";
+
+        container.style.top =
+            "24px";
+
+        container.style.left =
+            "50%";
+
+        container.style.transform =
+            "translateX(-50%)";
+
+        container.style.zIndex =
+            "99999";
+
+        container.style.display =
+            "flex";
+
+        container.style.flexDirection =
+            "column";
+
+        container.style.gap =
+            "10px";
+
+        container.style.width =
+            "min(420px, calc(100vw - 30px))";
 
         document.body.appendChild(
             container
@@ -106,101 +128,52 @@ function showNotification(
         );
 
 
-    const isError =
-        type === "error";
+    notification.style.padding =
+        "14px 18px";
 
+    notification.style.borderRadius =
+        "10px";
 
-    notification.style.cssText = `
-        pointer-events:auto;
-        min-width:280px;
-        max-width:360px;
-        padding:15px 17px;
-        border-radius:10px;
-        background:${
-            isError
-                ? "#241313"
-                : "#101d15"
-        };
-        border:1px solid ${
-            isError
-                ? "#61302d"
-                : "#28563a"
-        };
-        color:${
-            isError
-                ? "#ff9a91"
-                : "#9af0b8"
-        };
-        box-shadow:0 15px 40px rgba(0,0,0,.35);
-        font-family:Inter,Arial,sans-serif;
-        font-size:13px;
-        font-weight:600;
-        line-height:1.5;
-        display:flex;
-        align-items:center;
-        gap:10px;
-        transform:translateX(30px);
-        opacity:0;
-        transition:
-            opacity .25s ease,
-            transform .25s ease;
-    `;
+    notification.style.border =
+        "1px solid rgba(255,255,255,.10)";
 
+    notification.style.background =
+        "rgba(15,18,23,.96)";
 
-    notification.innerHTML = `
+    notification.style.backdropFilter =
+        "blur(14px)";
 
-        <span
-            style="
-                font-size:17px;
-                flex-shrink:0;
-            "
-        >
-            ${
-                isError
-                    ? "!"
-                    : "✓"
-            }
-        </span>
+    notification.style.boxShadow =
+        "0 15px 50px rgba(0,0,0,.35)";
 
-        <span>
-            ${escapeHTML(message)}
-        </span>
+    notification.style.color =
+        type === "error"
+            ? "#ff8e82"
+            : "#8ee6ad";
 
-        <button
-            type="button"
-            style="
-                margin-left:auto;
-                border:0;
-                background:none;
-                color:inherit;
-                cursor:pointer;
-                font-size:18px;
-                line-height:1;
-                opacity:.65;
-            "
-        >
-            ×
-        </button>
+    notification.style.fontSize =
+        "13px";
 
-    `;
+    notification.style.fontWeight =
+        "700";
 
+    notification.style.lineHeight =
+        "1.5";
 
-    const closeButton =
-        notification.querySelector(
-            "button"
-        );
+    notification.style.textAlign =
+        "center";
 
+    notification.style.opacity =
+        "0";
 
-    closeButton.addEventListener(
-        "click",
-        () => {
+    notification.style.transform =
+        "translateY(-10px)";
 
-            removeNotification(
-                notification
-            );
+    notification.style.transition =
+        "all .25s ease";
 
-        }
-    );
+    notification.textContent =
+        message;
 
 
     container.appendChild(
@@ -209,55 +182,38 @@ function showNotification(
 
 
     requestAnimationFrame(
-        () => {
+        function() {
 
             notification.style.opacity =
                 "1";
 
             notification.style.transform =
-                "translateX(0)";
+                "translateY(0)";
 
         }
     );
 
 
     setTimeout(
-        () => {
+        function() {
 
-            removeNotification(
-                notification
+            notification.style.opacity =
+                "0";
+
+            notification.style.transform =
+                "translateY(-10px)";
+
+            setTimeout(
+                function() {
+
+                    notification.remove();
+
+                },
+                300
             );
 
         },
-        4000
-    );
-
-}
-
-
-function removeNotification(
-    notification
-) {
-
-    if (!notification) {
-
-        return;
-
-    }
-
-    notification.style.opacity =
-        "0";
-
-    notification.style.transform =
-        "translateX(30px)";
-
-    setTimeout(
-        () => {
-
-            notification.remove();
-
-        },
-        250
+        3000
     );
 
 }
@@ -282,7 +238,6 @@ function initSupabase() {
 
     }
 
-
     try {
 
         supabaseClient =
@@ -291,11 +246,9 @@ function initSupabase() {
                 SUPABASE_KEY
             );
 
-
         console.log(
             "✓ Supabase подключён"
         );
-
 
         return true;
 
@@ -319,9 +272,7 @@ function initSupabase() {
 
 function normalize(value) {
 
-    return String(
-        value || ""
-    )
+    return String(value || "")
         .trim()
         .toLowerCase();
 
@@ -330,58 +281,24 @@ function normalize(value) {
 
 function escapeHTML(value) {
 
-    return String(
-        value ?? ""
-    )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
 
 
 function safeJSString(value) {
 
-    return String(
-        value || ""
-    )
-        .replace(
-            /\\/g,
-            "\\\\"
-        )
-        .replace(
-            /'/g,
-            "\\'"
-        )
-        .replace(
-            /"/g,
-            '\\"'
-        )
-        .replace(
-            /\n/g,
-            "\\n"
-        )
-        .replace(
-            /\r/g,
-            "\\r"
-        );
+    return String(value || "")
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r");
 
 }
 
@@ -391,12 +308,9 @@ function findPlayer(name) {
     const target =
         normalize(name);
 
-
     return players.find(
         player =>
-            normalize(
-                player.name
-            ) === target
+            normalize(player.name) === target
     ) || null;
 
 }
@@ -417,8 +331,7 @@ function getStarterPlayers() {
     return getActivePlayers().filter(
         player =>
             normalize(
-                player.roster_type ||
-                "starter"
+                player.roster_type || "starter"
             ) === "starter"
     );
 
@@ -430,8 +343,7 @@ function getSubstitutePlayers() {
     return getActivePlayers().filter(
         player =>
             normalize(
-                player.roster_type ||
-                ""
+                player.roster_type || ""
             ) === "substitute"
     );
 
@@ -455,19 +367,21 @@ async function supabaseRequest(
 
     }
 
-
-    const {
-        data: {
-            session
-        }
-    } =
+    const sessionResult =
         await supabaseClient.auth.getSession();
 
+    if (sessionResult.error) {
+
+        throw sessionResult.error;
+
+    }
+
+    const session =
+        sessionResult.data?.session || null;
 
     const accessToken =
         session?.access_token ||
         SUPABASE_KEY;
-
 
     const headers = {
 
@@ -475,14 +389,12 @@ async function supabaseRequest(
             SUPABASE_KEY,
 
         "Authorization":
-            "Bearer " +
-            accessToken,
+            "Bearer " + accessToken,
 
         "Content-Type":
             "application/json"
 
     };
-
 
     if (options.headers) {
 
@@ -492,7 +404,6 @@ async function supabaseRequest(
         );
 
     }
-
 
     const response =
         await fetch(
@@ -513,10 +424,8 @@ async function supabaseRequest(
             }
         );
 
-
     const text =
         await response.text();
-
 
     if (!response.ok) {
 
@@ -533,19 +442,15 @@ async function supabaseRequest(
 
     }
 
-
     if (!text) {
 
         return [];
 
     }
 
-
     try {
 
-        return JSON.parse(
-            text
-        );
+        return JSON.parse(text);
 
     } catch {
 
@@ -557,7 +462,192 @@ async function supabaseRequest(
 
 
 /* =========================================================
-   AUTH
+   STEAM AVATAR
+========================================================= */
+
+/*
+   Отправляем Steam URL в Supabase Edge Function.
+
+   Function ожидает:
+
+   {
+       "steam_url": "https://steamcommunity.com/..."
+   }
+
+   Возвращает:
+
+   {
+       success: true,
+       steam_id: "...",
+       persona_name: "...",
+       avatar: "...",
+       avatar_medium: "...",
+       avatar_small: "...",
+       profile_url: "..."
+   }
+*/
+
+async function getSteamAvatar(
+    steamURL
+) {
+
+    if (!steamURL) {
+
+        return null;
+
+    }
+
+    const url =
+        String(steamURL).trim();
+
+    if (!url) {
+
+        return null;
+
+    }
+
+
+    try {
+
+        console.log(
+            "Получаем Steam аватар:",
+            url
+        );
+
+
+        const sessionResult =
+            await supabaseClient.auth.getSession();
+
+
+        if (sessionResult.error) {
+
+            throw sessionResult.error;
+
+        }
+
+
+        const session =
+            sessionResult.data?.session ||
+            null;
+
+
+        const accessToken =
+            session?.access_token ||
+            SUPABASE_KEY;
+
+
+        const response =
+            await fetch(
+
+                SUPABASE_URL +
+                "/functions/v1/" +
+                STEAM_AVATAR_FUNCTION,
+
+                {
+
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "apikey":
+                            SUPABASE_KEY,
+
+                        "Authorization":
+                            "Bearer " +
+                            accessToken
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            steam_url:
+                                url
+
+                        })
+
+                }
+
+            );
+
+
+        const text =
+            await response.text();
+
+
+        let data = null;
+
+
+        try {
+
+            data =
+                JSON.parse(text);
+
+        } catch {
+
+            data = null;
+
+        }
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Steam avatar function error:",
+                response.status,
+                data || text
+            );
+
+            throw new Error(
+                data?.error ||
+                text ||
+                "Не удалось получить Steam аватар."
+            );
+
+        }
+
+
+        if (
+            !data ||
+            data.success !== true
+        ) {
+
+            throw new Error(
+                data?.error ||
+                "Steam не вернул данные игрока."
+            );
+
+        }
+
+
+        console.log(
+            "✓ Steam данные:",
+            data
+        );
+
+
+        return data;
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка получения Steam аватара:",
+            error
+        );
+
+        throw error;
+
+    }
+
+}
+
+
+/* =========================================================
+   AUTH CHECK
 ========================================================= */
 
 async function checkAuth() {
@@ -568,18 +658,15 @@ async function checkAuth() {
         isAdmin = false;
 
         updateLoginButton();
-        updateLoginModalUI();
 
         return;
 
     }
 
-
     try {
 
         const result =
             await supabaseClient.auth.getSession();
-
 
         if (result.error) {
 
@@ -587,26 +674,14 @@ async function checkAuth() {
 
         }
 
-
         currentUser =
             result.data?.session?.user ||
             null;
 
-
-        if (currentUser) {
-
-            await checkAdmin();
-
-        } else {
-
-            isAdmin = false;
-
-        }
-
+        await checkAdmin();
 
         updateLoginButton();
         updateLoginModalUI();
-
 
     } catch (error) {
 
@@ -634,13 +709,11 @@ async function checkAdmin() {
 
     isAdmin = false;
 
-
     if (!currentUser) {
 
         return false;
 
     }
-
 
     try {
 
@@ -671,12 +744,6 @@ async function checkAdmin() {
             !!result.data;
 
 
-        console.log(
-            "Admin:",
-            isAdmin
-        );
-
-
         return isAdmin;
 
     } catch (error) {
@@ -696,79 +763,6 @@ async function checkAdmin() {
 
 
 /* =========================================================
-   AUTH LISTENER
-   IMPORTANT:
-   NO await INSIDE CALLBACK
-========================================================= */
-
-function setupAuthListener() {
-
-    if (!supabaseClient) {
-
-        return;
-
-    }
-
-
-    supabaseClient.auth.onAuthStateChange(
-        function(
-            event,
-            session
-        ) {
-
-            console.log(
-                "Auth event:",
-                event
-            );
-
-
-            currentUser =
-                session?.user ||
-                null;
-
-
-            if (!currentUser) {
-
-                isAdmin = false;
-
-                updateLoginButton();
-                updateLoginModalUI();
-
-                renderTeamProfile();
-
-                return;
-
-            }
-
-
-            /*
-             * Не вызываем Supabase await
-             * непосредственно внутри callback.
-             *
-             * Это важно для supabase-js.
-             */
-
-            setTimeout(
-                async function() {
-
-                    await checkAdmin();
-
-                    updateLoginButton();
-                    updateLoginModalUI();
-
-                    renderTeamProfile();
-
-                },
-                0
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
    LOGIN BUTTON
 ========================================================= */
 
@@ -779,13 +773,11 @@ function updateLoginButton() {
             ".login"
         );
 
-
     if (!button) {
 
         return;
 
     }
-
 
     if (!currentUser) {
 
@@ -795,7 +787,6 @@ function updateLoginButton() {
         return;
 
     }
-
 
     button.textContent =
         isAdmin
@@ -816,26 +807,18 @@ function openLoginModal() {
             "loginModal"
         );
 
-
     if (!modal) {
-
-        console.error(
-            "loginModal не найден."
-        );
 
         return;
 
     }
 
-
     updateLoginModalUI();
-
 
     const error =
         document.getElementById(
             "loginError"
         );
-
 
     if (error) {
 
@@ -847,11 +830,9 @@ function openLoginModal() {
 
     }
 
-
     modal.classList.remove(
         "hidden"
     );
-
 
     document.body.style.overflow =
         "hidden";
@@ -866,18 +847,15 @@ function closeLoginModal() {
             "loginModal"
         );
 
-
     if (!modal) {
 
         return;
 
     }
 
-
     modal.classList.add(
         "hidden"
     );
-
 
     document.body.style.overflow =
         "";
@@ -896,18 +874,15 @@ function updateLoginModalUI() {
             "loginStatus"
         );
 
-
     const loginForm =
         document.getElementById(
             "loginForm"
         );
 
-
     const logoutButton =
         document.getElementById(
             "logoutButton"
         );
-
 
     if (!status) {
 
@@ -986,7 +961,6 @@ async function login(event) {
 
     event.preventDefault();
 
-
     if (!supabaseClient) {
 
         showLoginError(
@@ -1003,7 +977,6 @@ async function login(event) {
             "loginEmail"
         );
 
-
     const password =
         document.getElementById(
             "loginPassword"
@@ -1017,37 +990,6 @@ async function login(event) {
         );
 
         return;
-
-    }
-
-
-    const errorElement =
-        document.getElementById(
-            "loginError"
-        );
-
-
-    if (errorElement) {
-
-        errorElement.style.display =
-            "none";
-
-        errorElement.textContent =
-            "";
-
-    }
-
-
-    const status =
-        document.getElementById(
-            "loginStatus"
-        );
-
-
-    if (status) {
-
-        status.textContent =
-            "Выполняется вход...";
 
     }
 
@@ -1075,8 +1017,7 @@ async function login(event) {
 
 
         currentUser =
-            result.data.user ||
-            null;
+            result.data.user;
 
 
         await checkAdmin();
@@ -1102,7 +1043,7 @@ async function login(event) {
 
         setTimeout(
             closeLoginModal,
-            500
+            400
         );
 
 
@@ -1112,7 +1053,6 @@ async function login(event) {
             "Ошибка входа:",
             error
         );
-
 
         showLoginError(
             getAuthErrorMessage(
@@ -1129,27 +1069,20 @@ async function login(event) {
    LOGIN ERROR
 ========================================================= */
 
-function showLoginError(
-    message
-) {
+function showLoginError(message) {
 
     const error =
         document.getElementById(
             "loginError"
         );
 
-
     if (!error) {
 
-        showNotification(
-            message,
-            "error"
-        );
+        alert(message);
 
         return;
 
     }
-
 
     error.textContent =
         message;
@@ -1160,14 +1093,11 @@ function showLoginError(
 }
 
 
-function getAuthErrorMessage(
-    error
-) {
+function getAuthErrorMessage(error) {
 
     const message =
         String(
-            error?.message ||
-            ""
+            error?.message || ""
         ).toLowerCase();
 
 
@@ -1215,8 +1145,8 @@ async function logout() {
         if (supabaseClient) {
 
             const result =
-                await supabaseClient.auth.signOut();
-
+                await supabaseClient.auth
+                    .signOut();
 
             if (result.error) {
 
@@ -1226,27 +1156,6 @@ async function logout() {
 
         }
 
-
-        currentUser = null;
-        isAdmin = false;
-
-
-        updateLoginButton();
-        updateLoginModalUI();
-
-
-        closeLoginModal();
-
-
-        renderTeams();
-        renderTeamProfile();
-
-
-        showNotification(
-            "Вы вышли из аккаунта."
-        );
-
-
     } catch (error) {
 
         console.error(
@@ -1254,13 +1163,63 @@ async function logout() {
             error
         );
 
+    }
 
-        showNotification(
-            "Не удалось выйти из аккаунта.",
-            "error"
-        );
+
+    currentUser = null;
+    isAdmin = false;
+
+
+    updateLoginButton();
+    updateLoginModalUI();
+
+    closeLoginModal();
+
+    renderTeamProfile();
+
+
+    showNotification(
+        "Вы вышли из аккаунта."
+    );
+
+}
+
+
+/* =========================================================
+   AUTH LISTENER
+========================================================= */
+
+function setupAuthListener() {
+
+    if (!supabaseClient) {
+
+        return;
 
     }
+
+
+    supabaseClient.auth.onAuthStateChange(
+        async function(
+            event,
+            session
+        ) {
+
+            currentUser =
+                session?.user ||
+                null;
+
+
+            await checkAdmin();
+
+
+            updateLoginButton();
+            updateLoginModalUI();
+
+
+            renderTeamProfile();
+
+        }
+    );
 
 }
 
@@ -1285,12 +1244,6 @@ async function loadPlayers() {
                 : [];
 
 
-        console.log(
-            "✓ Игроки загружены:",
-            players
-        );
-
-
         return players;
 
     } catch (error) {
@@ -1300,9 +1253,7 @@ async function loadPlayers() {
             error
         );
 
-
         players = [];
-
 
         return [];
 
@@ -1321,7 +1272,6 @@ function renderTeams() {
         document.getElementById(
             "grid"
         );
-
 
     if (!grid) {
 
@@ -1358,7 +1308,6 @@ function renderTeams() {
 
                 </div>
 
-
                 <div>
 
                     <div class="team-name">
@@ -1372,7 +1321,6 @@ function renderTeams() {
                 </div>
 
             </div>
-
 
             <div class="team-bottom">
 
@@ -1418,9 +1366,7 @@ function playerCard(
 
 
     const safeName =
-        safeJSString(
-            name
-        );
+        safeJSString(name);
 
 
     return `
@@ -1550,8 +1496,8 @@ function openTeam() {
 
 
     window.scrollTo({
-        top:0,
-        behavior:"smooth"
+        top: 0,
+        behavior: "smooth"
     });
 
 }
@@ -1835,9 +1781,7 @@ function renderTeamProfile() {
    OPEN PLAYER
 ========================================================= */
 
-function openPlayerByName(
-    name
-) {
+function openPlayerByName(name) {
 
     const player =
         findPlayer(name);
@@ -1845,18 +1789,9 @@ function openPlayerByName(
 
     if (!player) {
 
-        showNotification(
-            "Игрок не найден.",
-            "error"
-        );
-
         return;
 
     }
-
-
-    currentPlayer =
-        player;
 
 
     const teams =
@@ -1917,8 +1852,8 @@ function openPlayerByName(
 
 
     window.scrollTo({
-        top:0,
-        behavior:"smooth"
+        top: 0,
+        behavior: "smooth"
     });
 
 }
@@ -1928,9 +1863,7 @@ function openPlayerByName(
    PLAYER PROFILE
 ========================================================= */
 
-function renderPlayerProfile(
-    player
-) {
+function renderPlayerProfile(player) {
 
     const container =
         document.getElementById(
@@ -1966,9 +1899,7 @@ function renderPlayerProfile(
 
 
     const safeName =
-        safeJSString(
-            name
-        );
+        safeJSString(name);
 
 
     let adminButtons = "";
@@ -1999,18 +1930,14 @@ function renderPlayerProfile(
                 type="button"
                 onclick="${
                     isSubstitute
-                        ?
-                        `movePlayerToStarter('${safeName}')`
-                        :
-                        `movePlayerToSubstitute('${safeName}')`
+                        ? `movePlayerToStarter('${safeName}')`
+                        : `movePlayerToSubstitute('${safeName}')`
                 }"
             >
                 ⇄ ${
                     isSubstitute
-                        ?
-                        "В основной состав"
-                        :
-                        "В замены"
+                        ? "В основной состав"
+                        : "В замены"
                 }
             </button>
 
@@ -2165,9 +2092,7 @@ function renderPlayerProfile(
    PLAYER EDITOR
 ========================================================= */
 
-function openPlayerEditor(
-    name
-) {
+function openPlayerEditor(name) {
 
     if (!isAdmin) {
 
@@ -2290,11 +2215,10 @@ function closePlayerEditor() {
 
 /* =========================================================
    SAVE PLAYER
+   AUTOMATIC STEAM AVATAR
 ========================================================= */
 
-async function savePlayer(
-    event
-) {
+async function savePlayer(event) {
 
     event.preventDefault();
 
@@ -2338,7 +2262,7 @@ async function savePlayer(
         )?.value.trim();
 
 
-    const avatar =
+    const manualAvatar =
         document.getElementById(
             "playerEditAvatar"
         )?.value.trim();
@@ -2368,7 +2292,83 @@ async function savePlayer(
     }
 
 
+    const player =
+        findPlayer(oldName);
+
+
+    if (!player) {
+
+        showNotification(
+            "Игрок не найден.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
     try {
+
+        /*
+           По умолчанию оставляем существующий аватар.
+        */
+
+        let avatar =
+            manualAvatar ||
+            "";
+
+
+        /*
+           Если указан Steam URL —
+           автоматически получаем актуальный аватар.
+        */
+
+        if (steam) {
+
+            try {
+
+                const steamData =
+                    await getSteamAvatar(
+                        steam
+                    );
+
+
+                if (
+                    steamData?.avatar
+                ) {
+
+                    avatar =
+                        steamData.avatar;
+
+                    console.log(
+                        "✓ Steam аватар обновлён"
+                    );
+
+                }
+
+            } catch (steamError) {
+
+                console.error(
+                    "Steam avatar error:",
+                    steamError
+                );
+
+
+                /*
+                   Если Steam не ответил,
+                   не ломаем сохранение профиля.
+                */
+
+                showNotification(
+                    "Профиль сохраняется, но Steam-аватар получить не удалось.",
+                    "error"
+                );
+
+            }
+
+        }
+
 
         await supabaseRequest(
 
@@ -2402,7 +2402,7 @@ async function savePlayer(
                             role || "Игрок",
 
                         avatar:
-                            avatar || "",
+                            avatar,
 
                         faceit:
                             faceit || "",
@@ -2428,15 +2428,10 @@ async function savePlayer(
 
 
         const updatedPlayer =
-            findPlayer(
-                newName
-            );
+            findPlayer(newName);
 
 
         if (updatedPlayer) {
-
-            currentPlayer =
-                updatedPlayer;
 
             renderPlayerProfile(
                 updatedPlayer
@@ -2446,7 +2441,9 @@ async function savePlayer(
 
 
         showNotification(
-            "Профиль игрока сохранён."
+            steam && avatar
+                ? "Профиль сохранён. Steam-аватар обновлён."
+                : "Профиль игрока сохранён."
         );
 
 
@@ -2623,7 +2620,7 @@ function createAddPlayerModal() {
                     <input
                         id="addPlayerAvatar"
                         type="url"
-                        placeholder="https://..."
+                        placeholder="Можно оставить пустым"
                     >
                 </label>
 
@@ -2777,11 +2774,10 @@ function closeAddPlayerModal() {
 
 /* =========================================================
    ADD PLAYER
+   AUTOMATIC STEAM AVATAR
 ========================================================= */
 
-async function addPlayer(
-    event
-) {
+async function addPlayer(event) {
 
     event.preventDefault();
 
@@ -2825,7 +2821,7 @@ async function addPlayer(
         )?.value;
 
 
-    const avatar =
+    const manualAvatar =
         document.getElementById(
             "addPlayerAvatar"
         )?.value.trim();
@@ -2869,6 +2865,47 @@ async function addPlayer(
 
     try {
 
+        /*
+           Если аватар вручную не указан,
+           пробуем получить его из Steam.
+        */
+
+        let avatar =
+            manualAvatar ||
+            "";
+
+
+        if (steam) {
+
+            try {
+
+                const steamData =
+                    await getSteamAvatar(
+                        steam
+                    );
+
+
+                if (
+                    steamData?.avatar
+                ) {
+
+                    avatar =
+                        steamData.avatar;
+
+                }
+
+            } catch (steamError) {
+
+                console.error(
+                    "Steam avatar error:",
+                    steamError
+                );
+
+            }
+
+        }
+
+
         await supabaseRequest(
             "players",
             {
@@ -2896,7 +2933,7 @@ async function addPlayer(
                             role || "Игрок",
 
                         avatar:
-                            avatar || "",
+                            avatar,
 
                         faceit:
                             faceit || "",
@@ -2928,7 +2965,9 @@ async function addPlayer(
 
 
         showNotification(
-            "Игрок успешно добавлен."
+            steam && avatar
+                ? "Игрок добавлен. Steam-аватар получен автоматически."
+                : "Игрок успешно добавлен."
         );
 
 
@@ -2954,9 +2993,7 @@ async function addPlayer(
    MOVE TO SUBSTITUTE
 ========================================================= */
 
-async function movePlayerToSubstitute(
-    name
-) {
+async function movePlayerToSubstitute(name) {
 
     if (!isAdmin) {
 
@@ -3023,45 +3060,19 @@ async function movePlayerToSubstitute(
         await loadPlayers();
 
 
-        const updated =
-            findPlayer(
-                player.name
-            );
-
-
-        if (updated) {
-
-            currentPlayer =
-                updated;
-
-        }
-
-
-        renderTeams();
         renderTeamProfile();
-
-
-        if (
-            window.location.hash ===
-            "#playerPage" &&
-            currentPlayer
-        ) {
-
-            renderPlayerProfile(
-                currentPlayer
-            );
-
-        }
+        renderTeams();
 
 
         showNotification(
-            `${player.name} переведён в замены.`
+            player.name +
+            " переведён в замены."
         );
+
 
     } catch (error) {
 
         console.error(
-            "Ошибка перевода:",
             error
         );
 
@@ -3080,9 +3091,7 @@ async function movePlayerToSubstitute(
    MOVE TO STARTER
 ========================================================= */
 
-async function movePlayerToStarter(
-    name
-) {
+async function movePlayerToStarter(name) {
 
     if (!isAdmin) {
 
@@ -3149,45 +3158,19 @@ async function movePlayerToStarter(
         await loadPlayers();
 
 
-        const updated =
-            findPlayer(
-                player.name
-            );
-
-
-        if (updated) {
-
-            currentPlayer =
-                updated;
-
-        }
-
-
-        renderTeams();
         renderTeamProfile();
-
-
-        if (
-            window.location.hash ===
-            "#playerPage" &&
-            currentPlayer
-        ) {
-
-            renderPlayerProfile(
-                currentPlayer
-            );
-
-        }
+        renderTeams();
 
 
         showNotification(
-            `${player.name} переведён в основной состав.`
+            player.name +
+            " переведён в основной состав."
         );
+
 
     } catch (error) {
 
         console.error(
-            "Ошибка перевода:",
             error
         );
 
@@ -3206,9 +3189,7 @@ async function movePlayerToStarter(
    REMOVE PLAYER
 ========================================================= */
 
-async function removePlayerFromRoster(
-    name
-) {
+async function removePlayerFromRoster(name) {
 
     if (!isAdmin) {
 
@@ -3232,6 +3213,19 @@ async function removePlayerFromRoster(
             "Игрок не найден.",
             "error"
         );
+
+        return;
+
+    }
+
+
+    const confirmed =
+        confirm(
+            `Удалить ${player.name} из состава?\n\nИгрок будет скрыт с сайта.`
+        );
+
+
+    if (!confirmed) {
 
         return;
 
@@ -3283,7 +3277,7 @@ async function removePlayerFromRoster(
 
 
         showNotification(
-            `${player.name} удалён из состава.`
+            "Игрок удалён из состава."
         );
 
 
@@ -3308,9 +3302,7 @@ async function removePlayerFromRoster(
    RESTORE PLAYER
 ========================================================= */
 
-async function restorePlayer(
-    name
-) {
+async function restorePlayer(name) {
 
     if (!isAdmin) {
 
@@ -3382,7 +3374,7 @@ async function restorePlayer(
 
 
         showNotification(
-            `${player.name} снова добавлен в состав.`
+            "Игрок снова добавлен в состав."
         );
 
 
@@ -3421,81 +3413,46 @@ function openEditor() {
     }
 
 
-    const title =
-        document.getElementById(
-            "editTitle"
-        );
+    document.getElementById(
+        "editTitle"
+    ).value =
+        team.title;
 
 
-    const tag =
-        document.getElementById(
-            "editTag"
-        );
+    document.getElementById(
+        "editTag"
+    ).value =
+        team.tag;
 
 
-    const country =
-        document.getElementById(
-            "editCountry"
-        );
+    document.getElementById(
+        "editCountry"
+    ).value =
+        team.country;
 
 
-    const logo =
-        document.getElementById(
-            "editLogo"
-        );
+    document.getElementById(
+        "editLogo"
+    ).value =
+        team.logo;
 
 
-    const faceit =
-        document.getElementById(
-            "editFaceit"
-        );
+    document.getElementById(
+        "editFaceit"
+    ).value =
+        team.faceit;
 
 
-    const steam =
-        document.getElementById(
-            "editSteam"
-        );
+    document.getElementById(
+        "editSteam"
+    ).value =
+        team.steam;
 
 
-    const description =
-        document.getElementById(
-            "editDescription"
-        );
-
-
-    if (title)
-        title.value =
-            team.title;
-
-
-    if (tag)
-        tag.value =
-            team.tag;
-
-
-    if (country)
-        country.value =
-            team.country;
-
-
-    if (logo)
-        logo.value =
-            team.logo;
-
-
-    if (faceit)
-        faceit.value =
-            team.faceit;
-
-
-    if (steam)
-        steam.value =
-            team.steam;
-
-
-    if (description)
-        description.value =
-            team.description;
+    document.getElementById(
+        "editDescription"
+    ).value =
+        team.description;
 
 
     const modal =
@@ -3545,9 +3502,7 @@ function closeEditor() {
    SAVE TEAM
 ========================================================= */
 
-function saveTeamFromForm(
-    event
-) {
+function saveTeamFromForm(event) {
 
     event.preventDefault();
 
@@ -3564,89 +3519,57 @@ function saveTeamFromForm(
     }
 
 
-    const title =
+    team.title =
         document.getElementById(
             "editTitle"
-        )?.value.trim();
+        )?.value.trim() ||
+        team.title;
 
 
-    const tag =
+    team.name =
+        team.title;
+
+
+    team.tag =
         document.getElementById(
             "editTag"
-        )?.value.trim();
+        )?.value.trim() ||
+        team.tag;
 
 
-    const country =
+    team.country =
         document.getElementById(
             "editCountry"
-        )?.value.trim();
-
-
-    const logo =
-        document.getElementById(
-            "editLogo"
-        )?.value.trim();
-
-
-    const faceit =
-        document.getElementById(
-            "editFaceit"
-        )?.value.trim();
-
-
-    const steam =
-        document.getElementById(
-            "editSteam"
-        )?.value.trim();
-
-
-    const description =
-        document.getElementById(
-            "editDescription"
-        )?.value.trim();
-
-
-    if (title) {
-
-        team.title =
-            title;
-
-        team.name =
-            title;
-
-    }
-
-
-    if (tag) {
-
-        team.tag =
-            tag;
-
-    }
-
-
-    if (country) {
-
-        team.country =
-            country;
-
-    }
+        )?.value.trim() ||
+        team.country;
 
 
     team.logo =
-        logo || "";
+        document.getElementById(
+            "editLogo"
+        )?.value.trim() ||
+        "";
 
 
     team.faceit =
-        faceit || "";
+        document.getElementById(
+            "editFaceit"
+        )?.value.trim() ||
+        "";
 
 
     team.steam =
-        steam || "";
+        document.getElementById(
+            "editSteam"
+        )?.value.trim() ||
+        "";
 
 
     team.description =
-        description || "";
+        document.getElementById(
+            "editDescription"
+        )?.value.trim() ||
+        "";
 
 
     closeEditor();
@@ -3722,8 +3645,8 @@ function closeTeam() {
 
 
     window.scrollTo({
-        top:0,
-        behavior:"smooth"
+        top: 0,
+        behavior: "smooth"
     });
 
 }
@@ -3773,8 +3696,8 @@ function closePlayer() {
 
 
     window.scrollTo({
-        top:0,
-        behavior:"smooth"
+        top: 0,
+        behavior: "smooth"
     });
 
 }
@@ -3808,6 +3731,12 @@ function filterTeams(
     filter,
     button
 ) {
+
+    /*
+       В текущей версии фильтры
+       оставляем как декоративные.
+       Команда у нас одна.
+    */
 
     document
         .querySelectorAll(
@@ -4070,15 +3999,6 @@ function showHashPage() {
         }
 
 
-        if (currentPlayer) {
-
-            renderPlayerProfile(
-                currentPlayer
-            );
-
-        }
-
-
         updateActiveNavigation(
             "#teams"
         );
@@ -4180,11 +4100,6 @@ async function init() {
     }
 
 
-    /*
-     * Сначала ставим listener.
-     * Затем получаем текущую сессию.
-     */
-
     setupAuthListener();
 
 
@@ -4207,14 +4122,7 @@ async function init() {
 
 
     console.log(
-        "1Minute готов."
-    );
-
-
-    console.log(
-        "User:",
-        currentUser?.id ||
-        "нет"
+        "✓ 1Minute готов."
     );
 
 
@@ -4251,9 +4159,7 @@ document.addEventListener(
     function() {
 
 
-        /* ================================================
-           PLAYER EDIT FORM
-        ================================================ */
+        /* PLAYER EDIT FORM */
 
         const playerForm =
             document.getElementById(
@@ -4271,9 +4177,7 @@ document.addEventListener(
         }
 
 
-        /* ================================================
-           LOGIN FORM
-        ================================================ */
+        /* LOGIN FORM */
 
         const loginForm =
             document.getElementById(
@@ -4291,9 +4195,7 @@ document.addEventListener(
         }
 
 
-        /* ================================================
-           TEAM EDIT FORM
-        ================================================ */
+        /* TEAM EDIT FORM */
 
         const editForm =
             document.getElementById(
@@ -4311,120 +4213,13 @@ document.addEventListener(
         }
 
 
-        /* ================================================
-           START
-        ================================================ */
+        /* START */
 
         init();
 
     }
 );
-/* =========================================================
-   MAIN PAGE DESIGN
-   Убираем фильтры и центрируем команду
-========================================================= */
 
-function setupMainPageDesign() {
-
-    /* Убираем фильтры:
-       Все / Активные / Неактивные
-    */
-
-    const filters =
-        document.querySelector(".filters");
-
-    if (filters) {
-        filters.remove();
-    }
-
-
-    /* Центрируем заголовок TEAM / 1Minute */
-
-    const teamsSection =
-        document.getElementById("teams");
-
-    if (teamsSection) {
-
-        teamsSection.style.textAlign =
-            "center";
-
-    }
-
-
-    /* Центрируем блок с карточкой команды */
-
-    const teamsList =
-        document.getElementById("teams-list");
-
-    if (teamsList) {
-
-        teamsList.style.display =
-            "flex";
-
-        teamsList.style.flexDirection =
-            "column";
-
-        teamsList.style.alignItems =
-            "center";
-
-    }
-
-
-    /* Саму карточку команды */
-
-    const grid =
-        document.getElementById("grid");
-
-    if (grid) {
-
-        grid.style.width =
-            "100%";
-
-        grid.style.display =
-            "flex";
-
-        grid.style.justifyContent =
-            "center";
-
-        grid.style.alignItems =
-            "center";
-
-    }
-
-}
-
-
-/* =========================================================
-   MAIN PAGE DESIGN AFTER RENDER
-========================================================= */
-
-const originalRenderTeams =
-    renderTeams;
-
-renderTeams = function() {
-
-    originalRenderTeams();
-
-    setupMainPageDesign();
-
-};
-
-
-/* =========================================================
-   INITIAL DESIGN
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        setTimeout(
-            setupMainPageDesign,
-            100
-        );
-
-    }
-);
 
 /* =========================================================
    END
