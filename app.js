@@ -23,8 +23,6 @@ const teams = [
         matches: 28,
         wins: 22,
         points: 2140,
-        faceit: "https://www.faceit.com/",
-        steam: "https://steamcommunity.com/",
         description:
             "Молодой состав 1Minute, который строится вокруг дисциплины и стабильной игры."
     }
@@ -40,7 +38,7 @@ let players = {
 };
 
 
-// Эти два игрока ВСЕГДА являются заменами
+// Эти игроки автоматически считаются заменами
 const SUBSTITUTE_NAMES = [
     "lqq69",
     "ChapsTea"
@@ -77,32 +75,21 @@ function esc(value) {
 
 function getPlayerStatus(name) {
 
-    if (
-        SUBSTITUTE_NAMES.includes(
-            String(name || "")
-        )
-    ) {
-
-        return "sub";
-
-    }
-
-    return "main";
+    return SUBSTITUTE_NAMES.includes(
+        String(name || "")
+    )
+        ? "sub"
+        : "main";
 }
 
 
 // ======================================================
-// ЗАГРУЗКА ИГРОКОВ ИЗ SUPABASE
+// ЗАГРУЗКА ИГРОКОВ
 // ======================================================
 
 async function loadPlayers() {
 
     try {
-
-        console.log(
-            "Загрузка игроков из Supabase..."
-        );
-
 
         const response = await fetch(
             SUPABASE_URL +
@@ -133,12 +120,6 @@ async function loadPlayers() {
 
         const data =
             await response.json();
-
-
-        console.log(
-            "Игроки получены:",
-            data
-        );
 
 
         players["1M Academy"] =
@@ -173,8 +154,6 @@ async function loadPlayers() {
                         player.steam ||
                         "",
 
-                    // ВАЖНО:
-                    // status из базы НЕ используется
                     status:
                         getPlayerStatus(
                             player.name
@@ -185,28 +164,12 @@ async function loadPlayers() {
             });
 
 
-        console.log(
-            "Основной состав:",
-            players["1M Academy"].filter(
-                function (player) {
-                    return player.status === "main";
-                }
-            )
-        );
-
-
-        console.log(
-            "Замены:",
-            players["1M Academy"].filter(
-                function (player) {
-                    return player.status === "sub";
-                }
-            )
-        );
-
-
         renderTeams();
 
+
+        // Если пользователь уже
+        // находится на странице команды
+        // — обновляем её
 
         handleNavigation();
 
@@ -239,7 +202,9 @@ function showSection(id) {
         .querySelectorAll(".screen")
         .forEach(function (screen) {
 
-            screen.classList.add("hidden");
+            screen.classList.add(
+                "hidden"
+            );
 
         });
 
@@ -250,7 +215,9 @@ function showSection(id) {
 
     if (section) {
 
-        section.classList.remove("hidden");
+        section.classList.remove(
+            "hidden"
+        );
 
     }
 
@@ -259,7 +226,9 @@ function showSection(id) {
         .querySelectorAll("nav a")
         .forEach(function (link) {
 
-            link.classList.remove("active");
+            link.classList.remove(
+                "active"
+            );
 
 
             if (
@@ -267,7 +236,9 @@ function showSection(id) {
                 "#" + id
             ) {
 
-                link.classList.add("active");
+                link.classList.add(
+                    "active"
+                );
 
             }
 
@@ -302,6 +273,7 @@ function handleNavigation() {
         }
 
         return;
+
     }
 
 
@@ -312,6 +284,7 @@ function handleNavigation() {
         );
 
         return;
+
     }
 
 
@@ -325,10 +298,12 @@ function handleNavigation() {
         showSection(hash);
 
         return;
+
     }
 
 
     showSection("teams");
+
 }
 
 
@@ -406,7 +381,7 @@ function renderTeams() {
 
 
 // ======================================================
-// ФИЛЬТР КОМАНД
+// ФИЛЬТРЫ
 // ======================================================
 
 function filterTeams(type, button) {
@@ -431,21 +406,7 @@ function filterTeams(type, button) {
     }
 
 
-    if (type === "all") {
-
-        renderTeams();
-
-    } else {
-
-        renderTeams(
-            teams.filter(function (team) {
-
-                return team.status === type;
-
-            })
-        );
-
-    }
+    renderTeams();
 
 }
 
@@ -578,7 +539,7 @@ function openTeam(name) {
 
 
     const mainHTML =
-        mainPlayers.length > 0
+        mainPlayers.length
 
         ?
 
@@ -599,7 +560,7 @@ function openTeam(name) {
 
 
     const substitutesHTML =
-        substitutePlayers.length > 0
+        substitutePlayers.length
 
         ?
 
@@ -644,28 +605,6 @@ function openTeam(name) {
                         <div class="profile-country">
                             ◉ ${esc(team.country)}
                             · Активная команда
-                        </div>
-
-
-                        <div class="links">
-
-                            <a
-                                class="link"
-                                target="_blank"
-                                href="${esc(team.faceit)}"
-                            >
-                                FACEIT ↗
-                            </a>
-
-
-                            <a
-                                class="link"
-                                target="_blank"
-                                href="${esc(team.steam)}"
-                            >
-                                Steam ↗
-                            </a>
-
                         </div>
 
                     </div>
@@ -809,11 +748,12 @@ function openTeam(name) {
 
 
     window.scrollTo(0, 0);
+
 }
 
 
 // ======================================================
-// ЗАКРЫТЬ КОМАНДУ
+// НАЗАД К КОМАНДАМ
 // ======================================================
 
 function closeTeam() {
@@ -856,16 +796,7 @@ function openPlayer(
         });
 
 
-    if (!player) {
-
-        console.error(
-            "Игрок не найден:",
-            playerName
-        );
-
-        return;
-
-    }
+    if (!player) return;
 
 
     document
@@ -926,10 +857,7 @@ function openPlayer(
 
                             esc(
                                 player.name
-                                    .substring(
-                                        0,
-                                        2
-                                    )
+                                    .substring(0, 2)
                                     .toUpperCase()
                             )
                         }
@@ -970,6 +898,7 @@ function openPlayer(
                                 `<a
                                     class="link"
                                     target="_blank"
+                                    rel="noopener noreferrer"
                                     href="${esc(
                                         player.faceit
                                     )}"
@@ -991,6 +920,7 @@ function openPlayer(
                                 `<a
                                     class="link"
                                     target="_blank"
+                                    rel="noopener noreferrer"
                                     href="${esc(
                                         player.steam
                                     )}"
@@ -1013,12 +943,8 @@ function openPlayer(
                             <button
                                 class="edit-btn"
                                 onclick="openPlayerEditor(
-                                    '${esc(
-                                        teamName
-                                    )}',
-                                    '${esc(
-                                        player.name
-                                    )}'
+                                    '${esc(teamName)}',
+                                    '${esc(player.name)}'
                                 )"
                             >
                                 ✎ Редактировать профиль
@@ -1036,9 +962,7 @@ function openPlayer(
                     <div class="stat">
 
                         <b>
-                            ${esc(
-                                team.name
-                            )}
+                            ${esc(team.name)}
                         </b>
 
                         <small>
@@ -1051,9 +975,7 @@ function openPlayer(
                     <div class="stat">
 
                         <b>
-                            ${esc(
-                                player.role
-                            )}
+                            ${esc(player.role)}
                         </b>
 
                         <small>
@@ -1066,9 +988,7 @@ function openPlayer(
                     <div class="stat">
 
                         <b>
-                            ${esc(
-                                player.country
-                            )}
+                            ${esc(player.country)}
                         </b>
 
                         <small>
@@ -1112,27 +1032,21 @@ function openPlayer(
 
                         Никнейм:
                         <b>
-                            ${esc(
-                                player.name
-                            )}
+                            ${esc(player.name)}
                         </b>
 
                         <br>
 
                         Роль:
                         <b>
-                            ${esc(
-                                player.role
-                            )}
+                            ${esc(player.role)}
                         </b>
 
                         <br>
 
                         Страна:
                         <b>
-                            ${esc(
-                                player.country
-                            )}
+                            ${esc(player.country)}
                         </b>
 
                     </p>
@@ -1153,15 +1067,11 @@ function openPlayer(
                         font-size:13px;
                     ">
 
-                        ${esc(
-                            team.name
-                        )}
+                        ${esc(team.name)}
 
                         <br>
 
-                        ${esc(
-                            team.country
-                        )}
+                        ${esc(team.country)}
 
                     </p>
 
@@ -1169,9 +1079,7 @@ function openPlayer(
                     <button
                         class="edit-btn"
                         onclick="openTeam(
-                            '${esc(
-                                team.name
-                            )}'
+                            '${esc(team.name)}'
                         )"
                     >
                         ← Открыть команду
@@ -1188,21 +1096,18 @@ function openPlayer(
 
     location.hash =
         "player/" +
-        encodeURIComponent(
-            teamName
-        ) +
+        encodeURIComponent(teamName) +
         "/" +
-        encodeURIComponent(
-            player.name
-        );
+        encodeURIComponent(player.name);
 
 
     window.scrollTo(0, 0);
+
 }
 
 
 // ======================================================
-// ЗАКРЫТЬ ИГРОКА
+// НАЗАД ОТ ИГРОКА
 // ======================================================
 
 function closePlayer() {
@@ -1213,11 +1118,7 @@ function closePlayer() {
         );
 
 
-    if (
-        hash.startsWith(
-            "player/"
-        )
-    ) {
+    if (hash.startsWith("player/")) {
 
         const parts =
             hash.substring(7)
@@ -1241,6 +1142,7 @@ function closePlayer() {
 
     location.hash =
         "teams";
+
 }
 
 
@@ -1328,6 +1230,7 @@ function openPlayerEditor(
     modal.classList.remove(
         "hidden"
     );
+
 }
 
 
@@ -1355,7 +1258,7 @@ function closePlayerEditor() {
 
 
 // ======================================================
-// СОХРАНЕНИЕ ИГРОКА В SUPABASE
+// СОХРАНЕНИЕ ИГРОКА
 // ======================================================
 
 const playerEditForm =
@@ -1385,12 +1288,10 @@ if (playerEditForm) {
                 ).value;
 
 
-            const list =
-                players[teamName] || [];
-
-
             const player =
-                list.find(function (item) {
+                (
+                    players[teamName] || []
+                ).find(function (item) {
 
                     return item.name === oldName;
 
@@ -1448,6 +1349,7 @@ if (playerEditForm) {
                         ),
 
                         {
+
                             method: "PATCH",
 
                             headers: {
@@ -1507,29 +1409,21 @@ if (playerEditForm) {
                 player.name =
                     newName;
 
-
                 player.country =
                     country;
-
 
                 player.role =
                     role;
 
-
                 player.avatar =
                     avatar;
-
 
                 player.faceit =
                     faceit;
 
-
                 player.steam =
                     steam;
 
-
-                // После изменения ника
-                // заново определяем замену
 
                 player.status =
                     getPlayerStatus(
@@ -1549,7 +1443,6 @@ if (playerEditForm) {
             } catch (error) {
 
                 console.error(
-                    "Ошибка сохранения:",
                     error
                 );
 
@@ -1594,9 +1487,7 @@ function renderRating() {
 
                     <td>
                         <b>
-                            ${esc(
-                                team.name
-                            )}
+                            ${esc(team.name)}
                         </b>
                     </td>
 
