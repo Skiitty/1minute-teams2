@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1Minute — Teams</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="glow glow-a"></div><div class="glow glow-b"></div>
+<header class="topbar"><a class="brand" href="#teams"><span>1</span>Minute</a><nav><a class="active" href="#teams">Команды</a><a href="#rating">Рейтинг</a><a href="#matches">Матчи</a><a href="#tournaments">Турниры</a></nav><button class="login" onclick="alert('Авторизация будет подключена позже')">Войти</button><button class="mobile-menu" onclick="document.body.classList.toggle('menu-open')">☰</button></header>
+<main>
+<section id="teams" class="screen">
+<div class="hero"><div class="eyebrow">1MINUTE DATABASE</div><h1>Команды, которые<br><span>играют на победу.</span></h1><p>Профили составов, рейтинг, матчи и статистика — всё в одном месте.</p><div class="hero-actions"><a href="#teams-list" class="primary">Смотреть команды <b>↓</b></a><a href="#rating" class="secondary">Рейтинг →</a></div></div>
+<div id="teams-list" class="section-head"><div><div class="eyebrow">TEAMS</div><h2>Все команды</h2></div><div class="filters"><button class="selected" onclick="filterTeams('all',this)">Все</button><button onclick="filterTeams('active',this)">Активные</button><button onclick="filterTeams('inactive',this)">Неактивные</button></div></div><div id="grid" class="team-grid"></div>
+</section>
+<section id="teamPage" class="screen hidden"><button class="back" onclick="closeTeam()">← Все команды</button><div id="teamProfile"></div></section>
+<section id="rating" class="screen page-section"><div class="section-head"><div><div class="eyebrow">RANKING</div><h2>Рейтинг команд</h2></div></div><div class="glass table-wrap"><table><thead><tr><th>#</th><th>Команда</th><th>Матчи</th><th>Победы</th><th>ELO</th></tr></thead><tbody id="ratingRows"></tbody></table></div></section>
+<section id="matches" class="screen page-section"><div class="section-head"><div><div class="eyebrow">MATCHES</div><h2>Последние матчи</h2></div></div><div id="matchesList" class="matches"></div></section>
+<section id="tournaments" class="screen page-section"><div class="section-head"><div><div class="eyebrow">TOURNAMENTS</div><h2>Турниры</h2></div></div><div id="tournamentsGrid" class="tournament-grid"></div></section>
+</main>
+<div id="editModal" class="modal hidden"><div class="modal-card"><button class="modal-close" onclick="closeEditor()">×</button><div class="eyebrow">TEAM EDITOR</div><h2>Редактировать команду</h2><form id="editForm"><input type="hidden" id="editName"><label>Название<input id="editTitle" required></label><label>Тег<input id="editTag" maxlength="5" required></label><label>Страна<input id="editCountry" required></label><label>Логотип URL<input id="editLogo" placeholder="https://..."></label><label>FACEIT URL<input id="editFaceit" placeholder="https://faceit.com/..."></label><label>Steam URL<input id="editSteam" placeholder="https://steamcommunity.com/..."></label><label>Описание<textarea id="editDescription" rows="3"></textarea></label><button class="primary save" type="submit">Сохранить изменения</button></form></div></div>
+<footer>© 2026 1Minute · Teams database</footer>
+<script src="app.js"></script>
+</body></html>
