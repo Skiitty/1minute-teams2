@@ -1,4 +1,4 @@
-const SUPABASE_URL = "const SUPABASE_URL = "https://wzheavazneaybhmgfntn.supabase.co";";
+const SUPABASE_URL = "https://wzheavazneaybhmgfntn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ZsTLAQNw2ILBetxcMTGY2A_rhMO_hkK";
 
 const TEAM_NAME = "1Minute";
