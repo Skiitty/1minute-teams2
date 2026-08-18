@@ -4319,7 +4319,112 @@ document.addEventListener(
 
     }
 );
+/* =========================================================
+   MAIN PAGE DESIGN
+   Убираем фильтры и центрируем команду
+========================================================= */
 
+function setupMainPageDesign() {
+
+    /* Убираем фильтры:
+       Все / Активные / Неактивные
+    */
+
+    const filters =
+        document.querySelector(".filters");
+
+    if (filters) {
+        filters.remove();
+    }
+
+
+    /* Центрируем заголовок TEAM / 1Minute */
+
+    const teamsSection =
+        document.getElementById("teams");
+
+    if (teamsSection) {
+
+        teamsSection.style.textAlign =
+            "center";
+
+    }
+
+
+    /* Центрируем блок с карточкой команды */
+
+    const teamsList =
+        document.getElementById("teams-list");
+
+    if (teamsList) {
+
+        teamsList.style.display =
+            "flex";
+
+        teamsList.style.flexDirection =
+            "column";
+
+        teamsList.style.alignItems =
+            "center";
+
+    }
+
+
+    /* Саму карточку команды */
+
+    const grid =
+        document.getElementById("grid");
+
+    if (grid) {
+
+        grid.style.width =
+            "100%";
+
+        grid.style.display =
+            "flex";
+
+        grid.style.justifyContent =
+            "center";
+
+        grid.style.alignItems =
+            "center";
+
+    }
+
+}
+
+
+/* =========================================================
+   MAIN PAGE DESIGN AFTER RENDER
+========================================================= */
+
+const originalRenderTeams =
+    renderTeams;
+
+renderTeams = function() {
+
+    originalRenderTeams();
+
+    setupMainPageDesign();
+
+};
+
+
+/* =========================================================
+   INITIAL DESIGN
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        setTimeout(
+            setupMainPageDesign,
+            100
+        );
+
+    }
+);
 
 /* =========================================================
    END
