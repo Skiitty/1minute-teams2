@@ -1,3 +1,22 @@
+const SUPABASE_URL = 'https://wzheavazneaybhmgfntn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ZsTLAQNw2ILBetxcMTGY2A_rhMO_hkK';
+
+let teams = [];
+let players = [];
+
+const matches = [
+    ['1M Academy', 'Velocity', '16 : 12', 'Сегодня'],
+    ['NightFox', 'Rebels', '13 : 16', 'Вчера'],
+    ['Nova', 'United', '10 : 16', '16.08.2026'],
+    ['Velocity', 'NightFox', '16 : 14', '15.08.2026']
+];
+
+const tournaments = [
+    ['1Minute Championship #12', 'Активный', '128 команд'],
+    ['1Minute Pro League S4', 'Активный', '32 команды'],
+    ['1Minute Cup Summer', 'Завершён', '64 команды']
+];
+
 const defaultTeams = [
     {
         name: '1M Academy',
@@ -85,199 +104,65 @@ const defaultTeams = [
     }
 ];
 
-
-const defaultPlayers = {
-
-    '1M Academy': [
-        {
-            name: 's1mple',
-            country: 'Russia',
-            role: 'Капитан',
-            avatar: '',
-            faceit: 'https://www.faceit.com/',
-            steam: 'https://steamcommunity.com/'
-        },
-        {
-            name: 'electroNic',
-            country: 'Russia',
-            role: 'Игрок',
-            avatar: '',
-            faceit: '',
-            steam: ''
-        },
-        {
-            name: 'b1t',
-            country: 'Ukraine',
-            role: 'Игрок',
-            avatar: '',
-            faceit: '',
-            steam: ''
-        },
-        {
-            name: 'Perfecto',
-            country: 'Russia',
-            role: 'Игрок',
-            avatar: '',
-            faceit: '',
-            steam: ''
-        },
-        {
-            name: 'Ax1Le',
-            country: 'Russia',
-            role: 'Игрок',
-            avatar: '',
-            faceit: '',
-            steam: ''
-        }
-    ],
-
-    'Velocity': [
-        { name: 'm0NESY', country: 'Netherlands', role: 'Капитан', avatar: '', faceit: '', steam: '' },
-        { name: 'NiKo', country: 'Netherlands', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'huNter-', country: 'Netherlands', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'jks', country: 'Netherlands', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'malbsMd', country: 'Netherlands', role: 'Игрок', avatar: '', faceit: '', steam: '' }
-    ],
-
-    'NightFox': [
-        { name: 'donk', country: 'Germany', role: 'Капитан', avatar: '', faceit: '', steam: '' },
-        { name: 'sh1ro', country: 'Germany', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'magixx', country: 'Germany', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'zont1x', country: 'Germany', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'chopper', country: 'Germany', role: 'Игрок', avatar: '', faceit: '', steam: '' }
-    ],
-
-    'Rebels': [
-        { name: 'ZywOo', country: 'Poland', role: 'Капитан', avatar: '', faceit: '', steam: '' },
-        { name: 'apEX', country: 'Poland', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'flameZ', country: 'Poland', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'mezii', country: 'Poland', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'ropz', country: 'Poland', role: 'Игрок', avatar: '', faceit: '', steam: '' }
-    ],
-
-    'Nova': [
-        { name: 'rain', country: 'Sweden', role: 'Капитан', avatar: '', faceit: '', steam: '' },
-        { name: 'broky', country: 'Sweden', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'karrigan', country: 'Sweden', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'frozen', country: 'Sweden', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'Jame', country: 'Sweden', role: 'Игрок', avatar: '', faceit: '', steam: '' }
-    ],
-
-    'United': [
-        { name: 'device', country: 'France', role: 'Капитан', avatar: '', faceit: '', steam: '' },
-        { name: 'stavn', country: 'France', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'jabbi', country: 'France', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'cadiaN', country: 'France', role: 'Игрок', avatar: '', faceit: '', steam: '' },
-        { name: 'dupreeh', country: 'France', role: 'Игрок', avatar: '', faceit: '', steam: '' }
-    ]
-};
-
-
-let teams =
-    JSON.parse(localStorage.getItem('1minute-teams') || 'null')
-    || defaultTeams;
-
-
-let players =
-    JSON.parse(localStorage.getItem('1minute-players') || 'null')
-    || defaultPlayers;
-
-
-const matches = [
-    ['1M Academy', 'Velocity', '16 : 12', 'Сегодня'],
-    ['NightFox', 'Rebels', '13 : 16', 'Вчера'],
-    ['Nova', 'United', '10 : 16', '16.08.2026'],
-    ['Velocity', 'NightFox', '16 : 14', '15.08.2026']
-];
-
-
-const tournaments = [
-    ['1Minute Championship #12', 'Активный', '128 команд'],
-    ['1Minute Pro League S4', 'Активный', '32 команды'],
-    ['1Minute Cup Summer', 'Завершён', '64 команды']
-];
-
-
 function esc(value) {
-
-    return String(value ?? '').replace(
-        /[&<>"']/g,
-        character => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-        }[character])
-    );
-
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
 }
 
+async function api(table, query = '', options = {}) {
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/${table}${query}`,
+        {
+            ...options,
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+            }
+        }
+    );
 
-function logo(team, className = 'team-logo') {
+    const text = await response.text();
 
+    if (!response.ok) {
+        console.error('Supabase error:', text);
+        throw new Error(text);
+    }
+
+    return text ? JSON.parse(text) : [];
+}
+
+function logo(team, cls = 'team-logo') {
     if (team.logo) {
-
         return `
-            <div class="${className}">
+            <div class="${cls}">
                 <img src="${esc(team.logo)}" alt="">
             </div>
         `;
-
     }
 
     return `
-        <div class="${className}">
-            ${esc(team.tag)}
+        <div class="${cls}">
+            ${esc(team.tag || '1M')}
         </div>
     `;
-
 }
 
-
-function playerAvatar(player) {
-
-    if (player.avatar) {
-
-        return `
-            <div class="mini">
-                <img src="${esc(player.avatar)}" alt="">
-            </div>
-        `;
-
-    }
-
-    return `
-        <div class="mini">
-            ${esc(player.name.substring(0, 2).toUpperCase())}
-        </div>
-    `;
-
-}
-
-
-function savePlayers() {
-
-    localStorage.setItem(
-        '1minute-players',
-        JSON.stringify(players)
-    );
-
-}
-
-
-function renderTeams(list) {
-
+function renderTeams(list = teams) {
     const grid = document.getElementById('grid');
 
     if (!grid) return;
 
-
     grid.innerHTML = list.map(team => `
-
         <article
             class="team-card"
-            onclick="openTeam('${esc(team.name)}')"
+            onclick="openTeam(${JSON.stringify(team.name)})"
         >
 
             <div class="team-top">
@@ -298,174 +183,189 @@ function renderTeams(list) {
 
             </div>
 
-
             <div class="team-bottom">
 
                 <span>
                     #${team.rank} · ${team.points} ELO
                 </span>
 
-                <span class="status ${team.status}">
-                    ${team.status === 'active'
-                        ? 'ACTIVE'
-                        : 'INACTIVE'}
+                <span class="status ${esc(team.status)}">
+                    ${team.status === 'active' ? 'ACTIVE' : 'INACTIVE'}
                 </span>
 
             </div>
 
         </article>
-
     `).join('');
-
 }
 
-
 function filterTeams(type, button) {
-
     document
         .querySelectorAll('.filters button')
-        .forEach(button => button.classList.remove('selected'));
-
+        .forEach(btn => btn.classList.remove('selected'));
 
     button.classList.add('selected');
 
-
-    renderTeams(
-        type === 'all'
-            ? teams
-            : teams.filter(team => team.status === type)
-    );
-
+    if (type === 'all') {
+        renderTeams(teams);
+    } else {
+        renderTeams(
+            teams.filter(team => team.status === type)
+        );
+    }
 }
 
+function renderRating() {
+    const rows = document.getElementById('ratingRows');
+
+    if (!rows) return;
+
+    rows.innerHTML = teams.map(team => `
+        <tr>
+            <td>#${team.rank}</td>
+            <td><b>${esc(team.name)}</b></td>
+            <td>${team.matches}</td>
+            <td>${team.wins}</td>
+            <td><b>${team.points}</b></td>
+        </tr>
+    `).join('');
+}
+
+function renderMatches() {
+    const box = document.getElementById('matchesList');
+
+    if (!box) return;
+
+    box.innerHTML = matches.map(match => `
+        <div class="match">
+
+            <div>
+
+                <div class="match-name">
+                    ${esc(match[0])} — ${esc(match[1])}
+                </div>
+
+                <div class="date">
+                    ${esc(match[3])}
+                </div>
+
+            </div>
+
+            <div class="score">
+                ${esc(match[2])}
+            </div>
+
+        </div>
+    `).join('');
+}
+
+function renderTournaments() {
+    const box = document.getElementById('tournamentsGrid');
+
+    if (!box) return;
+
+    box.innerHTML = tournaments.map(item => `
+        <div class="tournament">
+
+            <span class="status">
+                ${esc(item[1])}
+            </span>
+
+            <h3>
+                ${esc(item[0])}
+            </h3>
+
+            <p>
+                ${esc(item[2])} · 1Minute
+            </p>
+
+        </div>
+    `).join('');
+}
 
 function renderAll() {
-
-    renderTeams(teams);
-
-
-    document.getElementById('ratingRows').innerHTML =
-        teams.map(team => `
-
-            <tr>
-
-                <td>
-                    #${team.rank}
-                </td>
-
-                <td>
-                    <b>${esc(team.name)}</b>
-                </td>
-
-                <td>
-                    ${team.matches}
-                </td>
-
-                <td>
-                    ${team.wins}
-                </td>
-
-                <td>
-                    <b>${team.points}</b>
-                </td>
-
-            </tr>
-
-        `).join('');
-
-
-    document.getElementById('matchesList').innerHTML =
-        matches.map(match => `
-
-            <div class="match">
-
-                <div>
-
-                    <div class="match-name">
-                        ${esc(match[0])} — ${esc(match[1])}
-                    </div>
-
-                    <div class="date">
-                        ${esc(match[3])}
-                    </div>
-
-                </div>
-
-                <div class="score">
-                    ${esc(match[2])}
-                </div>
-
-            </div>
-
-        `).join('');
-
-
-    document.getElementById('tournamentsGrid').innerHTML =
-        tournaments.map(tournament => `
-
-            <div class="tournament">
-
-                <span class="status">
-                    ${esc(tournament[1])}
-                </span>
-
-                <h3>
-                    ${esc(tournament[0])}
-                </h3>
-
-                <p>
-                    ${esc(tournament[2])} · 1Minute
-                </p>
-
-            </div>
-
-        `).join('');
-
+    renderTeams();
+    renderRating();
+    renderMatches();
+    renderTournaments();
 }
 
+async function loadData() {
+    try {
+        teams = await api(
+            'teams',
+            '?select=*&order=rank.asc'
+        );
 
-function hideScreens() {
+        players = await api(
+            'players',
+            '?select=*&order=id.asc'
+        );
+
+        if (!teams.length) {
+            teams = await api(
+                'teams',
+                '',
+                {
+                    method: 'POST',
+                    headers: {
+                        Prefer: 'return=representation'
+                    },
+                    body: JSON.stringify(defaultTeams)
+                }
+            );
+        }
+
+        renderAll();
+
+        console.log('Supabase подключён.');
+        console.log('Команд:', teams.length);
+        console.log('Игроков:', players.length);
+
+    } catch (error) {
+
+        console.error(error);
+
+        /*
+         * Если база пока не отвечает,
+         * показываем команды локально,
+         * чтобы сайт не был пустым.
+         */
+
+        teams = defaultTeams;
+        players = [];
+
+        renderAll();
+
+        console.warn(
+            'База Supabase пока недоступна. Используются временные данные.'
+        );
+    }
+}
+
+function openTeam(name) {
+    const team = teams.find(item => item.name === name);
+
+    if (!team) {
+        console.error('Команда не найдена:', name);
+        return;
+    }
 
     document
         .querySelectorAll('.screen')
         .forEach(screen => screen.classList.add('hidden'));
 
-}
-
-
-function showMain() {
-
-    hideScreens();
-
-    document
-        .getElementById('teams')
-        .classList.remove('hidden');
-
-}
-
-
-function openTeam(name) {
-
-    const team = teams.find(
-        item => item.name === name
-    );
-
-    if (!team) return;
-
-
-    hideScreens();
-
     document
         .getElementById('teamPage')
         .classList.remove('hidden');
 
+    const teamPlayers = players.filter(
+        player => Number(player.team_id) === Number(team.id)
+    );
 
-    const teamPlayerList =
-        players[name] || [];
+    const profile = document.getElementById('teamProfile');
 
-
-    document.getElementById('teamProfile').innerHTML = `
-
+    profile.innerHTML = `
         <div class="profile">
 
             <div class="profile-hero">
@@ -488,46 +388,35 @@ function openTeam(name) {
                                 : 'Неактивная команда'}
                         </div>
 
-
                         <div class="links">
 
-                            ${
-                                team.faceit
-                                    ? `
-                                        <a
-                                            class="link"
-                                            target="_blank"
-                                            rel="noopener"
-                                            href="${esc(team.faceit)}"
-                                        >
-                                            FACEIT ↗
-                                        </a>
-                                    `
-                                    : ''
-                            }
+                            ${team.faceit ? `
+                                <a
+                                    class="link"
+                                    href="${esc(team.faceit)}"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    FACEIT ↗
+                                </a>
+                            ` : ''}
 
-
-                            ${
-                                team.steam
-                                    ? `
-                                        <a
-                                            class="link"
-                                            target="_blank"
-                                            rel="noopener"
-                                            href="${esc(team.steam)}"
-                                        >
-                                            Steam ↗
-                                        </a>
-                                    `
-                                    : ''
-                            }
+                            ${team.steam ? `
+                                <a
+                                    class="link"
+                                    href="${esc(team.steam)}"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    Steam ↗
+                                </a>
+                            ` : ''}
 
                         </div>
 
                     </div>
 
                 </div>
-
 
                 <div class="profile-stats">
 
@@ -547,18 +436,21 @@ function openTeam(name) {
                     </div>
 
                     <div class="stat">
-                        <b>${Math.round(team.wins / team.matches * 100)}%</b>
+                        <b>
+                            ${team.matches
+                                ? Math.round(team.wins / team.matches * 100)
+                                : 0}%
+                        </b>
                         <small>Win rate</small>
                     </div>
 
                 </div>
 
-
                 <div class="panel-actions">
 
                     <button
                         class="edit-btn"
-                        onclick="openEditor('${esc(team.name)}')"
+                        onclick="openEditor(${JSON.stringify(team.name)})"
                     >
                         ✎ Редактировать команду
                     </button>
@@ -567,9 +459,7 @@ function openTeam(name) {
 
             </div>
 
-
             <div class="profile-grid">
-
 
                 <div class="panel">
 
@@ -577,50 +467,54 @@ function openTeam(name) {
                         Состав
                     </h3>
 
-
                     ${
-                        teamPlayerList.length
-                            ? teamPlayerList.map(player => `
+                        teamPlayers.length
+                        ?
+                        teamPlayers.map(player => `
+                            <div
+                                class="player"
+                                onclick="openPlayer(
+                                    ${JSON.stringify(team.name)},
+                                    ${JSON.stringify(player.name)}
+                                )"
+                                style="cursor:pointer"
+                            >
 
-                                <div
-                                    class="player"
-                                    onclick="openPlayer(
-                                        '${esc(team.name)}',
-                                        '${esc(player.name)}'
-                                    )"
-                                    style="cursor:pointer"
-                                >
+                                <div class="mini">
+                                    ${esc(
+                                        player.name
+                                            .substring(0, 2)
+                                            .toUpperCase()
+                                    )}
+                                </div>
 
-                                    ${playerAvatar(player)}
+                                <div>
 
-                                    <div>
+                                    <b>
+                                        ${esc(player.name)}
+                                    </b>
 
-                                        <b>
-                                            ${esc(player.name)}
-                                        </b>
-
-                                        <div class="role">
-                                            ${esc(player.role || 'Игрок')}
-                                        </div>
-
+                                    <div class="role">
+                                        ${esc(player.role || 'Игрок')}
                                     </div>
 
                                 </div>
 
-                            `).join('')
-                            : `
-                                <p style="color:#858c98;font-size:13px">
-                                    Игроки пока не добавлены.
-                                </p>
-                            `
+                            </div>
+                        `).join('')
+                        :
+                        `
+                            <p style="color:#858c98">
+                                Игроков пока нет.
+                            </p>
+                        `
                     }
-
 
                     <div class="panel-actions">
 
                         <button
                             class="edit-btn"
-                            onclick="openPlayerCreator('${esc(team.name)}')"
+                            onclick="openPlayerCreator(${JSON.stringify(team.name)})"
                         >
                             ＋ Добавить игрока
                         </button>
@@ -629,7 +523,6 @@ function openTeam(name) {
 
                 </div>
 
-
                 <div class="panel">
 
                     <h3>
@@ -637,7 +530,7 @@ function openTeam(name) {
                     </h3>
 
                     <p style="color:#858c98;line-height:1.7;font-size:13px">
-                        ${esc(team.description)}
+                        ${esc(team.description || '')}
                     </p>
 
                     <div class="date">
@@ -651,76 +544,67 @@ function openTeam(name) {
             </div>
 
         </div>
-
     `;
 
-
-    location.hash =
-        'team/' + encodeURIComponent(name);
+    location.hash = 'team/' + encodeURIComponent(name);
 
     window.scrollTo(0, 0);
-
 }
 
+function closeTeam() {
+    document
+        .querySelectorAll('.screen')
+        .forEach(screen => screen.classList.add('hidden'));
+
+    document
+        .getElementById('teams')
+        .classList.remove('hidden');
+
+    location.hash = 'teams';
+
+    window.scrollTo(0, 0);
+}
 
 function openPlayer(teamName, playerName) {
+    const team = teams.find(item => item.name === teamName);
 
-    const list = players[teamName] || [];
-
-
-    const player = list.find(
-        item => item.name === playerName
+    const player = players.find(
+        item =>
+            Number(item.team_id) === Number(team.id) &&
+            item.name === playerName
     );
 
+    if (!team || !player) {
+        console.error('Игрок не найден.');
+        return;
+    }
 
-    if (!player) return;
-
-
-    const team = teams.find(
-        item => item.name === teamName
-    );
-
-
-    hideScreens();
-
+    document
+        .querySelectorAll('.screen')
+        .forEach(screen => screen.classList.add('hidden'));
 
     document
         .getElementById('playerPage')
         .classList.remove('hidden');
 
-
     document.getElementById('playerProfile').innerHTML = `
-
         <div class="profile">
 
             <div class="profile-hero">
 
                 <div class="profile-top">
 
-
-                    ${
-                        player.avatar
-
-                            ? `
-                                <div class="profile-logo">
-                                    <img
-                                        src="${esc(player.avatar)}"
-                                        alt=""
-                                    >
-                                </div>
-                            `
-
-                            : `
-                                <div class="profile-logo">
-                                    ${esc(
-                                        player.name
-                                            .substring(0, 2)
-                                            .toUpperCase()
-                                    )}
-                                </div>
-                            `
-                    }
-
+                    <div class="profile-logo">
+                        ${
+                            player.avatar
+                            ? `<img src="${esc(player.avatar)}" alt="">`
+                            : esc(
+                                player.name
+                                    .substring(0, 2)
+                                    .toUpperCase()
+                            )
+                        }
+                    </div>
 
                     <div>
 
@@ -729,126 +613,74 @@ function openPlayer(teamName, playerName) {
                         </h1>
 
                         <div class="profile-country">
-                            ◉ ${esc(player.country || 'Не указана')}
+                            ◉ ${esc(player.country || 'Страна не указана')}
                         </div>
 
-                        <div
-                            class="role"
-                            style="margin-top:8px"
-                        >
+                        <div class="role">
                             ${esc(player.role || 'Игрок')}
                         </div>
 
-
                         <div class="links">
 
+                            ${player.faceit ? `
+                                <a
+                                    class="link"
+                                    href="${esc(player.faceit)}"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    FACEIT ↗
+                                </a>
+                            ` : ''}
 
-                            ${
-                                player.faceit
-
-                                    ? `
-                                        <a
-                                            class="link"
-                                            target="_blank"
-                                            rel="noopener"
-                                            href="${esc(player.faceit)}"
-                                        >
-                                            FACEIT ↗
-                                        </a>
-                                    `
-
-                                    : ''
-                            }
-
-
-                            ${
-                                player.steam
-
-                                    ? `
-                                        <a
-                                            class="link"
-                                            target="_blank"
-                                            rel="noopener"
-                                            href="${esc(player.steam)}"
-                                        >
-                                            Steam ↗
-                                        </a>
-                                    `
-
-                                    : ''
-                            }
-
+                            ${player.steam ? `
+                                <a
+                                    class="link"
+                                    href="${esc(player.steam)}"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    Steam ↗
+                                </a>
+                            ` : ''}
 
                         </div>
 
                     </div>
 
                 </div>
-
 
                 <div class="profile-stats">
 
                     <div class="stat">
-
-                        <b>
-                            ${esc(team ? team.name : '—')}
-                        </b>
-
-                        <small>
-                            Команда
-                        </small>
-
+                        <b>${esc(team.name)}</b>
+                        <small>Команда</small>
                     </div>
 
-
                     <div class="stat">
-
-                        <b>
-                            ${esc(player.role || 'Игрок')}
-                        </b>
-
-                        <small>
-                            Роль
-                        </small>
-
+                        <b>${esc(player.role || 'Игрок')}</b>
+                        <small>Роль</small>
                     </div>
 
-
                     <div class="stat">
-
-                        <b>
-                            ${esc(player.country || '—')}
-                        </b>
-
-                        <small>
-                            Страна
-                        </small>
-
+                        <b>${esc(player.country || '—')}</b>
+                        <small>Страна</small>
                     </div>
 
-
                     <div class="stat">
-
-                        <b>
-                            CS2
-                        </b>
-
-                        <small>
-                            Дисциплина
-                        </small>
-
+                        <b>CS2</b>
+                        <small>Дисциплина</small>
                     </div>
 
                 </div>
-
 
                 <div class="panel-actions">
 
                     <button
                         class="edit-btn"
                         onclick="openPlayerEditor(
-                            '${esc(teamName)}',
-                            '${esc(player.name)}'
+                            ${JSON.stringify(teamName)},
+                            ${JSON.stringify(playerName)}
                         )"
                     >
                         ✎ Редактировать профиль
@@ -858,9 +690,7 @@ function openPlayer(teamName, playerName) {
 
             </div>
 
-
             <div class="profile-grid">
-
 
                 <div class="panel">
 
@@ -868,26 +698,18 @@ function openPlayer(teamName, playerName) {
                         Профиль игрока
                     </h3>
 
-                    <div class="player">
-
-                        ${playerAvatar(player)}
-
-                        <div>
-
-                            <b>
-                                ${esc(player.name)}
-                            </b>
-
-                            <div class="role">
-                                ${esc(player.role || 'Игрок')}
-                            </div>
-
-                        </div>
-
-                    </div>
+                    <p style="color:#858c98;line-height:1.7;font-size:13px">
+                        Никнейм:
+                        <b>${esc(player.name)}</b>
+                        <br>
+                        Роль:
+                        <b>${esc(player.role || 'Игрок')}</b>
+                        <br>
+                        Страна:
+                        <b>${esc(player.country || '—')}</b>
+                    </p>
 
                 </div>
-
 
                 <div class="panel">
 
@@ -895,483 +717,305 @@ function openPlayer(teamName, playerName) {
                         Команда
                     </h3>
 
-                    ${
-                        team
+                    <p style="color:#858c98;line-height:1.7;font-size:13px">
+                        ${esc(team.name)}
+                        ·
+                        ${esc(team.country)}
+                    </p>
 
-                            ? `
-                                <p style="color:#858c98;line-height:1.7;font-size:13px">
-                                    ${esc(team.name)}
-                                    ·
-                                    ${esc(team.country)}
-                                </p>
-
-                                <button
-                                    class="edit-btn"
-                                    onclick="openTeam('${esc(team.name)}')"
-                                >
-                                    Открыть команду →
-                                </button>
-                            `
-
-                            : ''
-                    }
+                    <button
+                        class="edit-btn"
+                        onclick="openTeam(${JSON.stringify(team.name)})"
+                    >
+                        Открыть команду →
+                    </button>
 
                 </div>
-
 
             </div>
 
         </div>
-
     `;
 
-
     location.hash =
-        'player/'
-        + encodeURIComponent(teamName)
-        + '/'
-        + encodeURIComponent(playerName);
-
+        'player/' +
+        encodeURIComponent(teamName) +
+        '/' +
+        encodeURIComponent(playerName);
 
     window.scrollTo(0, 0);
-
 }
 
+function closePlayer() {
+    const hash = location.hash;
+
+    if (hash.startsWith('#player/')) {
+        const data = decodeURIComponent(hash.substring(8)).split('/');
+
+        if (data[0]) {
+            openTeam(data[0]);
+            return;
+        }
+    }
+
+    closeTeam();
+}
 
 function openPlayerCreator(teamName) {
+    document.getElementById('playerEditOldName').value = '';
+    document.getElementById('playerEditTeam').value = teamName;
+    document.getElementById('playerEditName').value = '';
+    document.getElementById('playerEditCountry').value = '';
+    document.getElementById('playerEditRole').value = 'Игрок';
+    document.getElementById('playerEditAvatar').value = '';
+    document.getElementById('playerEditFaceit').value = '';
+    document.getElementById('playerEditSteam').value = '';
 
-    document.getElementById(
-        'playerEditOldName'
-    ).value = '';
-
-
-    document.getElementById(
-        'playerEditTeam'
-    ).value = teamName;
-
-
-    document.getElementById(
-        'playerEditName'
-    ).value = '';
-
-
-    document.getElementById(
-        'playerEditCountry'
-    ).value = '';
-
-
-    document.getElementById(
-        'playerEditAvatar'
-    ).value = '';
-
-
-    document.getElementById(
-        'playerEditRole'
-    ).value = 'Игрок';
-
-
-    document.getElementById(
-        'playerEditFaceit'
-    ).value = '';
-
-
-    document.getElementById(
-        'playerEditSteam'
-    ).value = '';
-
-
-    document.getElementById(
-        'playerEditModal'
-    ).classList.remove('hidden');
-
+    document
+        .getElementById('playerEditModal')
+        .classList.remove('hidden');
 }
 
-
 function openPlayerEditor(teamName, playerName) {
+    const team = teams.find(item => item.name === teamName);
 
-    const list = players[teamName] || [];
+    if (!team) return;
 
-
-    const player = list.find(
-        item => item.name === playerName
+    const player = players.find(
+        item =>
+            Number(item.team_id) === Number(team.id) &&
+            item.name === playerName
     );
-
 
     if (!player) return;
 
+    document.getElementById('playerEditOldName').value = player.name;
+    document.getElementById('playerEditTeam').value = teamName;
+    document.getElementById('playerEditName').value = player.name;
+    document.getElementById('playerEditCountry').value = player.country || '';
+    document.getElementById('playerEditRole').value = player.role || 'Игрок';
+    document.getElementById('playerEditAvatar').value = player.avatar || '';
+    document.getElementById('playerEditFaceit').value = player.faceit || '';
+    document.getElementById('playerEditSteam').value = player.steam || '';
 
-    document.getElementById(
-        'playerEditOldName'
-    ).value = player.name;
-
-
-    document.getElementById(
-        'playerEditTeam'
-    ).value = teamName;
-
-
-    document.getElementById(
-        'playerEditName'
-    ).value = player.name;
-
-
-    document.getElementById(
-        'playerEditCountry'
-    ).value = player.country || '';
-
-
-    document.getElementById(
-        'playerEditAvatar'
-    ).value = player.avatar || '';
-
-
-    document.getElementById(
-        'playerEditRole'
-    ).value = player.role || 'Игрок';
-
-
-    document.getElementById(
-        'playerEditFaceit'
-    ).value = player.faceit || '';
-
-
-    document.getElementById(
-        'playerEditSteam'
-    ).value = player.steam || '';
-
-
-    document.getElementById(
-        'playerEditModal'
-    ).classList.remove('hidden');
-
+    document
+        .getElementById('playerEditModal')
+        .classList.remove('hidden');
 }
-
 
 function closePlayerEditor() {
-
-    document.getElementById(
-        'playerEditModal'
-    ).classList.add('hidden');
-
+    document
+        .getElementById('playerEditModal')
+        .classList.add('hidden');
 }
 
+function openEditor(name) {
+    const team = teams.find(item => item.name === name);
+
+    if (!team) return;
+
+    document.getElementById('editName').value = team.name;
+    document.getElementById('editTitle').value = team.name;
+    document.getElementById('editTag').value = team.tag;
+    document.getElementById('editCountry').value = team.country;
+    document.getElementById('editLogo').value = team.logo || '';
+    document.getElementById('editFaceit').value = team.faceit || '';
+    document.getElementById('editSteam').value = team.steam || '';
+    document.getElementById('editDescription').value =
+        team.description || '';
+
+    document
+        .getElementById('editModal')
+        .classList.remove('hidden');
+}
 
 function closeEditor() {
-
-    document.getElementById(
-        'editModal'
-    ).classList.add('hidden');
-
+    document
+        .getElementById('editModal')
+        .classList.add('hidden');
 }
-
-
-function closePlayer() {
-
-    showMain();
-
-    location.hash = 'teams';
-
-    window.scrollTo(0, 0);
-
-}
-
-
-function closeTeam() {
-
-    showMain();
-
-    location.hash = 'teams';
-
-    window.scrollTo(0, 0);
-
-}
-
-
-/* СОХРАНЕНИЕ КОМАНДЫ */
 
 document
     .getElementById('editForm')
-    .addEventListener('submit', function(event) {
+    .addEventListener('submit', async event => {
 
         event.preventDefault();
-
 
         const oldName =
             document.getElementById('editName').value;
 
-
         const team =
             teams.find(item => item.name === oldName);
 
-
         if (!team) return;
 
+        const updated = {
+            name: document.getElementById('editTitle').value.trim(),
+            tag: document.getElementById('editTag').value.trim().toUpperCase(),
+            country: document.getElementById('editCountry').value.trim(),
+            logo: document.getElementById('editLogo').value.trim(),
+            faceit: document.getElementById('editFaceit').value.trim(),
+            steam: document.getElementById('editSteam').value.trim(),
+            description: document.getElementById('editDescription').value.trim()
+        };
 
-        const previousName = team.name;
+        try {
 
+            await api(
+                'teams',
+                `?id=eq.${team.id}`,
+                {
+                    method: 'PATCH',
+                    body: JSON.stringify(updated)
+                }
+            );
 
-        team.name =
-            document.getElementById('editTitle')
-            .value.trim();
+            Object.assign(team, updated);
 
+            closeEditor();
 
-        team.tag =
-            document.getElementById('editTag')
-            .value.trim()
-            .toUpperCase();
+            renderAll();
 
+            openTeam(team.name);
 
-        team.country =
-            document.getElementById('editCountry')
-            .value.trim();
+        } catch (error) {
 
+            console.error(error);
 
-        team.logo =
-            document.getElementById('editLogo')
-            .value.trim();
-
-
-        team.faceit =
-            document.getElementById('editFaceit')
-            .value.trim();
-
-
-        team.steam =
-            document.getElementById('editSteam')
-            .value.trim();
-
-
-        team.description =
-            document.getElementById('editDescription')
-            .value.trim();
-
-
-        if (
-            previousName !== team.name &&
-            players[previousName]
-        ) {
-
-            players[team.name] =
-                players[previousName];
-
-            delete players[previousName];
-
-            savePlayers();
-
+            alert(
+                'Ошибка сохранения команды. Проверь консоль браузера.'
+            );
         }
-
-
-        localStorage.setItem(
-            '1minute-teams',
-            JSON.stringify(teams)
-        );
-
-
-        closeEditor();
-
-        renderAll();
-
-        openTeam(team.name);
-
     });
-
-
-/* СОХРАНЕНИЕ ИГРОКА */
 
 document
     .getElementById('playerEditForm')
-    .addEventListener('submit', function(event) {
+    .addEventListener('submit', async event => {
 
         event.preventDefault();
 
-
         const teamName =
-            document.getElementById(
-                'playerEditTeam'
-            ).value;
-
+            document.getElementById('playerEditTeam').value;
 
         const oldName =
-            document.getElementById(
-                'playerEditOldName'
-            ).value;
+            document.getElementById('playerEditOldName').value;
 
+        const team =
+            teams.find(item => item.name === teamName);
 
-        const newName =
-            document.getElementById(
-                'playerEditName'
-            ).value.trim();
+        if (!team) return;
 
+        const data = {
+            name: document.getElementById('playerEditName').value.trim(),
+            country: document.getElementById('playerEditCountry').value.trim(),
+            role: document.getElementById('playerEditRole').value,
+            avatar: document.getElementById('playerEditAvatar').value.trim(),
+            faceit: document.getElementById('playerEditFaceit').value.trim(),
+            steam: document.getElementById('playerEditSteam').value.trim()
+        };
 
-        if (!newName) return;
-
-
-        if (!players[teamName]) {
-            players[teamName] = [];
+        if (!data.name) {
+            alert('Введите никнейм игрока.');
+            return;
         }
 
+        try {
 
-        const list =
-            players[teamName];
+            if (oldName) {
 
+                const player =
+                    players.find(
+                        item =>
+                            Number(item.team_id) === Number(team.id) &&
+                            item.name === oldName
+                    );
 
-        if (oldName) {
+                if (!player) return;
 
-            const player =
-                list.find(
-                    item => item.name === oldName
+                await api(
+                    'players',
+                    `?id=eq.${player.id}`,
+                    {
+                        method: 'PATCH',
+                        body: JSON.stringify(data)
+                    }
                 );
 
+                Object.assign(player, data);
 
-            if (!player) return;
+            } else {
 
+                const created =
+                    await api(
+                        'players',
+                        '',
+                        {
+                            method: 'POST',
+                            headers: {
+                                Prefer: 'return=representation'
+                            },
+                            body: JSON.stringify({
+                                team_id: team.id,
+                                ...data
+                            })
+                        }
+                    );
 
-            player.name = newName;
-
-            player.country =
-                document.getElementById(
-                    'playerEditCountry'
-                ).value.trim();
-
-
-            player.avatar =
-                document.getElementById(
-                    'playerEditAvatar'
-                ).value.trim();
-
-
-            player.role =
-                document.getElementById(
-                    'playerEditRole'
-                ).value.trim()
-                || 'Игрок';
-
-
-            player.faceit =
-                document.getElementById(
-                    'playerEditFaceit'
-                ).value.trim();
-
-
-            player.steam =
-                document.getElementById(
-                    'playerEditSteam'
-                ).value.trim();
-
-        } else {
-
-            if (
-                list.some(
-                    item =>
-                        item.name.toLowerCase()
-                        === newName.toLowerCase()
-                )
-            ) {
-
-                alert(
-                    'Игрок с таким никнеймом уже есть в команде.'
-                );
-
-                return;
-
+                if (created && created[0]) {
+                    players.push(created[0]);
+                }
             }
 
+            closePlayerEditor();
 
-            list.push({
+            openPlayer(
+                teamName,
+                data.name
+            );
 
-                name: newName,
+        } catch (error) {
 
-                country:
-                    document.getElementById(
-                        'playerEditCountry'
-                    ).value.trim(),
+            console.error(error);
 
-                avatar:
-                    document.getElementById(
-                        'playerEditAvatar'
-                    ).value.trim(),
-
-                role:
-                    document.getElementById(
-                        'playerEditRole'
-                    ).value.trim()
-                    || 'Игрок',
-
-                faceit:
-                    document.getElementById(
-                        'playerEditFaceit'
-                    ).value.trim(),
-
-                steam:
-                    document.getElementById(
-                        'playerEditSteam'
-                    ).value.trim()
-
-            });
-
+            alert(
+                'Ошибка сохранения игрока. Проверь консоль браузера.'
+            );
         }
-
-
-        savePlayers();
-
-        closePlayerEditor();
-
-        openTeam(teamName);
-
     });
 
-
-/* ОТКРЫТИЕ СТРАНИЦ ПО ССЫЛКЕ */
-
-window.addEventListener('hashchange', function() {
+window.addEventListener('hashchange', () => {
 
     const hash =
-        decodeURIComponent(
-            location.hash.slice(1)
-        );
-
+        decodeURIComponent(location.hash.substring(1));
 
     if (hash.startsWith('team/')) {
 
-        openTeam(
-            hash.slice(5)
-        );
+        openTeam(hash.substring(5));
 
         return;
-
     }
-
 
     if (hash.startsWith('player/')) {
 
         const data =
-            hash.slice(7).split('/');
-
+            hash.substring(7).split('/');
 
         if (data.length >= 2) {
-
-            openPlayer(
-                data[0],
-                data[1]
-            );
-
+            openPlayer(data[0], data[1]);
         }
 
         return;
-
     }
 
+    if (!hash || hash === 'teams') {
+        document
+            .querySelectorAll('.screen')
+            .forEach(screen => screen.classList.add('hidden'));
 
-    if (
-        !hash ||
-        hash === 'teams'
-    ) {
-
-        showMain();
-
+        document
+            .getElementById('teams')
+            .classList.remove('hidden');
     }
-
 });
 
-
-renderAll();
+loadData();
