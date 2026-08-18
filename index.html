@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="ru">
 
@@ -79,7 +80,6 @@
 
 <main>
 
-
     <!-- =================================================
          TEAMS
     ================================================== -->
@@ -148,22 +148,22 @@
 
                 <button
                     class="selected"
-                    onclick="filterTeams('all', this)"
                     type="button"
+                    onclick="filterTeams('all', this)"
                 >
                     Все
                 </button>
 
                 <button
-                    onclick="filterTeams('active', this)"
                     type="button"
+                    onclick="filterTeams('active', this)"
                 >
                     Активные
                 </button>
 
                 <button
-                    onclick="filterTeams('inactive', this)"
                     type="button"
+                    onclick="filterTeams('inactive', this)"
                 >
                     Неактивные
                 </button>
@@ -179,7 +179,6 @@
         ></div>
 
     </section>
-
 
 
     <!-- =================================================
@@ -204,7 +203,6 @@
     </section>
 
 
-
     <!-- =================================================
          PLAYER PAGE
     ================================================== -->
@@ -225,7 +223,6 @@
         <div id="playerProfile"></div>
 
     </section>
-
 
 
     <!-- =================================================
@@ -262,9 +259,7 @@
 
                     <tr>
 
-                        <th>
-                            #
-                        </th>
+                        <th>#</th>
 
                         <th>
                             Команда
@@ -293,7 +288,6 @@
         </div>
 
     </section>
-
 
 
     <!-- =================================================
@@ -330,7 +324,6 @@
     </section>
 
 
-
     <!-- =================================================
          TOURNAMENTS
     ================================================== -->
@@ -365,7 +358,6 @@
     </section>
 
 </main>
-
 
 
 <!-- =====================================================
@@ -494,7 +486,6 @@
 </div>
 
 
-
 <!-- =====================================================
      PLAYER EDITOR
 ===================================================== -->
@@ -535,6 +526,7 @@
             <input
                 type="hidden"
                 id="playerEditTeam"
+                value="1Minute"
             >
 
 
@@ -660,7 +652,6 @@
 </div>
 
 
-
 <!-- =====================================================
      LOGIN MODAL
 ===================================================== -->
@@ -710,8 +701,6 @@
         </p>
 
 
-        <!-- ОШИБКА -->
-
         <div
             id="loginError"
             style="
@@ -728,8 +717,6 @@
             "
         ></div>
 
-
-        <!-- ФОРМА ВХОДА -->
 
         <form id="loginForm">
 
@@ -769,14 +756,15 @@
         </form>
 
 
-        <!-- КНОПКА ВЫХОДА -->
-
         <button
             id="logoutButton"
             class="secondary save"
             type="button"
             onclick="logout()"
-            style="display:none;margin-top:10px;"
+            style="
+                display:none;
+                margin-top:10px;
+            "
         >
             Выйти из аккаунта
         </button>
@@ -784,7 +772,6 @@
     </div>
 
 </div>
-
 
 
 <!-- =====================================================
@@ -796,228 +783,20 @@
 </footer>
 
 
-
 <!-- =====================================================
      SUPABASE
 ===================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+
 <!-- =====================================================
-     APP
+     APP.JS
 ===================================================== -->
 
 <script src="app.js"></script>
 
 
-<script>
-
-/* =====================================================
-   LOGIN UI
-===================================================== */
-
-function openLoginModal() {
-
-    const modal =
-        document.getElementById("loginModal");
-
-    if (!modal) {
-        return;
-    }
-
-
-    const email =
-        document.getElementById("loginEmail");
-
-    const password =
-        document.getElementById("loginPassword");
-
-    const error =
-        document.getElementById("loginError");
-
-    const status =
-        document.getElementById("loginStatus");
-
-    const loginForm =
-        document.getElementById("loginForm");
-
-    const logoutButton =
-        document.getElementById("logoutButton");
-
-
-    if (error) {
-
-        error.style.display = "none";
-        error.textContent = "";
-
-    }
-
-
-    if (currentUser) {
-
-        if (status) {
-
-            status.innerHTML =
-                "Вы вошли как <strong>" +
-                escapeHTML(
-                    currentUser.email || "пользователь"
-                ) +
-                "</strong>" +
-                (
-                    isAdmin
-                        ? "<br><span style='color:#8ee6ad'>✓ Вы администратор</span>"
-                        : "<br><span style='color:#ffb36b'>У вас нет прав администратора</span>"
-                );
-
-        }
-
-
-        if (loginForm) {
-            loginForm.style.display = "none";
-        }
-
-
-        if (logoutButton) {
-            logoutButton.style.display = "block";
-        }
-
-    } else {
-
-        if (status) {
-
-            status.textContent =
-                "Войдите в свой аккаунт Supabase.";
-
-        }
-
-
-        if (loginForm) {
-            loginForm.style.display = "flex";
-        }
-
-
-        if (logoutButton) {
-            logoutButton.style.display = "none";
-        }
-
-
-        if (email) {
-            email.value = "";
-        }
-
-        if (password) {
-            password.value = "";
-        }
-
-    }
-
-
-    modal.classList.remove("hidden");
-
-    document.body.style.overflow = "hidden";
-
-}
-
-
-function closeLoginModal() {
-
-    const modal =
-        document.getElementById("loginModal");
-
-    if (!modal) {
-        return;
-    }
-
-
-    modal.classList.add("hidden");
-
-    document.body.style.overflow = "";
-
-}
-
-
-
-/* =====================================================
-   UPDATE LOGIN WINDOW AFTER AUTH
-===================================================== */
-
-function updateLoginModalUI() {
-
-    const status =
-        document.getElementById("loginStatus");
-
-    const loginForm =
-        document.getElementById("loginForm");
-
-    const logoutButton =
-        document.getElementById("logoutButton");
-
-    if (!status) {
-        return;
-    }
-
-
-    if (currentUser) {
-
-        status.innerHTML =
-            "Вы вошли как <strong>" +
-            escapeHTML(
-                currentUser.email || "пользователь"
-            ) +
-            "</strong>" +
-            (
-                isAdmin
-                    ? "<br><span style='color:#8ee6ad'>✓ Доступ администратора</span>"
-                    : "<br><span style='color:#ffb36b'>У вас нет прав администратора</span>"
-            );
-
-
-        if (loginForm) {
-            loginForm.style.display = "none";
-        }
-
-
-        if (logoutButton) {
-            logoutButton.style.display = "block";
-        }
-
-    } else {
-
-        status.textContent =
-            "Войдите в свой аккаунт Supabase.";
-
-
-        if (loginForm) {
-            loginForm.style.display = "flex";
-        }
-
-
-        if (logoutButton) {
-            logoutButton.style.display = "none";
-        }
-
-    }
-
-}
-
-
-/* =====================================================
-   WATCH AUTH
-===================================================== */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        setTimeout(
-            updateLoginModalUI,
-            500
-        );
-
-    }
-);
-
-</script>
-
 </body>
 </html>
+```
