@@ -16,53 +16,62 @@ const SUBSTITUTES = [
 "ChapsTea"
 ];
 
-let teams = [];
 let players = [];
+let team = null;
 
 /* =========================
 SUPABASE
 ========================= */
 
-async function supabaseRequest(path, options = {}) {
+async function supabase(path, options) {
 
 ```
+options = options || {};
+
+const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json"
+};
+
+if (options.headers) {
+    Object.assign(headers, options.headers);
+}
+
 const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/${path}`,
+    SUPABASE_URL + "/rest/v1/" + path,
     {
-        ...options,
-        headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json",
-            "Prefer": options.method === "POST"
-                ? "return=representation"
-                : undefined,
-            ...(options.headers || {})
-        }
+        method: options.method || "GET",
+        headers: headers,
+        body: options.body
     }
 );
 
 if (!response.ok) {
 
-    const errorText = await response.text();
+    const error = await response.text();
 
     console.error(
         "Supabase error:",
-        errorText
+        error
     );
 
-    throw new Error(errorText);
+    throw new Error(error);
 }
 
 const text = await response.text();
 
-return text ? JSON.parse(text) : [];
+if (!text) {
+    return [];
+}
+
+return JSON.parse(text);
 ```
 
 }
 
 /* =========================
-LOAD DATA
+LOAD PLAYERS
 ========================= */
 
 async function loadPlayers() {
@@ -70,7 +79,7 @@ async function loadPlayers() {
 ```
 try {
 
-    players = await supabaseRequest(
+    players = await supabase(
         "players?select=*&order=id.asc"
     );
 
@@ -79,14 +88,14 @@ try {
     }
 
     console.log(
-        "Players loaded:",
+        "Игроки загружены:",
         players
     );
 
 } catch (error) {
 
     console.error(
-        "Не удалось загрузить игроков:",
+        "Ошибка загрузки игроков:",
         error
     );
 
@@ -96,48 +105,36 @@ try {
 
 }
 
-async function loadTeams() {
+/* =========================
+TEAM
+========================= */
+
+function createTeam() {
 
 ```
-/*
-   Если таблица teams существует,
-   пытаемся загрузить её.
+return {
+    name: TEAM_NAME,
+    title: TEAM_NAME,
+    tag: "1M",
+    country: "Russia",
+    logo: "",
+    avatar: "",
+    faceit: "",
+    steam: "",
+    description:
+        "Профили состава, матчи и статистика 1Minute — всё в одном месте.",
+    status: "active"
+};
+```
 
-   Если её нет — создаём локальную
-   команду 1Minute.
-*/
-
-try {
-
-    teams = await supabaseRequest(
-        "teams?select=*"
-    );
-
-} catch {
-
-    teams = [];
 }
 
+function loadTeam() {
 
-if (!teams.length) {
+```
+team = createTeam();
 
-    teams = [
-        {
-            id: "1minute",
-            name: TEAM_NAME,
-            title: TEAM_NAME,
-            tag: "1M",
-            country: "Russia",
-            logo: "",
-            avatar: "",
-            faceit: "",
-            steam: "",
-            description:
-                "Профили состава, матчи и статистика 1Minute — всё в одном месте.",
-            status: "active"
-        }
-    ];
-}
+return team;
 ```
 
 }
@@ -146,12 +143,42 @@ if (!teams.length) {
 HELPERS
 ========================= */
 
-function normalizeName(name) {
+function normalize(value) {
 
 ```
-return String(name || "")
+return String(value || "")
     .trim()
     .toLowerCase();
+```
+
+}
+
+function escapeHTML(value) {
+
+```
+return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+```
+
+}
+
+function getPlayer(name) {
+
+```
+const target = normalize(name);
+
+for (let i = 0; i < players.length; i++) {
+
+    if (normalize(players[i].name) === target) {
+        return players[i];
+    }
+}
+
+return null;
 ```
 
 }
@@ -159,76 +186,22 @@ return String(name || "")
 function isSubstitute(player) {
 
 ```
-const name = normalizeName(
-    player.name
+if (!player) {
+    return false;
+}
+
+const name = normalize(player.name);
+
+return (
+    name === "lqq69" ||
+    name === "chapstea"
 );
-
-return SUBSTITUTES
-    .map(normalizeName)
-    .includes(name);
-```
-
-}
-
-function getStarterPlayers() {
-
-```
-return players.filter(player => {
-
-    const name =
-        normalizeName(player.name);
-
-    return STARTERS
-        .map(normalizeName)
-        .includes(name);
-
-});
-```
-
-}
-
-function getSubstitutePlayers() {
-
-```
-return players.filter(player =>
-    isSubstitute(player)
-);
-```
-
-}
-
-function getTeam() {
-
-```
-return teams[0] || {
-
-    id: "1minute",
-
-    name: TEAM_NAME,
-
-    title: TEAM_NAME,
-
-    tag: "1M",
-
-    country: "Russia",
-
-    logo: "",
-
-    faceit: "",
-
-    steam: "",
-
-    description:
-        "Профили состава, матчи и статистика 1Minute — всё в одном месте.",
-
-    status: "active"
-};
 ```
 
 }
 
 /* =========================
-RENDER TEAM
+TEAM LIST
 ========================= */
 
 function renderTeams() {
@@ -237,66 +210,61 @@ function renderTeams() {
 const grid =
     document.getElementById("grid");
 
-if (!grid) return;
+if (!grid) {
+    return;
+}
 
-const team = getTeam();
+const logo = team.logo || team.avatar;
 
+let html = "";
 
-grid.innerHTML = `
+html += '<div class="team-card" onclick="openTeam()">';
 
-    <div
-        class="team-card"
-        onclick="openTeam('${escapeAttribute(team.name || TEAM_NAME)}')"
-    >
+html += '<div class="team-card-top">';
 
-        <div class="team-card-top">
+html += '<div class="team-logo">';
 
-            <div class="team-logo">
+if (logo) {
 
-                ${
-                    team.logo || team.avatar
-                    ?
-                    `<img
-                        src="${escapeAttribute(team.logo || team.avatar)}"
-                        alt="${escapeAttribute(team.name || TEAM_NAME)}"
-                    >`
-                    :
-                    `<span>1</span>`
-                }
+    html +=
+        '<img src="' +
+        escapeHTML(logo) +
+        '" alt="1Minute">';
 
-            </div>
+} else {
 
+    html += '<span>1</span>';
 
-            <div>
+}
 
-                <div class="team-name">
-                    ${escapeHTML(team.name || TEAM_NAME)}
-                </div>
+html += '</div>';
 
-                <div class="team-tag">
-                    ${escapeHTML(team.tag || "1M")}
-                </div>
+html += '<div>';
 
-            </div>
+html +=
+    '<div class="team-name">' +
+    escapeHTML(TEAM_NAME) +
+    '</div>';
 
-        </div>
+html +=
+    '<div class="team-tag">1M</div>';
 
+html += '</div>';
 
-        <div class="team-card-bottom">
+html += '</div>';
 
-            <span>
-                ${escapeHTML(team.country || "Russia")}
-            </span>
+html += '<div class="team-card-bottom">';
 
-            <span class="status">
-                ● ACTIVE
-            </span>
+html += '<span>Russia</span>';
 
-        </div>
+html +=
+    '<span class="status">● ACTIVE</span>';
 
-    </div>
+html += '</div>';
 
-`;
+html += '</div>';
+
+grid.innerHTML = html;
 ```
 
 }
@@ -308,31 +276,25 @@ TEAM PAGE
 function openTeam() {
 
 ```
+const teams =
+    document.getElementById("teams");
+
 const teamPage =
     document.getElementById("teamPage");
 
-const teamsPage =
-    document.getElementById("teams");
+if (teams) {
+    teams.classList.add("hidden");
+}
 
-if (!teamPage || !teamsPage)
-    return;
+if (teamPage) {
+    teamPage.classList.remove("hidden");
+}
 
-
-teamsPage.classList.add("hidden");
-
-document
-    .querySelectorAll(".page-section")
-    .forEach(section =>
-        section.classList.add("hidden")
-    );
-
-teamPage.classList.remove("hidden");
-
+hideOtherPages();
 
 renderTeamProfile();
 
-window.location.hash =
-    "teamPage";
+window.location.hash = "teamPage";
 ```
 
 }
@@ -343,145 +305,142 @@ function renderTeamProfile() {
 const container =
     document.getElementById("teamProfile");
 
-if (!container)
+if (!container) {
     return;
+}
+
+let starters = [];
+let substitutes = [];
+
+for (let i = 0; i < players.length; i++) {
+
+    const player = players[i];
+
+    if (isSubstitute(player)) {
+        substitutes.push(player);
+    } else {
+        starters.push(player);
+    }
+}
+
+let html = "";
+
+html += '<div class="team-profile">';
+
+html += '<div class="team-profile-header">';
+
+html += '<div class="team-profile-logo">';
+
+if (team.logo || team.avatar) {
+
+    html +=
+        '<img src="' +
+        escapeHTML(team.logo || team.avatar) +
+        '" alt="1Minute">';
+
+} else {
+
+    html += '<span>1</span>';
+
+}
+
+html += '</div>';
+
+html += '<div>';
+
+html += '<div class="eyebrow">TEAM</div>';
+
+html += '<h1>' +
+    escapeHTML(TEAM_NAME) +
+    '</h1>';
+
+html += '<p>' +
+    escapeHTML(team.description) +
+    '</p>';
+
+html += '</div>';
+
+html += '</div>';
 
 
-const team = getTeam();
+html += '<div class="roster">';
 
-const starters =
-    getStarterPlayers();
+html += '<div class="section-head">';
 
-const substitutes =
-    getSubstitutePlayers();
+html += '<div>';
 
+html += '<div class="eyebrow">ROSTER</div>';
 
-container.innerHTML = `
+html += '<h2>Основной состав</h2>';
 
-    <div class="team-profile">
+html += '</div>';
 
-        <div class="team-profile-header">
-
-            <div class="team-profile-logo">
-
-                ${
-                    team.logo || team.avatar
-                    ?
-                    `<img
-                        src="${escapeAttribute(team.logo || team.avatar)}"
-                        alt="1Minute"
-                    >`
-                    :
-                    `<span>1</span>`
-                }
-
-            </div>
+html += '</div>';
 
 
-            <div>
+html += '<div class="player-grid">';
 
-                <div class="eyebrow">
-                    TEAM
-                </div>
+if (starters.length === 0) {
 
-                <h1>
-                    ${escapeHTML(team.name || TEAM_NAME)}
-                </h1>
+    html +=
+        '<div class="glass" style="padding:24px;">' +
+        'Игроки пока не добавлены.' +
+        '</div>';
 
-                <p>
-                    ${escapeHTML(
-                        team.description ||
-                        "Профили состава, матчи и статистика 1Minute — всё в одном месте."
-                    )}
-                </p>
+} else {
 
-            </div>
+    for (let i = 0; i < starters.length; i++) {
 
-        </div>
+        html += playerCard(
+            starters[i],
+            false
+        );
+    }
+}
 
-
-
-        <div class="roster">
-
-            <div class="section-head">
-
-                <div>
-
-                    <div class="eyebrow">
-                        ROSTER
-                    </div>
-
-                    <h2>
-                        Основной состав
-                    </h2>
-
-                </div>
-
-            </div>
+html += '</div>';
 
 
-            <div class="player-grid">
+html += '<div class="section-head">';
 
-                ${
-                    starters.length
-                    ?
-                    starters
-                        .map(player =>
-                            playerCard(
-                                player,
-                                false
-                            )
-                        )
-                        .join("")
-                    :
-                    emptyPlayers()
-                }
+html += '<div>';
 
-            </div>
+html += '<div class="eyebrow">SUBSTITUTES</div>';
+
+html += '<h2>Замены</h2>';
+
+html += '</div>';
+
+html += '</div>';
 
 
+html += '<div class="player-grid">';
 
-            <div class="section-head substitutes-title">
+if (substitutes.length === 0) {
 
-                <div>
+    html +=
+        '<div class="glass" style="padding:24px;">' +
+        'Замены пока не добавлены.' +
+        '</div>';
 
-                    <div class="eyebrow">
-                        SUBSTITUTES
-                    </div>
+} else {
 
-                    <h2>
-                        Замены
-                    </h2>
+    for (let i = 0; i < substitutes.length; i++) {
 
-                </div>
+        html += playerCard(
+            substitutes[i],
+            true
+        );
+    }
+}
 
-            </div>
+html += '</div>';
 
+html += '</div>';
 
-            <div class="player-grid">
+html += '</div>';
 
-                ${
-                    substitutes.length
-                    ?
-                    substitutes
-                        .map(player =>
-                            playerCard(
-                                player,
-                                true
-                            )
-                        )
-                        .join("")
-                    :
-                    emptyPlayers()
-                }
-
-            </div>
-
-        </div>
-
-    </div>
-
-`;
+container.innerHTML = html;
 ```
 
 }
@@ -493,88 +452,69 @@ PLAYER CARD
 function playerCard(player, substitute) {
 
 ```
-const avatar =
-    player.avatar ||
-    player.photo ||
-    "";
-
 const name =
-    player.name ||
-    "Player";
+    player.name || "Player";
 
 const role =
-    player.role ||
-    "Игрок";
+    player.role || "Игрок";
 
+const avatar =
+    player.avatar || "";
 
-return `
+let html = "";
 
-    <div
-        class="player-card"
-        onclick="openPlayer('${escapeAttribute(name)}')"
-    >
+html +=
+    '<div class="player-card" onclick="openPlayer(\'' +
+    escapeHTML(name) +
+    '\')">';
 
-        <div class="player-avatar">
+html += '<div class="player-avatar">';
 
-            ${
-                avatar
-                ?
-                `<img
-                    src="${escapeAttribute(avatar)}"
-                    alt="${escapeAttribute(name)}"
-                >`
-                :
-                `<span>
-                    ${escapeHTML(
-                        name.charAt(0).toUpperCase()
-                    )}
-                </span>`
-            }
+if (avatar) {
 
-        </div>
+    html +=
+        '<img src="' +
+        escapeHTML(avatar) +
+        '" alt="' +
+        escapeHTML(name) +
+        '">';
 
+} else {
 
-        <div class="player-info">
-
-            <h3>
-                ${escapeHTML(name)}
-            </h3>
-
-            <span>
-                ${escapeHTML(role)}
-            </span>
-
-        </div>
-
-
-        ${
-            substitute
-            ?
-            `<div class="player-badge">
-                ЗАМЕНА
-            </div>`
-            :
-            ""
-        }
-
-    </div>
-
-`;
-```
+    html +=
+        '<span>' +
+        escapeHTML(
+            name.charAt(0).toUpperCase()
+        ) +
+        '</span>';
 
 }
 
-function emptyPlayers() {
+html += '</div>';
 
-```
-return `
-    <div class="glass" style="
-        padding:24px;
-        color:#858c98;
-    ">
-        Игроки пока не добавлены.
-    </div>
-`;
+html += '<div class="player-info">';
+
+html +=
+    '<h3>' +
+    escapeHTML(name) +
+    '</h3>';
+
+html +=
+    '<span>' +
+    escapeHTML(role) +
+    '</span>';
+
+html += '</div>';
+
+if (substitute) {
+
+    html +=
+        '<div class="player-badge">ЗАМЕНА</div>';
+}
+
+html += '</div>';
+
+return html;
 ```
 
 }
@@ -587,50 +527,38 @@ function openPlayer(name) {
 
 ```
 const player =
-    players.find(
-        p =>
-            normalizeName(p.name) ===
-            normalizeName(name)
-    );
+    getPlayer(name);
 
-
-if (!player)
+if (!player) {
     return;
+}
 
+const teams =
+    document.getElementById("teams");
 
-document
-    .getElementById("teams")
-    ?.classList.add("hidden");
+const teamPage =
+    document.getElementById("teamPage");
 
-
-document
-    .getElementById("teamPage")
-    ?.classList.add("hidden");
-
-
-document
-    .querySelectorAll(".page-section")
-    .forEach(section =>
-        section.classList.add("hidden")
-    );
-
-
-const page =
+const playerPage =
     document.getElementById("playerPage");
 
+if (teams) {
+    teams.classList.add("hidden");
+}
 
-if (!page)
-    return;
+if (teamPage) {
+    teamPage.classList.add("hidden");
+}
 
+hideOtherPages();
 
-page.classList.remove("hidden");
-
+if (playerPage) {
+    playerPage.classList.remove("hidden");
+}
 
 renderPlayerProfile(player);
 
-
-window.location.hash =
-    "playerPage";
+window.location.hash = "playerPage";
 ```
 
 }
@@ -641,142 +569,144 @@ function renderPlayerProfile(player) {
 const container =
     document.getElementById("playerProfile");
 
-if (!container)
+if (!container) {
     return;
-
+}
 
 const avatar =
-    player.avatar ||
-    player.photo ||
-    "";
+    player.avatar || "";
 
+let html = "";
 
-container.innerHTML = `
+html += '<div class="player-profile">';
 
-    <div class="player-profile">
+html +=
+    '<div class="player-profile-avatar">';
 
-        <div class="player-profile-avatar">
+if (avatar) {
 
-            ${
-                avatar
-                ?
-                `<img
-                    src="${escapeAttribute(avatar)}"
-                    alt="${escapeAttribute(player.name)}"
-                >`
-                :
-                `<span>
-                    ${escapeHTML(
-                        player.name
-                            .charAt(0)
-                            .toUpperCase()
-                    )}
-                </span>`
-            }
+    html +=
+        '<img src="' +
+        escapeHTML(avatar) +
+        '" alt="' +
+        escapeHTML(player.name) +
+        '">';
 
-        </div>
+} else {
 
+    html +=
+        '<span>' +
+        escapeHTML(
+            player.name
+                .charAt(0)
+                .toUpperCase()
+        ) +
+        '</span>';
 
-        <div class="eyebrow">
-            PLAYER
-        </div>
+}
 
+html += '</div>';
 
-        <h1>
-            ${escapeHTML(player.name)}
-        </h1>
+html +=
+    '<div class="eyebrow">PLAYER</div>';
 
+html +=
+    '<h1>' +
+    escapeHTML(player.name) +
+    '</h1>';
 
-        <div class="player-role">
+html +=
+    '<div class="player-role">' +
+    escapeHTML(
+        player.role || "Игрок"
+    ) +
+    '</div>';
 
-            ${escapeHTML(
-                player.role || "Игрок"
-            )}
+if (player.country) {
 
-        </div>
+    html +=
+        '<p>' +
+        escapeHTML(player.country) +
+        '</p>';
+}
 
+html += '<div class="player-links">';
 
-        ${
-            player.country
-            ?
-            `<p>
-                ${escapeHTML(player.country)}
-            </p>`
-            :
-            ""
-        }
+if (player.faceit) {
 
+    html +=
+        '<a class="secondary" href="' +
+        escapeHTML(player.faceit) +
+        '" target="_blank" rel="noopener noreferrer">' +
+        'FACEIT →' +
+        '</a>';
+}
 
-        <div class="player-links">
+if (player.steam) {
 
-            ${
-                player.faceit
-                ?
-                `
-                <a
-                    class="secondary"
-                    href="${escapeAttribute(player.faceit)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    FACEIT →
-                </a>
-                `
-                :
-                ""
-            }
+    html +=
+        '<a class="secondary" href="' +
+        escapeHTML(player.steam) +
+        '" target="_blank" rel="noopener noreferrer">' +
+        'Steam →' +
+        '</a>';
+}
 
+html += '</div>';
 
-            ${
-                player.steam
-                ?
-                `
-                <a
-                    class="secondary"
-                    href="${escapeAttribute(player.steam)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Steam →
-                </a>
-                `
-                :
-                ""
-            }
+html += '</div>';
 
-        </div>
-
-    </div>
-
-`;
+container.innerHTML = html;
 ```
 
 }
 
 /* =========================
-CLOSE PAGES
+CLOSE
 ========================= */
+
+function hideOtherPages() {
+
+```
+const pages =
+    document.querySelectorAll(
+        ".page-section"
+    );
+
+for (let i = 0; i < pages.length; i++) {
+    pages[i].classList.add("hidden");
+}
+```
+
+}
 
 function closeTeam() {
 
 ```
-document
-    .getElementById("teamPage")
-    ?.classList.add("hidden");
+const teamPage =
+    document.getElementById("teamPage");
 
+const playerPage =
+    document.getElementById("playerPage");
 
-document
-    .getElementById("playerPage")
-    ?.classList.add("hidden");
+const teams =
+    document.getElementById("teams");
 
+if (teamPage) {
+    teamPage.classList.add("hidden");
+}
 
-document
-    .getElementById("teams")
-    ?.classList.remove("hidden");
+if (playerPage) {
+    playerPage.classList.add("hidden");
+}
 
+if (teams) {
+    teams.classList.remove("hidden");
+}
 
-window.location.hash =
-    "teams";
+hideOtherPages();
+
+window.location.hash = "teams";
 ```
 
 }
@@ -784,35 +714,30 @@ window.location.hash =
 function closePlayer() {
 
 ```
-document
-    .getElementById("playerPage")
-    ?.classList.add("hidden");
+const playerPage =
+    document.getElementById("playerPage");
 
+const teamPage =
+    document.getElementById("teamPage");
 
-document
-    .getElementById("teamPage")
-    ?.classList.remove("hidden");
+if (playerPage) {
+    playerPage.classList.add("hidden");
+}
 
+if (teamPage) {
+    teamPage.classList.remove("hidden");
+}
 
 renderTeamProfile();
 
-
-window.location.hash =
-    "teamPage";
+window.location.hash = "teamPage";
 ```
 
 }
 
 /* =========================
-FILTER
+OLD FILTER FUNCTION
 ========================= */
-
-/*
-Старые категории больше не нужны.
-Функция оставлена, чтобы старый HTML
-не выдавал ошибку, если где-то остались
-старые кнопки.
-*/
 
 function filterTeams() {
 
@@ -832,45 +757,30 @@ function renderRating() {
 const rows =
     document.getElementById("ratingRows");
 
-if (!rows)
+if (!rows) {
     return;
+}
 
+let html = "";
 
-const team =
-    getTeam();
+html += "<tr>";
 
+html += "<td>1</td>";
 
-rows.innerHTML = `
+html +=
+    "<td><strong>" +
+    escapeHTML(TEAM_NAME) +
+    "</strong></td>";
 
-    <tr>
+html += "<td>0</td>";
 
-        <td>
-            1
-        </td>
+html += "<td>0</td>";
 
-        <td>
-            <strong>
-                ${escapeHTML(
-                    team.name || TEAM_NAME
-                )}
-            </strong>
-        </td>
+html += "<td>—</td>";
 
-        <td>
-            0
-        </td>
+html += "</tr>";
 
-        <td>
-            0
-        </td>
-
-        <td>
-            —
-        </td>
-
-    </tr>
-
-`;
+rows.innerHTML = html;
 ```
 
 }
@@ -883,25 +793,18 @@ function renderMatches() {
 
 ```
 const container =
-    document.getElementById("matchesList");
+    document.getElementById(
+        "matchesList"
+    );
 
-if (!container)
+if (!container) {
     return;
+}
 
-
-container.innerHTML = `
-
-    <div
-        class="glass"
-        style="
-            padding:24px;
-            color:#858c98;
-        "
-    >
-        Матчи 1Minute пока не добавлены.
-    </div>
-
-`;
+container.innerHTML =
+    '<div class="glass" style="padding:24px;color:#858c98;">' +
+    'Матчи 1Minute пока не добавлены.' +
+    '</div>';
 ```
 
 }
@@ -918,89 +821,122 @@ const container =
         "tournamentsGrid"
     );
 
-if (!container)
+if (!container) {
     return;
+}
 
-
-container.innerHTML = `
-
-    <div
-        class="glass"
-        style="
-            padding:24px;
-            color:#858c98;
-        "
-    >
-        Турниры 1Minute пока не добавлены.
-    </div>
-
-`;
+container.innerHTML =
+    '<div class="glass" style="padding:24px;color:#858c98;">' +
+    'Турниры 1Minute пока не добавлены.' +
+    '</div>';
 ```
 
 }
 
 /* =========================
-EDIT PLAYER
+PLAYER EDITOR
 ========================= */
 
 function openPlayerEditor(name) {
 
 ```
 const player =
-    players.find(
-        p =>
-            normalizeName(p.name) ===
-            normalizeName(name)
+    getPlayer(name);
+
+if (!player) {
+    return;
+}
+
+const oldName =
+    document.getElementById(
+        "playerEditOldName"
+    );
+
+const teamInput =
+    document.getElementById(
+        "playerEditTeam"
+    );
+
+const nameInput =
+    document.getElementById(
+        "playerEditName"
+    );
+
+const countryInput =
+    document.getElementById(
+        "playerEditCountry"
+    );
+
+const roleInput =
+    document.getElementById(
+        "playerEditRole"
+    );
+
+const avatarInput =
+    document.getElementById(
+        "playerEditAvatar"
+    );
+
+const faceitInput =
+    document.getElementById(
+        "playerEditFaceit"
+    );
+
+const steamInput =
+    document.getElementById(
+        "playerEditSteam"
     );
 
 
-if (!player)
-    return;
+if (oldName) {
+    oldName.value =
+        player.name || "";
+}
+
+if (teamInput) {
+    teamInput.value =
+        TEAM_NAME;
+}
+
+if (nameInput) {
+    nameInput.value =
+        player.name || "";
+}
+
+if (countryInput) {
+    countryInput.value =
+        player.country || "";
+}
+
+if (roleInput) {
+    roleInput.value =
+        player.role || "Игрок";
+}
+
+if (avatarInput) {
+    avatarInput.value =
+        player.avatar || "";
+}
+
+if (faceitInput) {
+    faceitInput.value =
+        player.faceit || "";
+}
+
+if (steamInput) {
+    steamInput.value =
+        player.steam || "";
+}
 
 
-document.getElementById(
-    "playerEditOldName"
-).value = player.name || "";
+const modal =
+    document.getElementById(
+        "playerEditModal"
+    );
 
-
-document.getElementById(
-    "playerEditTeam"
-).value = TEAM_NAME;
-
-
-document.getElementById(
-    "playerEditName"
-).value = player.name || "";
-
-
-document.getElementById(
-    "playerEditCountry"
-).value = player.country || "";
-
-
-document.getElementById(
-    "playerEditRole"
-).value = player.role || "Игрок";
-
-
-document.getElementById(
-    "playerEditAvatar"
-).value = player.avatar || "";
-
-
-document.getElementById(
-    "playerEditFaceit"
-).value = player.faceit || "";
-
-
-document.getElementById(
-    "playerEditSteam"
-).value = player.steam || "";
-
-
-document
-    .getElementById("playerEditModal")
-    ?.classList.remove("hidden");
+if (modal) {
+    modal.classList.remove("hidden");
+}
 ```
 
 }
@@ -1008,9 +944,14 @@ document
 function closePlayerEditor() {
 
 ```
-document
-    .getElementById("playerEditModal")
-    ?.classList.add("hidden");
+const modal =
+    document.getElementById(
+        "playerEditModal"
+    );
+
+if (modal) {
+    modal.classList.add("hidden");
+}
 ```
 
 }
@@ -1020,58 +961,65 @@ async function savePlayer(event) {
 ```
 event.preventDefault();
 
-
 const oldName =
     document.getElementById(
         "playerEditOldName"
     ).value;
 
+const newName =
+    document.getElementById(
+        "playerEditName"
+    ).value.trim();
+
+const country =
+    document.getElementById(
+        "playerEditCountry"
+    ).value.trim();
+
+const role =
+    document.getElementById(
+        "playerEditRole"
+    ).value;
+
+const avatar =
+    document.getElementById(
+        "playerEditAvatar"
+    ).value.trim();
+
+const faceit =
+    document.getElementById(
+        "playerEditFaceit"
+    ).value.trim();
+
+const steam =
+    document.getElementById(
+        "playerEditSteam"
+    ).value.trim();
+
 
 const data = {
-
-    name:
-        document.getElementById(
-            "playerEditName"
-        ).value.trim(),
-
-    country:
-        document.getElementById(
-            "playerEditCountry"
-        ).value.trim(),
-
-    role:
-        document.getElementById(
-            "playerEditRole"
-        ).value,
-
-    avatar:
-        document.getElementById(
-            "playerEditAvatar"
-        ).value.trim(),
-
-    faceit:
-        document.getElementById(
-            "playerEditFaceit"
-        ).value.trim(),
-
-    steam:
-        document.getElementById(
-            "playerEditSteam"
-        ).value.trim()
-
+    name: newName,
+    country: country,
+    role: role,
+    avatar: avatar,
+    faceit: faceit,
+    steam: steam
 };
 
 
 try {
 
-    await supabaseRequest(
-        `players?name=eq.${encodeURIComponent(oldName)}`,
+    await supabase(
+        "players?name=eq." +
+        encodeURIComponent(oldName),
         {
             method: "PATCH",
             headers: {
-                "Prefer": "return=representation"
+                "Prefer":
+                    "return=representation"
             },
-            body: JSON.stringify(data)
+            body:
+                JSON.stringify(data)
         }
     );
 
@@ -1082,130 +1030,125 @@ try {
 
     renderTeams();
 
-
-    if (
-        !document
-            .getElementById("teamPage")
-            ?.classList.contains("hidden")
-    ) {
-
-        renderTeamProfile();
-
-    }
+    renderTeamProfile();
 
 
     alert(
         "Игрок успешно сохранён."
     );
 
-
 } catch (error) {
 
     console.error(error);
 
     alert(
-        "Не удалось сохранить игрока."
+        "Ошибка сохранения игрока. " +
+        "Проверь RLS и ключ Supabase."
     );
-
 }
 ```
 
 }
 
 /* =========================
-EDIT TEAM
+TEAM EDITOR
 ========================= */
-
-function closeEditor() {
-
-```
-document
-    .getElementById("editModal")
-    ?.classList.add("hidden");
-```
-
-}
 
 function openEditor() {
 
 ```
-const team =
-    getTeam();
+const title =
+    document.getElementById(
+        "editTitle"
+    );
+
+const tag =
+    document.getElementById(
+        "editTag"
+    );
+
+const country =
+    document.getElementById(
+        "editCountry"
+    );
+
+const logo =
+    document.getElementById(
+        "editLogo"
+    );
+
+const faceit =
+    document.getElementById(
+        "editFaceit"
+    );
+
+const steam =
+    document.getElementById(
+        "editSteam"
+    );
+
+const description =
+    document.getElementById(
+        "editDescription"
+    );
 
 
-const fields = {
+if (title) {
+    title.value = TEAM_NAME;
+}
 
-    editName:
-        team.name || TEAM_NAME,
+if (tag) {
+    tag.value = "1M";
+}
 
-    editTitle:
-        team.title ||
-        team.name ||
-        TEAM_NAME,
+if (country) {
+    country.value = "Russia";
+}
 
-    editTag:
-        team.tag || "1M",
+if (logo) {
+    logo.value =
+        team.logo || "";
+}
 
-    editCountry:
-        team.country || "Russia",
+if (faceit) {
+    faceit.value =
+        team.faceit || "";
+}
 
-    editLogo:
-        team.logo ||
-        team.avatar ||
-        "",
+if (steam) {
+    steam.value =
+        team.steam || "";
+}
 
-    editFaceit:
-        team.faceit || "",
-
-    editSteam:
-        team.steam || "",
-
-    editDescription:
-        team.description || ""
-
-};
-
-
-Object.entries(fields)
-    .forEach(([id, value]) => {
-
-        const element =
-            document.getElementById(id);
-
-        if (element)
-            element.value = value;
-
-    });
+if (description) {
+    description.value =
+        team.description || "";
+}
 
 
-document
-    .getElementById("editModal")
-    ?.classList.remove("hidden");
+const modal =
+    document.getElementById(
+        "editModal"
+    );
+
+if (modal) {
+    modal.classList.remove("hidden");
+}
 ```
 
 }
 
-/* =========================
-ESCAPE
-========================= */
-
-function escapeHTML(value) {
+function closeEditor() {
 
 ```
-return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-```
+const modal =
+    document.getElementById(
+        "editModal"
+    );
 
+if (modal) {
+    modal.classList.add("hidden");
 }
-
-function escapeAttribute(value) {
-
-```
-return escapeHTML(value);
 ```
 
 }
@@ -1214,11 +1157,36 @@ return escapeHTML(value);
 NAVIGATION
 ========================= */
 
-function showSectionFromHash() {
+function showHashPage() {
 
 ```
 const hash =
     window.location.hash;
+
+
+const teams =
+    document.getElementById("teams");
+
+const teamPage =
+    document.getElementById("teamPage");
+
+const playerPage =
+    document.getElementById("playerPage");
+
+
+if (teams) {
+    teams.classList.add("hidden");
+}
+
+if (teamPage) {
+    teamPage.classList.add("hidden");
+}
+
+if (playerPage) {
+    playerPage.classList.add("hidden");
+}
+
+hideOtherPages();
 
 
 if (
@@ -1227,28 +1195,12 @@ if (
     hash === "#tournaments"
 ) {
 
-    document
-        .getElementById("teams")
-        ?.classList.add("hidden");
-
-
-    document
-        .getElementById("teamPage")
-        ?.classList.add("hidden");
-
-
-    document
-        .getElementById("playerPage")
-        ?.classList.add("hidden");
-
-
-    const target =
+    const page =
         document.querySelector(hash);
 
-
-    if (target)
-        target.classList.remove("hidden");
-
+    if (page) {
+        page.classList.remove("hidden");
+    }
 
     return;
 }
@@ -1256,38 +1208,19 @@ if (
 
 if (hash === "#teamPage") {
 
-    openTeam();
+    if (teamPage) {
+        teamPage.classList.remove("hidden");
+    }
+
+    renderTeamProfile();
 
     return;
 }
 
 
-if (hash === "#playerPage") {
-
-    return;
+if (teams) {
+    teams.classList.remove("hidden");
 }
-
-
-document
-    .getElementById("teams")
-    ?.classList.remove("hidden");
-
-
-document
-    .getElementById("teamPage")
-    ?.classList.add("hidden");
-
-
-document
-    .getElementById("playerPage")
-    ?.classList.add("hidden");
-
-
-document
-    .querySelectorAll(".page-section")
-    .forEach(section =>
-        section.classList.add("hidden")
-    );
 ```
 
 }
@@ -1300,14 +1233,12 @@ async function init() {
 
 ```
 console.log(
-    "1Minute app starting..."
+    "1Minute запускается..."
 );
 
+loadTeam();
 
 await loadPlayers();
-
-await loadTeams();
-
 
 renderTeams();
 
@@ -1317,12 +1248,10 @@ renderMatches();
 
 renderTournaments();
 
-
-showSectionFromHash();
-
+showHashPage();
 
 console.log(
-    "1Minute app ready."
+    "1Minute готов."
 );
 ```
 
@@ -1330,12 +1259,12 @@ console.log(
 
 window.addEventListener(
 "hashchange",
-showSectionFromHash
+showHashPage
 );
 
 document.addEventListener(
 "DOMContentLoaded",
-() => {
+function() {
 
 ```
     const form =
@@ -1343,14 +1272,12 @@ document.addEventListener(
             "playerEditForm"
         );
 
-
     if (form) {
 
         form.addEventListener(
             "submit",
             savePlayer
         );
-
     }
 
 
