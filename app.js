@@ -13,7 +13,6 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_ZsTLAQNw2ILBetxcMTGY2A_rhMO_hkK";
 
-
 const TEAM_NAME = "1Minute";
 
 
@@ -28,7 +27,6 @@ const STARTERS = [
     "k9yzo",
     "jambo"
 ];
-
 
 const SUBSTITUTES = [
     "lqq69",
@@ -94,6 +92,7 @@ function initSupabase() {
         );
 
         return false;
+
     }
 
 
@@ -105,6 +104,10 @@ function initSupabase() {
                 SUPABASE_KEY
             );
 
+        console.log(
+            "Supabase client создан."
+        );
+
         return true;
 
     } catch (error) {
@@ -115,7 +118,9 @@ function initSupabase() {
         );
 
         return false;
+
     }
+
 }
 
 
@@ -160,7 +165,6 @@ function findPlayer(name) {
 
     const target =
         normalize(name);
-
 
     return players.find(
         function(player) {
@@ -259,7 +263,9 @@ async function supabaseRequest(
 
 
     if (!text) {
+
         return [];
+
     }
 
 
@@ -315,7 +321,16 @@ async function checkAuth() {
                 : null;
 
 
+        console.log(
+            "Current user:",
+            currentUser
+                ? currentUser.id
+                : "нет пользователя"
+        );
+
+
         await checkAdmin();
+
 
         updateLoginButton();
 
@@ -357,6 +372,23 @@ async function checkAuth() {
    AUTH — CHECK ADMIN
 ========================================================= */
 
+/*
+    ВАЖНО:
+
+    Проверяем именно UUID текущего пользователя:
+
+    currentUser.id
+
+    Например:
+
+    33aab221-5fec-453e-b949-4c2e7f66be3a
+
+    В таблице admins должно быть:
+
+    user_id =
+    33aab221-5fec-453e-b949-4c2e7f66be3a
+*/
+
 async function checkAdmin() {
 
     isAdmin = false;
@@ -364,36 +396,141 @@ async function checkAdmin() {
 
     if (!currentUser) {
 
+        console.log(
+            "Admin check: пользователь не авторизован"
+        );
+
         return false;
 
     }
 
 
+    if (!supabaseClient) {
+
+        console.error(
+            "Admin check: Supabase client отсутствует."
+        );
+
+        return false;
+
+    }
+
+
+    const userId =
+        currentUser.id;
+
+
+    console.log(
+        "================================="
+    );
+
+    console.log(
+        "ADMIN CHECK"
+    );
+
+    console.log(
+        "Auth user ID:",
+        userId
+    );
+
+    console.log(
+        "Ищем этот UUID в admins.user_id"
+    );
+
+
     try {
 
-        const userId =
-            encodeURIComponent(
-                currentUser.id
-            );
-
+        /*
+         * Используем Supabase client,
+         * а не обычный REST fetch.
+         */
 
         const result =
-            await supabaseRequest(
-                "admins?user_id=eq." +
-                userId +
-                "&select=user_id"
-            );
-
-
-        isAdmin =
-            Array.isArray(result) &&
-            result.length > 0;
+            await supabaseClient
+                .from("admins")
+                .select("user_id")
+                .eq(
+                    "user_id",
+                    userId
+                )
+                .maybeSingle();
 
 
         console.log(
-            "Admin check:",
-            currentUser.id,
+            "Ответ admins:",
+            result
+        );
+
+
+        if (result.error) {
+
+            console.error(
+                "ADMIN TABLE ERROR:",
+                result.error
+            );
+
+            console.error(
+                "Код:",
+                result.error.code
+            );
+
+            console.error(
+                "Сообщение:",
+                result.error.message
+            );
+
+            console.error(
+                "Детали:",
+                result.error.details
+            );
+
+            console.error(
+                "Hint:",
+                result.error.hint
+            );
+
+            isAdmin = false;
+
+            return false;
+
+        }
+
+
+        if (result.data) {
+
+            isAdmin = true;
+
+            console.log(
+                "✅ ADMIN FOUND"
+            );
+
+            console.log(
+                "Admin UUID:",
+                result.data.user_id
+            );
+
+        } else {
+
+            isAdmin = false;
+
+            console.log(
+                "❌ ADMIN NOT FOUND"
+            );
+
+            console.log(
+                "В таблице admins нет доступной строки с этим UUID."
+            );
+
+        }
+
+
+        console.log(
+            "Итог isAdmin:",
             isAdmin
+        );
+
+        console.log(
+            "================================="
         );
 
 
@@ -403,7 +540,7 @@ async function checkAdmin() {
     } catch (error) {
 
         console.error(
-            "Ошибка проверки admins:",
+            "Критическая ошибка проверки admins:",
             error
         );
 
@@ -579,7 +716,6 @@ function updateLoginModalUI() {
                 currentUser.email ||
                 "пользователь"
             ) +
-            "</strong>" +
             (
                 isAdmin
                     ?
@@ -733,6 +869,17 @@ async function login(event) {
         currentUser =
             result.data.user;
 
+
+        console.log(
+            "LOGIN USER:",
+            currentUser.id
+        );
+
+
+        /*
+         * Очень важно:
+         * после входа сразу проверяем admins.
+         */
 
         await checkAdmin();
 
@@ -979,13 +1126,24 @@ function setupAuthListener() {
                     : null;
 
 
-            await checkAdmin();
+            /*
+             * Не проверяем admins для SIGNED_OUT.
+             */
+
+            if (currentUser) {
+
+                await checkAdmin();
+
+            } else {
+
+                isAdmin = false;
+
+            }
 
 
             updateLoginButton();
 
             updateLoginModalUI();
-
 
             renderTeamProfile();
 
@@ -1440,7 +1598,6 @@ function renderTeamProfile() {
 
         <div class="team-profile">
 
-
             <div class="team-profile-header">
 
                 <div class="team-profile-logo">
@@ -1513,7 +1670,6 @@ function renderTeamProfile() {
 
             <div class="roster">
 
-
                 <div class="section-head">
 
                     <div>
@@ -1538,7 +1694,6 @@ function renderTeamProfile() {
                 </div>
 
 
-
                 <div class="section-head">
 
                     <div>
@@ -1561,7 +1716,6 @@ function renderTeamProfile() {
                     ${substitutesHTML}
 
                 </div>
-
 
             </div>
 
@@ -1733,7 +1887,6 @@ function renderPlayerProfile(player) {
 
         <div class="player-profile">
 
-
             <div class="player-profile-avatar">
 
                 ${
@@ -1790,7 +1943,6 @@ function renderPlayerProfile(player) {
 
             <div class="player-links">
 
-
                 ${
                     player.faceit
                         ?
@@ -1826,7 +1978,6 @@ function renderPlayerProfile(player) {
                         ""
                 }
 
-
             </div>
 
 
@@ -1841,7 +1992,6 @@ function renderPlayerProfile(player) {
                 "
             >
 
-
                 ${adminButtons}
 
 
@@ -1852,7 +2002,6 @@ function renderPlayerProfile(player) {
                 >
                     ← Вернуться к команде
                 </button>
-
 
             </div>
 
@@ -2974,8 +3123,6 @@ async function init() {
     );
 
 
-    /* Supabase */
-
     const connected =
         initSupabase();
 
@@ -2986,11 +3133,6 @@ async function init() {
             "Supabase не подключён."
         );
 
-
-        /*
-         * Даже если Supabase не загрузился,
-         * сайт всё равно показывает команду.
-         */
 
         renderTeams();
 
@@ -3007,22 +3149,14 @@ async function init() {
     }
 
 
-    /* Auth listener */
-
     setupAuthListener();
 
-
-    /* Проверяем пользователя */
 
     await checkAuth();
 
 
-    /* Загружаем игроков */
-
     await loadPlayers();
 
-
-    /* Рендер */
 
     renderTeams();
 
@@ -3062,8 +3196,6 @@ document.addEventListener(
     function() {
 
 
-        /* Player form */
-
         const playerForm =
             document.getElementById(
                 "playerEditForm"
@@ -3080,8 +3212,6 @@ document.addEventListener(
         }
 
 
-        /* Login form */
-
         const loginForm =
             document.getElementById(
                 "loginForm"
@@ -3097,8 +3227,6 @@ document.addEventListener(
 
         }
 
-
-        /* Team form */
 
         const editForm =
             document.getElementById(
@@ -3125,14 +3253,6 @@ document.addEventListener(
 
                     }
 
-
-                    /*
-                     * Пока данные команды
-                     * хранятся в JS.
-                     *
-                     * Игроки уже сохраняются
-                     * в Supabase.
-                     */
 
                     const title =
                         document.getElementById(
@@ -3251,8 +3371,6 @@ document.addEventListener(
 
         }
 
-
-        /* Start */
 
         init();
 
