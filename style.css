@@ -1346,3 +1346,7 @@ footer {
         transition-duration: 0.01ms !important;
     }
 }
+/* Скрываем фильтры команд */
+.filters {
+    display: none !important;
+}
