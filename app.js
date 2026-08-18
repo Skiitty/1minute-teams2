@@ -1,832 +1,312 @@
-```css
 /* =========================================================
-   1MINUTE — GLOBAL
+   1MINUTE — APP.JS
 ========================================================= */
 
-* {
-    box-sizing: border-box;
-}
+const SUPABASE_URL = "https://wzheavazneaybhmgfntn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ZsTLAQNw2ILBetxcMTGY2A_rhMO_hkK";
 
-html {
-    scroll-behavior: smooth;
-}
+const TEAM_NAME = "1Minute";
 
-body {
-    margin: 0;
-    min-height: 100vh;
+const STARTERS = [
+    "XXXOLDAR",
+    "Hesoko",
+    "yoplo",
+    "k9yzo",
+    "jambo"
+];
 
-    background:
-        radial-gradient(
-            circle at 50% -10%,
-            rgba(80, 255, 145, 0.055),
-            transparent 38%
-        ),
-        #080b0e;
+const SUBSTITUTES = [
+    "lqq69",
+    "ChapsTea"
+];
 
-    color: #f4f6f8;
-
-    font-family:
-        "Inter",
-        Arial,
-        sans-serif;
-
-    overflow-x: hidden;
-}
-
-button,
-input,
-textarea,
-select {
-    font: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-a {
-    color: inherit;
-}
-
-.hidden {
-    display: none !important;
-}
+let players = [];
 
 
 /* =========================================================
-   BACKGROUND GLOW
+   TEAM
 ========================================================= */
 
-.glow {
-    position: fixed;
-
-    width: 420px;
-    height: 420px;
-
-    border-radius: 50%;
-
-    pointer-events: none;
-
-    filter: blur(90px);
-
-    opacity: .12;
-
-    z-index: -2;
-}
-
-.glow-a {
-    left: -220px;
-    top: 180px;
-
-    background: #45ff91;
-}
-
-.glow-b {
-    right: -240px;
-    top: 420px;
-
-    background: #315c42;
-}
+const team = {
+    name: "1Minute",
+    title: "1Minute",
+    tag: "1M",
+    country: "Russia",
+    logo: "",
+    faceit: "",
+    steam: "",
+    description:
+        "Профили состава, матчи и статистика 1Minute — всё в одном месте.",
+    status: "active"
+};
 
 
 /* =========================================================
-   HEADER
+   SUPABASE
 ========================================================= */
 
-.topbar {
-    position: sticky;
-
-    top: 0;
-
-    z-index: 100;
-
-    width: 100%;
-
-    min-height: 68px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 30px;
-
-    padding: 0 32px;
-
-    background:
-        rgba(8, 11, 14, .88);
-
-    border-bottom:
-        1px solid #1b2229;
-
-    backdrop-filter:
-        blur(18px);
-}
-
-
-.brand {
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 3px;
-
-    text-decoration: none;
-
-    font-size: 19px;
-
-    font-weight: 900;
-
-    letter-spacing: -.04em;
-
-    white-space: nowrap;
-}
-
-.brand span {
-    color: #8ee6ad;
-}
-
-
-.topbar nav {
-    display: flex;
-
-    align-items: center;
-
-    gap: 5px;
-
-    flex: 1;
-}
-
-.topbar nav a {
-    position: relative;
-
-    display: inline-flex;
-
-    align-items: center;
-
-    padding: 9px 12px;
-
-    color: #717b86;
-
-    text-decoration: none;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    border-radius: 6px;
-
-    transition:
-        color .2s ease,
-        background .2s ease;
-}
-
-.topbar nav a:hover {
-    color: #e9edf0;
-
-    background: #11161b;
-}
-
-.topbar nav a.active {
-    color: #ffffff;
-
-    background: #11171c;
-}
-
-
-.login {
-    appearance: none;
-
-    border: 1px solid #29323a;
-
-    background: #11161b;
-
-    color: #c7ced5;
-
-    border-radius: 7px;
-
-    padding: 9px 15px;
-
-    font-size: 11px;
-
-    font-weight: 800;
-
-    transition:
-        background .2s ease,
-        border-color .2s ease,
-        transform .2s ease;
-}
-
-.login:hover {
-    background: #181f25;
-
-    border-color: #3b4650;
-
-    transform: translateY(-1px);
-}
-
-
-.mobile-menu {
-    display: none;
-
-    appearance: none;
-
-    border: 1px solid #29323a;
-
-    background: #11161b;
-
-    color: #c7ced5;
-
-    border-radius: 7px;
-
-    width: 40px;
-
-    height: 38px;
-
-    font-size: 18px;
-}
-
-
-/* =========================================================
-   MAIN / SCREEN
-========================================================= */
-
-main {
-    width: 100%;
-}
-
-.screen {
-    width: min(1180px, calc(100% - 40px));
-
-    margin: 0 auto;
-
-    padding: 70px 0 90px;
-}
-
-
-/* =========================================================
-   HERO
-========================================================= */
-
-.hero {
-    max-width: 850px;
-
-    padding:
-        65px
-        0
-        75px;
-}
-
-.eyebrow {
-    color: #65707b;
-
-    font-size: 10px;
-
-    font-weight: 900;
-
-    letter-spacing: .16em;
-
-    text-transform: uppercase;
-}
-
-.hero h1 {
-    margin: 13px 0 20px;
-
-    font-size:
-        clamp(
-            48px,
-            7vw,
-            82px
+async function supabase(path, options = {}) {
+
+    const headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json"
+    };
+
+    if (options.headers) {
+        Object.assign(headers, options.headers);
+    }
+
+    const response = await fetch(
+        SUPABASE_URL + "/rest/v1/" + path,
+        {
+            method: options.method || "GET",
+            headers,
+            body: options.body
+        }
+    );
+
+    if (!response.ok) {
+
+        const errorText = await response.text();
+
+        console.error(
+            "Supabase error:",
+            response.status,
+            errorText
         );
 
-    line-height: .95;
+        throw new Error(errorText);
+    }
 
-    letter-spacing: -.055em;
+    const text = await response.text();
 
-    font-weight: 900;
-}
+    if (!text) {
+        return [];
+    }
 
-.hero h1 span {
-    color: #8ee6ad;
-}
-
-.hero p {
-    max-width: 600px;
-
-    margin: 0;
-
-    color: #747e89;
-
-    font-size: 15px;
-
-    line-height: 1.75;
-}
-
-
-.hero-actions {
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    flex-wrap: wrap;
-
-    margin-top: 28px;
+    try {
+        return JSON.parse(text);
+    } catch {
+        return [];
+    }
 }
 
 
 /* =========================================================
-   BUTTONS / LINKS
+   HELPERS
 ========================================================= */
 
-.primary,
-.secondary {
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    min-height: 40px;
-
-    padding: 10px 15px;
-
-    border-radius: 7px;
-
-    text-decoration: none;
-
-    font-size: 11px;
-
-    font-weight: 800;
-
-    transition:
-        transform .2s ease,
-        background .2s ease,
-        border-color .2s ease;
+function normalize(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase();
 }
 
-.primary {
-    background: #8ee6ad;
 
-    color: #07100a;
-
-    border: 1px solid #8ee6ad;
+function escapeHTML(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
-.primary:hover {
-    transform: translateY(-2px);
 
-    background: #a5f2bd;
+function safeJSString(value) {
+    return String(value || "")
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r");
 }
 
-.primary b {
-    margin-left: 10px;
+
+function findPlayer(name) {
+
+    const target = normalize(name);
+
+    return players.find(function(player) {
+        return normalize(player.name) === target;
+    }) || null;
 }
 
-.secondary {
-    background: #11161b;
 
-    color: #aeb7c0;
+function getPlayersByNames(names) {
 
-    border: 1px solid #29323a;
-}
-
-.secondary:hover {
-    transform: translateY(-2px);
-
-    background: #181f25;
-
-    border-color: #3b4650;
+    return names
+        .map(function(name) {
+            return findPlayer(name);
+        })
+        .filter(Boolean);
 }
 
 
 /* =========================================================
-   SECTION HEAD
+   LOAD PLAYERS
 ========================================================= */
 
-.section-head {
-    display: flex;
+async function loadPlayers() {
 
-    align-items: flex-end;
+    try {
 
-    justify-content: space-between;
-
-    gap: 20px;
-
-    margin-bottom: 18px;
-}
-
-.section-head h2 {
-    margin: 5px 0 0;
-
-    font-size: 26px;
-
-    line-height: 1;
-
-    font-weight: 900;
-
-    letter-spacing: -.035em;
-}
-
-
-/* =========================================================
-   FILTERS
-========================================================= */
-
-.filters {
-    display: flex;
-
-    gap: 5px;
-
-    flex-wrap: wrap;
-}
-
-.filters button {
-    appearance: none;
-
-    border: 1px solid #232b32;
-
-    background: #0d1216;
-
-    color: #69747e;
-
-    border-radius: 6px;
-
-    padding: 7px 10px;
-
-    font-size: 10px;
-
-    font-weight: 800;
-
-    transition:
-        color .2s ease,
-        background .2s ease,
-        border-color .2s ease;
-}
-
-.filters button:hover,
-.filters button.selected {
-    color: #dce2e6;
-
-    background: #151b20;
-
-    border-color: #35404a;
-}
-
-
-/* =========================================================
-   TEAM GRID
-========================================================= */
-
-.team-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(270px, 1fr)
+        const data = await supabase(
+            "players?select=*&order=id.asc"
         );
 
-    gap: 15px;
-}
+        players = Array.isArray(data)
+            ? data
+            : [];
 
-
-.team-card {
-    position: relative;
-
-    padding: 18px;
-
-    min-height: 150px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: space-between;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(21, 27, 33, .96),
-            rgba(11, 14, 18, .96)
+        console.log(
+            "Игроки загружены:",
+            players
         );
 
-    border: 1px solid #222a32;
+        return players;
 
-    border-radius: 11px;
+    } catch (error) {
 
-    cursor: pointer;
-
-    overflow: hidden;
-
-    transition:
-        transform .2s ease,
-        border-color .2s ease,
-        box-shadow .2s ease;
-}
-
-.team-card::before {
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    pointer-events: none;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255,255,255,.045),
-            transparent 45%
+        console.error(
+            "Ошибка загрузки игроков:",
+            error
         );
-}
 
-.team-card:hover {
-    transform: translateY(-4px);
+        /*
+           ВАЖНО:
 
-    border-color: #35404a;
+           Даже если Supabase временно недоступен,
+           сайт НЕ должен исчезать.
+        */
 
-    box-shadow:
-        0 18px 50px rgba(0,0,0,.3);
-}
+        players = [];
 
-
-.team-top {
-    position: relative;
-
-    z-index: 1;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-}
-
-.team-logo {
-    width: 62px;
-    height: 62px;
-
-    flex: 0 0 62px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius: 9px;
-
-    overflow: hidden;
-
-    background: #0b0f13;
-
-    border: 1px solid #29323a;
-}
-
-.team-logo img {
-    width: 100%;
-    height: 100%;
-
-    object-fit: contain;
-}
-
-.team-logo span {
-    color: #8ee6ad;
-
-    font-size: 30px;
-
-    font-weight: 900;
-}
-
-.team-name {
-    color: #f1f3f5;
-
-    font-size: 17px;
-
-    font-weight: 900;
-
-    letter-spacing: -.025em;
-}
-
-.team-country {
-    margin-top: 4px;
-
-    color: #707a85;
-
-    font-size: 11px;
-
-    font-weight: 600;
-}
-
-.team-bottom {
-    position: relative;
-
-    z-index: 1;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
-    margin-top: 18px;
-
-    color: #68737e;
-
-    font-size: 10px;
-
-    font-weight: 800;
-}
-
-.status.active {
-    color: #8ee6ad;
+        return [];
+    }
 }
 
 
 /* =========================================================
-   BACK BUTTON
+   TEAM CARD
 ========================================================= */
 
-.back {
-    appearance: none;
+function renderTeams() {
 
-    border: 0;
+    const grid = document.getElementById("grid");
 
-    background: transparent;
+    if (!grid) {
+        console.error("Не найден #grid");
+        return;
+    }
 
-    color: #737e89;
+    const logoHTML = team.logo
+        ? `
+            <img
+                src="${escapeHTML(team.logo)}"
+                alt="${escapeHTML(team.name)}"
+            >
+        `
+        : `
+            <span>1</span>
+        `;
 
-    padding: 0;
+    grid.innerHTML = `
+        <div
+            class="team-card"
+            onclick="openTeam()"
+        >
 
-    margin-bottom: 25px;
+            <div class="team-top">
 
-    font-size: 11px;
+                <div class="team-logo">
+                    ${logoHTML}
+                </div>
 
-    font-weight: 800;
+                <div>
 
-    transition:
-        color .2s ease,
-        transform .2s ease;
-}
+                    <div class="team-name">
+                        ${escapeHTML(team.name)}
+                    </div>
 
-.back:hover {
-    color: #ffffff;
+                    <div class="team-country">
+                        ${escapeHTML(team.country)}
+                    </div>
 
-    transform: translateX(-3px);
+                </div>
+
+            </div>
+
+            <div class="team-bottom">
+
+                <span>
+                    ${escapeHTML(team.tag)}
+                </span>
+
+                <span class="status active">
+                    ● ACTIVE
+                </span>
+
+            </div>
+
+        </div>
+    `;
 }
 
 
 /* =========================================================
-   GLASS
+   FILTER TEAMS
 ========================================================= */
 
-.glass {
-    background:
-        linear-gradient(
-            145deg,
-            rgba(20,25,30,.94),
-            rgba(11,14,18,.94)
-        );
+function filterTeams(type = "all", button = null) {
 
-    border: 1px solid #242c34;
+    const buttons = document.querySelectorAll(
+        ".filters button"
+    );
 
-    border-radius: 11px;
-}
+    buttons.forEach(function(item) {
+        item.classList.remove("selected");
+    });
 
+    if (button) {
+        button.classList.add("selected");
+    }
 
-/* =========================================================
-   TEAM PROFILE
-========================================================= */
+    const grid = document.getElementById("grid");
 
-.team-profile {
-    max-width: 1100px;
+    if (!grid) {
+        return;
+    }
 
-    margin: 0 auto;
+    /*
+       Пока у нас одна команда.
+       При любом фильтре она остаётся,
+       если её статус подходит.
+    */
 
-    padding-bottom: 70px;
-}
+    if (
+        type === "inactive" &&
+        team.status === "active"
+    ) {
 
-.team-profile-header {
-    display: flex;
+        grid.innerHTML = `
+            <div
+                class="glass"
+                style="
+                    padding:24px;
+                    color:#858c98;
+                    grid-column:1/-1;
+                "
+            >
+                Неактивных команд пока нет.
+            </div>
+        `;
 
-    align-items: center;
+        return;
+    }
 
-    gap: 28px;
-
-    padding: 28px;
-
-    margin-bottom: 45px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(20,25,30,.94),
-            rgba(11,14,18,.94)
-        );
-
-    border: 1px solid #242c34;
-
-    border-radius: 13px;
-
-    box-shadow:
-        0 20px 60px rgba(0,0,0,.22);
-}
-
-.team-profile-logo {
-    width: 110px;
-    height: 110px;
-
-    flex: 0 0 110px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius: 14px;
-
-    background: #0c1014;
-
-    border: 1px solid #29323a;
-
-    overflow: hidden;
-}
-
-.team-profile-logo img {
-    width: 100%;
-    height: 100%;
-
-    object-fit: contain;
-}
-
-.team-profile-logo span {
-    color: #8ee6ad;
-
-    font-size: 50px;
-
-    font-weight: 900;
-}
-
-.team-profile-header h1 {
-    margin: 4px 0 8px;
-
-    font-size: 42px;
-
-    line-height: 1;
-
-    font-weight: 900;
-
-    letter-spacing: -.035em;
-}
-
-.team-profile-header p {
-    margin: 0;
-
-    max-width: 600px;
-
-    color: #737d88;
-
-    line-height: 1.7;
-
-    font-size: 14px;
-}
-
-
-/* =========================================================
-   ROSTER
-========================================================= */
-
-.roster .section-head {
-    margin-top: 38px;
-
-    margin-bottom: 16px;
-}
-
-.roster .section-head h2 {
-    margin: 4px 0 0;
-
-    font-size: 25px;
-
-    font-weight: 850;
-
-    letter-spacing: -.02em;
-}
-
-.player-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(230px, 1fr)
-        );
-
-    gap: 14px;
+    renderTeams();
 }
 
 
@@ -834,168 +314,359 @@ main {
    PLAYER CARD
 ========================================================= */
 
-.player-card {
-    position: relative;
+function playerCard(player, isSubstitute = false) {
 
-    min-height: 105px;
+    const name = player.name || "Player";
+    const role = player.role || "Игрок";
+    const avatar = player.avatar || "";
 
-    display: flex;
+    const safeName = safeJSString(name);
 
-    align-items: center;
+    const avatarHTML = avatar
+        ? `
+            <img
+                src="${escapeHTML(avatar)}"
+                alt="${escapeHTML(name)}"
+            >
+        `
+        : `
+            <span>
+                ${escapeHTML(
+                    name.charAt(0).toUpperCase()
+                )}
+            </span>
+        `;
 
-    gap: 15px;
+    return `
+        <div
+            class="player-card"
+            onclick="openPlayerByName('${safeName}')"
+        >
 
-    padding: 15px;
+            <div class="player-avatar">
+                ${avatarHTML}
+            </div>
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(22,27,33,.96),
-            rgba(12,15,19,.96)
+            <div class="player-info">
+
+                <h3>
+                    ${escapeHTML(name)}
+                </h3>
+
+                <span>
+                    ${escapeHTML(role)}
+                </span>
+
+            </div>
+
+            ${
+                isSubstitute
+                    ? `
+                        <div class="player-badge">
+                            ЗАМЕНА
+                        </div>
+                    `
+                    : ""
+            }
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   OPEN TEAM
+========================================================= */
+
+function openTeam() {
+
+    const teams = document.getElementById("teams");
+    const teamPage = document.getElementById("teamPage");
+    const playerPage = document.getElementById("playerPage");
+
+    if (teams) {
+        teams.classList.add("hidden");
+    }
+
+    if (playerPage) {
+        playerPage.classList.add("hidden");
+    }
+
+    document
+        .querySelectorAll(".page-section")
+        .forEach(function(page) {
+            page.classList.add("hidden");
+        });
+
+    if (teamPage) {
+        teamPage.classList.remove("hidden");
+    }
+
+    renderTeamProfile();
+
+    window.location.hash = "teamPage";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+/* =========================================================
+   TEAM PROFILE
+========================================================= */
+
+function renderTeamProfile() {
+
+    const container =
+        document.getElementById("teamProfile");
+
+    if (!container) {
+        return;
+    }
+
+    const starters =
+        getPlayersByNames(STARTERS);
+
+    const substitutes =
+        getPlayersByNames(SUBSTITUTES);
+
+
+    let startersHTML = "";
+    let substitutesHTML = "";
+
+
+    if (starters.length) {
+
+        startersHTML = starters
+            .map(function(player) {
+                return playerCard(
+                    player,
+                    false
+                );
+            })
+            .join("");
+
+    } else {
+
+        startersHTML = `
+            <div
+                class="glass"
+                style="
+                    padding:24px;
+                    grid-column:1/-1;
+                    color:#858c98;
+                "
+            >
+                Основной состав пока не загружен.
+            </div>
+        `;
+    }
+
+
+    if (substitutes.length) {
+
+        substitutesHTML = substitutes
+            .map(function(player) {
+                return playerCard(
+                    player,
+                    true
+                );
+            })
+            .join("");
+
+    } else {
+
+        substitutesHTML = `
+            <div
+                class="glass"
+                style="
+                    padding:24px;
+                    grid-column:1/-1;
+                    color:#858c98;
+                "
+            >
+                Замены пока не добавлены.
+            </div>
+        `;
+    }
+
+
+    const logoHTML = team.logo
+        ? `
+            <img
+                src="${escapeHTML(team.logo)}"
+                alt="${escapeHTML(team.name)}"
+            >
+        `
+        : `
+            <span>1</span>
+        `;
+
+
+    container.innerHTML = `
+
+        <div class="team-profile">
+
+            <div class="team-profile-header">
+
+                <div class="team-profile-logo">
+                    ${logoHTML}
+                </div>
+
+                <div>
+
+                    <div
+                        class="eyebrow"
+                        style="font-weight:800;"
+                    >
+                        TEAM
+                    </div>
+
+                    <h1>
+                        ${escapeHTML(team.name)}
+                    </h1>
+
+                    <p>
+                        ${escapeHTML(team.description)}
+                    </p>
+
+                    <div
+                        class="team-profile-status"
+                        style="
+                            margin-top:12px;
+                            display:inline-flex;
+                            align-items:center;
+                            gap:7px;
+                            color:#8ee6ad;
+                            background:#0b1710;
+                            border:1px solid #21452f;
+                            border-radius:6px;
+                            padding:5px 9px;
+                            font-size:10px;
+                            font-weight:800;
+                        "
+                    >
+                        <span>●</span>
+                        ACTIVE
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="roster">
+
+                <div class="section-head">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            ROSTER
+                        </div>
+
+                        <h2>
+                            Основной состав
+                        </h2>
+
+                    </div>
+
+                </div>
+
+                <div class="player-grid">
+                    ${startersHTML}
+                </div>
+
+
+                <div class="section-head">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            SUBSTITUTES
+                        </div>
+
+                        <h2>
+                            Замены
+                        </h2>
+
+                    </div>
+
+                </div>
+
+                <div class="player-grid">
+                    ${substitutesHTML}
+                </div>
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   OPEN PLAYER
+========================================================= */
+
+function openPlayerByName(name) {
+
+    const player = findPlayer(name);
+
+    if (!player) {
+
+        console.error(
+            "Игрок не найден:",
+            name
         );
 
-    border: 1px solid #222a32;
-
-    border-radius: 10px;
-
-    cursor: pointer;
-
-    overflow: hidden;
-
-    transition:
-        transform .2s ease,
-        border-color .2s ease,
-        background .2s ease,
-        box-shadow .2s ease;
-}
-
-.player-card::before {
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255,255,255,.045),
-            transparent 45%
+        alert(
+            "Профиль этого игрока пока отсутствует в базе."
         );
 
-    pointer-events: none;
-}
+        return;
+    }
 
-.player-card:hover {
-    transform: translateY(-3px);
+    const teams =
+        document.getElementById("teams");
 
-    border-color: #34404a;
+    const teamPage =
+        document.getElementById("teamPage");
 
-    background:
-        linear-gradient(
-            145deg,
-            #181e24,
-            #101419
-        );
+    const playerPage =
+        document.getElementById("playerPage");
 
-    box-shadow:
-        0 15px 40px rgba(0,0,0,.28);
-}
 
-.player-avatar {
-    flex: 0 0 68px;
+    if (teams) {
+        teams.classList.add("hidden");
+    }
 
-    width: 68px;
-    height: 68px;
+    if (teamPage) {
+        teamPage.classList.add("hidden");
+    }
 
-    border-radius: 9px;
+    document
+        .querySelectorAll(".page-section")
+        .forEach(function(page) {
+            page.classList.add("hidden");
+        });
 
-    overflow: hidden;
 
-    background: #0c1014;
+    if (playerPage) {
+        playerPage.classList.remove("hidden");
+    }
 
-    border: 1px solid #29323a;
 
-    display: flex;
+    renderPlayerProfile(player);
 
-    align-items: center;
+    window.location.hash = "playerPage";
 
-    justify-content: center;
-}
-
-.player-avatar img {
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-}
-
-.player-avatar span {
-    font-size: 25px;
-
-    font-weight: 900;
-
-    color: #8ee6ad;
-}
-
-.player-info {
-    min-width: 0;
-
-    position: relative;
-
-    z-index: 1;
-}
-
-.player-info h3 {
-    margin: 0 0 5px;
-
-    color: #f0f2f4;
-
-    font-size: 16px;
-
-    font-weight: 800;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-}
-
-.player-info span {
-    color: #727c87;
-
-    font-size: 11px;
-
-    font-weight: 700;
-
-    text-transform: uppercase;
-
-    letter-spacing: .06em;
-}
-
-.player-badge {
-    position: absolute;
-
-    right: 12px;
-
-    top: 12px;
-
-    padding: 4px 7px;
-
-    border-radius: 5px;
-
-    background: #171b20;
-
-    border: 1px solid #303740;
-
-    color: #727c87;
-
-    font-size: 8px;
-
-    font-weight: 900;
-
-    letter-spacing: .07em;
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
 
 
@@ -1003,832 +674,1095 @@ main {
    PLAYER PROFILE
 ========================================================= */
 
-.player-profile {
-    position: relative;
+function renderPlayerProfile(player) {
 
-    max-width: 1100px;
+    const container =
+        document.getElementById("playerProfile");
 
-    margin: 0 auto;
+    if (!container) {
+        return;
+    }
 
-    padding: 30px 0 80px;
+
+    const name =
+        player.name || "Player";
+
+    const role =
+        player.role || "Игрок";
+
+    const country =
+        player.country || "";
+
+    const avatar =
+        player.avatar || "";
+
+    const safeName =
+        safeJSString(name);
+
+
+    const avatarHTML = avatar
+        ? `
+            <img
+                src="${escapeHTML(avatar)}"
+                alt="${escapeHTML(name)}"
+            >
+        `
+        : `
+            <span>
+                ${escapeHTML(
+                    name.charAt(0).toUpperCase()
+                )}
+            </span>
+        `;
+
+
+    container.innerHTML = `
+
+        <div class="player-profile">
+
+            <div class="player-profile-avatar">
+                ${avatarHTML}
+            </div>
+
+            <div class="eyebrow">
+                PLAYER
+            </div>
+
+            <h1>
+                ${escapeHTML(name)}
+            </h1>
+
+            <div class="player-role">
+                ${escapeHTML(role)}
+            </div>
+
+            ${
+                country
+                    ? `
+                        <p>
+                            ${escapeHTML(country)}
+                        </p>
+                    `
+                    : ""
+            }
+
+
+            <div class="player-links">
+
+                ${
+                    player.faceit
+                        ? `
+                            <a
+                                class="secondary"
+                                href="${escapeHTML(player.faceit)}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                FACEIT →
+                            </a>
+                        `
+                        : ""
+                }
+
+                ${
+                    player.steam
+                        ? `
+                            <a
+                                class="secondary"
+                                href="${escapeHTML(player.steam)}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Steam →
+                            </a>
+                        `
+                        : ""
+                }
+
+            </div>
+
+
+            <div
+                class="player-profile-actions"
+                style="
+                    margin-top:24px;
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                "
+            >
+
+                <button
+                    class="edit-btn"
+                    onclick="openPlayerEditor('${safeName}')"
+                >
+                    ✎ Редактировать профиль
+                </button>
+
+                <button
+                    class="edit-btn"
+                    onclick="closePlayer()"
+                >
+                    ← Вернуться к команде
+                </button>
+
+            </div>
+
+        </div>
+    `;
 }
 
-.player-profile::before {
-    content: "";
 
-    position: absolute;
+/* =========================================================
+   CLOSE TEAM
+========================================================= */
 
-    width: 500px;
-    height: 500px;
+function closeTeam() {
 
-    left: 50%;
-    top: 80px;
+    const teams =
+        document.getElementById("teams");
 
-    transform: translateX(-50%);
+    const teamPage =
+        document.getElementById("teamPage");
 
-    background:
-        radial-gradient(
-            circle,
-            rgba(80, 255, 145, 0.10),
-            transparent 70%
+    const playerPage =
+        document.getElementById("playerPage");
+
+
+    if (teamPage) {
+        teamPage.classList.add("hidden");
+    }
+
+    if (playerPage) {
+        playerPage.classList.add("hidden");
+    }
+
+    document
+        .querySelectorAll(".page-section")
+        .forEach(function(page) {
+            page.classList.add("hidden");
+        });
+
+
+    if (teams) {
+        teams.classList.remove("hidden");
+    }
+
+
+    renderTeams();
+
+    window.location.hash = "teams";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+/* =========================================================
+   CLOSE PLAYER
+========================================================= */
+
+function closePlayer() {
+
+    const playerPage =
+        document.getElementById("playerPage");
+
+    const teamPage =
+        document.getElementById("teamPage");
+
+
+    if (playerPage) {
+        playerPage.classList.add("hidden");
+    }
+
+    document
+        .querySelectorAll(".page-section")
+        .forEach(function(page) {
+            page.classList.add("hidden");
+        });
+
+
+    if (teamPage) {
+        teamPage.classList.remove("hidden");
+    }
+
+
+    renderTeamProfile();
+
+    window.location.hash = "teamPage";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function showHashPage() {
+
+    const hash =
+        window.location.hash;
+
+
+    const teams =
+        document.getElementById("teams");
+
+    const teamPage =
+        document.getElementById("teamPage");
+
+    const playerPage =
+        document.getElementById("playerPage");
+
+
+    /*
+       Сначала всё скрываем
+    */
+
+    if (teams) {
+        teams.classList.add("hidden");
+    }
+
+    if (teamPage) {
+        teamPage.classList.add("hidden");
+    }
+
+    if (playerPage) {
+        playerPage.classList.add("hidden");
+    }
+
+    document
+        .querySelectorAll(".page-section")
+        .forEach(function(page) {
+            page.classList.add("hidden");
+        });
+
+
+    /*
+       Рейтинг / матчи / турниры
+    */
+
+    if (
+        hash === "#rating" ||
+        hash === "#matches" ||
+        hash === "#tournaments"
+    ) {
+
+        const page =
+            document.querySelector(hash);
+
+        if (page) {
+            page.classList.remove("hidden");
+        }
+
+        updateActiveNavigation(hash);
+
+        return;
+    }
+
+
+    /*
+       Команда
+    */
+
+    if (hash === "#teamPage") {
+
+        if (teamPage) {
+            teamPage.classList.remove("hidden");
+        }
+
+        renderTeamProfile();
+
+        updateActiveNavigation("#teams");
+
+        return;
+    }
+
+
+    /*
+       Игрок
+    */
+
+    if (hash === "#playerPage") {
+
+        if (playerPage) {
+            playerPage.classList.remove("hidden");
+        }
+
+        updateActiveNavigation("#teams");
+
+        return;
+    }
+
+
+    /*
+       Главная
+    */
+
+    if (teams) {
+        teams.classList.remove("hidden");
+    }
+
+    renderTeams();
+
+    updateActiveNavigation("#teams");
+}
+
+
+/* =========================================================
+   ACTIVE NAVIGATION
+========================================================= */
+
+function updateActiveNavigation(currentHash) {
+
+    const links =
+        document.querySelectorAll(
+            ".topbar nav a"
         );
 
-    pointer-events: none;
 
-    z-index: -1;
+    links.forEach(function(link) {
+
+        const href =
+            link.getAttribute("href");
+
+        if (href === currentHash) {
+            link.classList.add("active");
+        } else {
+            link.classList.remove("active");
+        }
+
+    });
 }
 
-.player-profile-avatar {
-    width: 190px;
-    height: 190px;
 
-    margin: 0 auto 28px;
+/* =========================================================
+   RATING
+========================================================= */
 
-    border-radius: 18px;
+function renderRating() {
 
-    background:
-        linear-gradient(
-            145deg,
-            #151a20,
-            #0b0e12
+    const rows =
+        document.getElementById("ratingRows");
+
+    if (!rows) {
+        return;
+    }
+
+
+    rows.innerHTML = `
+
+        <tr>
+
+            <td>
+                1
+            </td>
+
+            <td>
+                <strong>
+                    ${escapeHTML(TEAM_NAME)}
+                </strong>
+            </td>
+
+            <td>
+                0
+            </td>
+
+            <td>
+                0
+            </td>
+
+            <td>
+                —
+            </td>
+
+        </tr>
+    `;
+}
+
+
+/* =========================================================
+   MATCHES
+========================================================= */
+
+function renderMatches() {
+
+    const container =
+        document.getElementById(
+            "matchesList"
         );
 
-    border: 1px solid #242b34;
+    if (!container) {
+        return;
+    }
 
-    display: flex;
 
-    align-items: center;
+    container.innerHTML = `
 
-    justify-content: center;
+        <div
+            class="glass"
+            style="
+                padding:24px;
+                color:#858c98;
+            "
+        >
+            Матчи 1Minute пока не добавлены.
+        </div>
 
-    overflow: hidden;
-
-    box-shadow:
-        0 25px 70px rgba(0,0,0,.45),
-        0 0 0 1px rgba(255,255,255,.02);
-
-    position: relative;
+    `;
 }
 
-.player-profile-avatar::after {
-    content: "";
 
-    position: absolute;
+/* =========================================================
+   TOURNAMENTS
+========================================================= */
 
-    inset: 0;
+function renderTournaments() {
 
-    border-radius: inherit;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255,255,255,.08),
-            transparent 40%
+    const container =
+        document.getElementById(
+            "tournamentsGrid"
         );
 
-    pointer-events: none;
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = `
+
+        <div
+            class="glass"
+            style="
+                padding:24px;
+                color:#858c98;
+            "
+        >
+            Турниры 1Minute пока не добавлены.
+        </div>
+
+    `;
 }
 
-.player-profile-avatar img {
-    width: 100%;
-    height: 100%;
 
-    object-fit: cover;
+/* =========================================================
+   PLAYER EDITOR
+========================================================= */
 
-    display: block;
-}
+function openPlayerEditor(name) {
 
-.player-profile-avatar span {
-    font-size: 72px;
+    const player =
+        findPlayer(name);
 
-    font-weight: 900;
+    if (!player) {
 
-    color: #8ee6ad;
-}
-
-.player-profile > .eyebrow {
-    text-align: center;
-
-    color: #6e7783;
-
-    letter-spacing: .16em;
-
-    font-size: 11px;
-
-    font-weight: 800;
-
-    margin-bottom: 8px;
-}
-
-.player-profile > h1 {
-    text-align: center;
-
-    font-size:
-        clamp(
-            42px,
-            7vw,
-            76px
+        alert(
+            "Игрок не найден."
         );
 
-    line-height: .95;
+        return;
+    }
 
-    letter-spacing: -.045em;
 
-    margin: 0;
-
-    font-weight: 900;
-
-    color: #f4f6f8;
-
-    word-break: break-word;
-}
-
-.player-role {
-    width: fit-content;
-
-    margin: 16px auto 0;
-
-    padding: 7px 13px;
-
-    border-radius: 7px;
-
-    background: #10161b;
-
-    border: 1px solid #273039;
-
-    color: #9ba5b1;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    text-transform: uppercase;
-
-    letter-spacing: .08em;
-}
-
-.player-profile > p {
-    text-align: center;
-
-    margin: 14px 0 0;
-
-    color: #727b86;
-
-    font-size: 14px;
-}
-
-
-/* =========================================================
-   PLAYER LINKS
-========================================================= */
-
-.player-links {
-    display: flex;
-
-    justify-content: center;
-
-    gap: 10px;
-
-    flex-wrap: wrap;
-
-    margin-top: 24px;
-}
-
-.player-links a {
-    min-width: 110px;
-
-    justify-content: center;
-
-    display: inline-flex;
-
-    align-items: center;
-
-    text-decoration: none;
-
-    transition:
-        transform .2s ease,
-        border-color .2s ease,
-        background .2s ease;
-}
-
-.player-links a:hover {
-    transform: translateY(-2px);
-
-    border-color: #40505b;
-
-    background: #161c22;
-}
-
-
-/* =========================================================
-   PROFILE ACTIONS
-========================================================= */
-
-.player-profile-actions {
-    justify-content: center;
-}
-
-.player-profile-actions .edit-btn {
-    appearance: none;
-
-    border: 1px solid #29323a;
-
-    background: #11161b;
-
-    color: #aab3bd;
-
-    border-radius: 7px;
-
-    padding: 10px 15px;
-
-    font-family: inherit;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition:
-        background .2s ease,
-        border-color .2s ease,
-        color .2s ease,
-        transform .2s ease;
-}
-
-.player-profile-actions .edit-btn:hover {
-    background: #181f25;
-
-    border-color: #3b4650;
-
-    color: #ffffff;
-
-    transform: translateY(-1px);
-}
-
-.player-profile::after {
-    content: "";
-
-    display: block;
-
-    max-width: 900px;
-
-    height: 1px;
-
-    margin: 55px auto 0;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            #252d35,
-            transparent
-        );
-}
-
-
-/* =========================================================
-   TABLE
-========================================================= */
-
-.table-wrap {
-    overflow-x: auto;
-
-    padding: 5px;
-}
-
-table {
-    width: 100%;
-
-    border-collapse: collapse;
-
-    min-width: 650px;
-}
-
-th {
-    padding: 15px;
-
-    color: #66717c;
-
-    font-size: 9px;
-
-    font-weight: 900;
-
-    text-transform: uppercase;
-
-    letter-spacing: .1em;
-
-    text-align: left;
-
-    border-bottom: 1px solid #232b32;
-}
-
-td {
-    padding: 17px 15px;
-
-    color: #b9c1c8;
-
-    font-size: 12px;
-
-    border-bottom: 1px solid #1c232a;
-}
-
-tbody tr:last-child td {
-    border-bottom: 0;
-}
-
-tbody tr:hover {
-    background: rgba(255,255,255,.018);
-}
-
-
-/* =========================================================
-   MATCHES / TOURNAMENTS
-========================================================= */
-
-.matches,
-.tournament-grid {
-    display: grid;
-
-    gap: 14px;
-}
-
-.matches > .glass,
-.tournament-grid > .glass {
-    min-height: 90px;
-}
-
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-.modal {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 1000;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding: 20px;
-
-    background:
-        rgba(0,0,0,.72);
-
-    backdrop-filter:
-        blur(10px);
-
-    overflow-y: auto;
-}
-
-.modal.hidden {
-    display: none !important;
-}
-
-.modal-card {
-    position: relative;
-
-    width: min(520px, 100%);
-
-    max-height: calc(100vh - 40px);
-
-    overflow-y: auto;
-
-    padding: 28px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #151a20,
-            #0c1014
+    const oldName =
+        document.getElementById(
+            "playerEditOldName"
         );
 
-    border: 1px solid #2a333c;
-
-    border-radius: 13px;
-
-    box-shadow:
-        0 30px 100px rgba(0,0,0,.55);
-}
-
-.modal-card h2 {
-    margin: 6px 0 24px;
-
-    font-size: 25px;
-
-    font-weight: 900;
-
-    letter-spacing: -.035em;
-}
-
-.modal-close {
-    position: absolute;
-
-    right: 15px;
-    top: 12px;
-
-    width: 32px;
-    height: 32px;
-
-    appearance: none;
-
-    border: 1px solid #29323a;
-
-    background: #11161b;
-
-    color: #8a949e;
-
-    border-radius: 6px;
-
-    font-size: 20px;
-
-    line-height: 1;
-
-    transition:
-        background .2s ease,
-        color .2s ease;
-}
-
-.modal-close:hover {
-    background: #1a2127;
-
-    color: #ffffff;
-}
-
-.modal-card form {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 15px;
-}
-
-.modal-card label {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 7px;
-
-    color: #858f99;
-
-    font-size: 10px;
-
-    font-weight: 800;
-
-    text-transform: uppercase;
-
-    letter-spacing: .08em;
-}
-
-.modal-card input,
-.modal-card textarea,
-.modal-card select {
-    width: 100%;
-
-    appearance: none;
-
-    border: 1px solid #29323a;
-
-    background: #0b1014;
-
-    color: #e8ecef;
-
-    border-radius: 7px;
-
-    padding: 11px 12px;
-
-    outline: none;
-
-    font-size: 13px;
-
-    text-transform: none;
-
-    letter-spacing: normal;
-
-    transition:
-        border-color .2s ease,
-        background .2s ease,
-        box-shadow .2s ease;
-}
-
-.modal-card textarea {
-    resize: vertical;
-
-    min-height: 90px;
-}
-
-.modal-card input:focus,
-.modal-card textarea:focus,
-.modal-card select:focus {
-    border-color: #466052;
-
-    background: #0d1317;
-
-    box-shadow:
-        0 0 0 3px rgba(142,230,173,.06);
-}
-
-.modal-card select option {
-    background: #11161b;
-
-    color: #ffffff;
-}
-
-.save {
-    width: 100%;
-
-    margin-top: 5px;
-}
-
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-.login-card {
-    text-align: center;
-
-    max-width: 430px;
-}
-
-.login-icon {
-    width: 70px;
-    height: 70px;
-
-    margin: 20px auto;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius: 14px;
-
-    background: #0d1511;
-
-    border: 1px solid #284633;
-
-    color: #8ee6ad;
-
-    font-size: 32px;
-
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-footer {
-    padding: 35px 20px 45px;
-
-    text-align: center;
-
-    color: #4f5963;
-
-    font-size: 10px;
-
-    font-weight: 600;
-
-    border-top: 1px solid #151b20;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 700px) {
-
-    .topbar {
-        min-height: 62px;
-
-        padding: 0 16px;
-
-        gap: 12px;
-    }
-
-    .topbar nav {
-        display: none;
-
-        position: absolute;
-
-        left: 0;
-        right: 0;
-        top: 62px;
-
-        padding: 10px 16px 14px;
-
-        flex-direction: column;
-
-        align-items: stretch;
-
-        background: #0a0e12;
-
-        border-bottom: 1px solid #1d252c;
-    }
-
-    .menu-open .topbar nav {
-        display: flex;
-    }
-
-    .topbar nav a {
-        padding: 12px;
-
-        justify-content: center;
-    }
-
-    .mobile-menu {
-        display: block;
-
-        margin-left: auto;
-    }
-
-    .login {
-        display: none;
-    }
-
-    .screen {
-        width: min(
-            100% - 28px,
-            1180px
+    const teamInput =
+        document.getElementById(
+            "playerEditTeam"
         );
 
-        padding: 45px 0 65px;
+    const nameInput =
+        document.getElementById(
+            "playerEditName"
+        );
+
+    const countryInput =
+        document.getElementById(
+            "playerEditCountry"
+        );
+
+    const roleInput =
+        document.getElementById(
+            "playerEditRole"
+        );
+
+    const avatarInput =
+        document.getElementById(
+            "playerEditAvatar"
+        );
+
+    const faceitInput =
+        document.getElementById(
+            "playerEditFaceit"
+        );
+
+    const steamInput =
+        document.getElementById(
+            "playerEditSteam"
+        );
+
+
+    if (oldName) {
+        oldName.value =
+            player.name || "";
     }
 
-    .hero {
-        padding:
-            35px
-            0
-            50px;
+    if (teamInput) {
+        teamInput.value =
+            TEAM_NAME;
     }
 
-    .hero h1 {
-        font-size: 47px;
+    if (nameInput) {
+        nameInput.value =
+            player.name || "";
     }
 
-    .hero-actions {
-        flex-direction: column;
-
-        align-items: stretch;
+    if (countryInput) {
+        countryInput.value =
+            player.country || "";
     }
 
-    .hero-actions a {
-        width: 100%;
+    if (roleInput) {
+        roleInput.value =
+            player.role || "Игрок";
     }
 
-    .section-head {
-        align-items: flex-start;
-
-        flex-direction: column;
+    if (avatarInput) {
+        avatarInput.value =
+            player.avatar || "";
     }
 
-    .filters {
-        width: 100%;
+    if (faceitInput) {
+        faceitInput.value =
+            player.faceit || "";
     }
 
-    .filters button {
-        flex: 1;
+    if (steamInput) {
+        steamInput.value =
+            player.steam || "";
     }
 
-    .team-grid {
-        grid-template-columns: 1fr;
-    }
 
-    .team-profile-header {
-        flex-direction: column;
+    const modal =
+        document.getElementById(
+            "playerEditModal"
+        );
 
-        align-items: flex-start;
+    if (modal) {
 
-        padding: 20px;
-    }
+        modal.classList.remove(
+            "hidden"
+        );
 
-    .team-profile-logo {
-        width: 85px;
-        height: 85px;
-
-        flex-basis: 85px;
-    }
-
-    .team-profile-header h1 {
-        font-size: 34px;
-    }
-
-    .player-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .player-card {
-        min-height: 90px;
-    }
-
-    .player-avatar {
-        width: 58px;
-        height: 58px;
-
-        flex-basis: 58px;
-    }
-
-    .player-profile {
-        padding: 15px 0 55px;
-    }
-
-    .player-profile-avatar {
-        width: 145px;
-        height: 145px;
-
-        border-radius: 14px;
-    }
-
-    .player-profile-avatar span {
-        font-size: 55px;
-    }
-
-    .player-profile > h1 {
-        font-size: 48px;
-
-        word-break: break-word;
-    }
-
-    .player-links {
-        width: 100%;
-    }
-
-    .player-links a {
-        flex: 1;
-
-        min-width: 130px;
-    }
-
-    .player-profile-actions {
-        flex-direction: column;
-    }
-
-    .player-profile-actions .edit-btn {
-        width: 100%;
-    }
-
-    .modal {
-        align-items: flex-start;
-
-        padding:
-            15px;
-    }
-
-    .modal-card {
-        margin-top: 15px;
-
-        padding: 22px;
-
-        max-height:
-            calc(100vh - 30px);
+        document.body.style.overflow =
+            "hidden";
     }
 }
 
 
 /* =========================================================
-   VERY SMALL SCREEN
+   CLOSE PLAYER EDITOR
 ========================================================= */
 
-@media (max-width: 420px) {
+function closePlayerEditor() {
 
-    .hero h1 {
-        font-size: 40px;
-    }
+    const modal =
+        document.getElementById(
+            "playerEditModal"
+        );
 
-    .player-profile > h1 {
-        font-size: 39px;
-    }
+    if (modal) {
 
-    .player-profile-avatar {
-        width: 125px;
-        height: 125px;
-    }
+        modal.classList.add(
+            "hidden"
+        );
 
-    .player-card {
-        padding: 12px;
-    }
-
-    .player-badge {
-        display: none;
-    }
-
-    .team-profile-header {
-        padding: 17px;
-    }
-
-    .team-profile-header h1 {
-        font-size: 30px;
+        document.body.style.overflow =
+            "";
     }
 }
-```
+
+
+/* =========================================================
+   SAVE PLAYER
+========================================================= */
+
+async function savePlayer(event) {
+
+    event.preventDefault();
+
+
+    const oldNameElement =
+        document.getElementById(
+            "playerEditOldName"
+        );
+
+    const newNameElement =
+        document.getElementById(
+            "playerEditName"
+        );
+
+    const countryElement =
+        document.getElementById(
+            "playerEditCountry"
+        );
+
+    const roleElement =
+        document.getElementById(
+            "playerEditRole"
+        );
+
+    const avatarElement =
+        document.getElementById(
+            "playerEditAvatar"
+        );
+
+    const faceitElement =
+        document.getElementById(
+            "playerEditFaceit"
+        );
+
+    const steamElement =
+        document.getElementById(
+            "playerEditSteam"
+        );
+
+
+    if (
+        !oldNameElement ||
+        !newNameElement ||
+        !countryElement ||
+        !roleElement ||
+        !avatarElement ||
+        !faceitElement ||
+        !steamElement
+    ) {
+
+        alert(
+            "Не найдены поля формы игрока."
+        );
+
+        return;
+    }
+
+
+    const oldName =
+        oldNameElement.value.trim();
+
+    const newName =
+        newNameElement.value.trim();
+
+    const country =
+        countryElement.value.trim();
+
+    const role =
+        roleElement.value.trim();
+
+    const avatar =
+        avatarElement.value.trim();
+
+    const faceit =
+        faceitElement.value.trim();
+
+    const steam =
+        steamElement.value.trim();
+
+
+    if (!newName) {
+
+        alert(
+            "Введите никнейм игрока."
+        );
+
+        return;
+    }
+
+
+    const data = {
+        name: newName,
+        country: country,
+        role: role,
+        avatar: avatar,
+        faceit: faceit,
+        steam: steam
+    };
+
+
+    try {
+
+        await supabase(
+            "players?name=eq." +
+            encodeURIComponent(oldName),
+            {
+                method: "PATCH",
+
+                headers: {
+                    "Prefer":
+                        "return=representation"
+                },
+
+                body:
+                    JSON.stringify(data)
+            }
+        );
+
+
+        await loadPlayers();
+
+
+        closePlayerEditor();
+
+        renderTeams();
+
+        renderTeamProfile();
+
+
+        const updatedPlayer =
+            findPlayer(newName);
+
+
+        if (updatedPlayer) {
+
+            renderPlayerProfile(
+                updatedPlayer
+            );
+
+        }
+
+
+        alert(
+            "Профиль игрока сохранён."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка сохранения игрока:",
+            error
+        );
+
+        alert(
+            "Не удалось сохранить профиль.\n\n" +
+            "Проверь RLS и структуру таблицы players."
+        );
+    }
+}
+
+
+/* =========================================================
+   TEAM EDITOR
+========================================================= */
+
+function openEditor() {
+
+    const title =
+        document.getElementById(
+            "editTitle"
+        );
+
+    const tag =
+        document.getElementById(
+            "editTag"
+        );
+
+    const country =
+        document.getElementById(
+            "editCountry"
+        );
+
+    const logo =
+        document.getElementById(
+            "editLogo"
+        );
+
+    const faceit =
+        document.getElementById(
+            "editFaceit"
+        );
+
+    const steam =
+        document.getElementById(
+            "editSteam"
+        );
+
+    const description =
+        document.getElementById(
+            "editDescription"
+        );
+
+
+    if (title) {
+        title.value =
+            team.title;
+    }
+
+    if (tag) {
+        tag.value =
+            team.tag;
+    }
+
+    if (country) {
+        country.value =
+            team.country;
+    }
+
+    if (logo) {
+        logo.value =
+            team.logo;
+    }
+
+    if (faceit) {
+        faceit.value =
+            team.faceit;
+    }
+
+    if (steam) {
+        steam.value =
+            team.steam;
+    }
+
+    if (description) {
+        description.value =
+            team.description;
+    }
+
+
+    const modal =
+        document.getElementById(
+            "editModal"
+        );
+
+    if (modal) {
+
+        modal.classList.remove(
+            "hidden"
+        );
+
+        document.body.style.overflow =
+            "hidden";
+    }
+}
+
+
+/* =========================================================
+   CLOSE TEAM EDITOR
+========================================================= */
+
+function closeEditor() {
+
+    const modal =
+        document.getElementById(
+            "editModal"
+        );
+
+    if (modal) {
+
+        modal.classList.add(
+            "hidden"
+        );
+
+        document.body.style.overflow =
+            "";
+    }
+}
+
+
+/* =========================================================
+   SAVE TEAM LOCALLY
+========================================================= */
+
+function saveTeam(event) {
+
+    event.preventDefault();
+
+
+    const title =
+        document.getElementById(
+            "editTitle"
+        );
+
+    const tag =
+        document.getElementById(
+            "editTag"
+        );
+
+    const country =
+        document.getElementById(
+            "editCountry"
+        );
+
+    const logo =
+        document.getElementById(
+            "editLogo"
+        );
+
+    const faceit =
+        document.getElementById(
+            "editFaceit"
+        );
+
+    const steam =
+        document.getElementById(
+            "editSteam"
+        );
+
+    const description =
+        document.getElementById(
+            "editDescription"
+        );
+
+
+    if (title) {
+        team.name =
+            title.value.trim();
+
+        team.title =
+            title.value.trim();
+    }
+
+    if (tag) {
+        team.tag =
+            tag.value.trim();
+    }
+
+    if (country) {
+        team.country =
+            country.value.trim();
+    }
+
+    if (logo) {
+        team.logo =
+            logo.value.trim();
+    }
+
+    if (faceit) {
+        team.faceit =
+            faceit.value.trim();
+    }
+
+    if (steam) {
+        team.steam =
+            steam.value.trim();
+    }
+
+    if (description) {
+        team.description =
+            description.value.trim();
+    }
+
+
+    closeEditor();
+
+    renderTeams();
+
+    renderTeamProfile();
+
+    alert(
+        "Данные команды обновлены."
+    );
+}
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+async function init() {
+
+    console.log(
+        "1Minute запускается..."
+    );
+
+
+    /*
+       Сначала сразу рисуем команду.
+       Поэтому Supabase не сможет скрыть её.
+    */
+
+    renderTeams();
+
+
+    /*
+       Потом загружаем игроков.
+    */
+
+    await loadPlayers();
+
+
+    /*
+       После загрузки обновляем всё.
+    */
+
+    renderTeams();
+
+    renderRating();
+
+    renderMatches();
+
+    renderTournaments();
+
+    showHashPage();
+
+
+    console.log(
+        "1Minute готов."
+    );
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+window.addEventListener(
+    "hashchange",
+    function() {
+        showHashPage();
+    }
+);
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const playerForm =
+            document.getElementById(
+                "playerEditForm"
+            );
+
+        if (playerForm) {
+
+            playerForm.addEventListener(
+                "submit",
+                savePlayer
+            );
+        }
+
+
+        const teamForm =
+            document.getElementById(
+                "editForm"
+            );
+
+        if (teamForm) {
+
+            teamForm.addEventListener(
+                "submit",
+                saveTeam
+            );
+        }
+
+
+        init();
+    }
+);
