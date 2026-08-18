@@ -1,3 +1,4 @@
+```javascript
 /* =========================================================
    1MINUTE — APP.JS
    TEAM DATABASE + SUPABASE + ADMIN + ROSTER MANAGEMENT
@@ -14,8 +15,7 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_ZsTLAQNw2ILBetxcMTGY2A_rhMO_hkK";
 
-const TEAM_NAME =
-    "1Minute";
+const TEAM_NAME = "1Minute";
 
 
 /* =========================================================
@@ -23,11 +23,8 @@ const TEAM_NAME =
 ========================================================= */
 
 let players = [];
-
 let currentUser = null;
-
 let isAdmin = false;
-
 let supabaseClient = null;
 
 
@@ -38,25 +35,216 @@ let supabaseClient = null;
 const team = {
 
     name: "1Minute",
-
     title: "1Minute",
-
     tag: "1M",
-
     country: "Russia",
-
     logo: "",
-
     faceit: "",
-
     steam: "",
-
     description:
         "Профили состава, матчи и статистика 1Minute — всё в одном месте.",
-
     status: "active"
 
 };
+
+
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
+
+function createNotificationContainer() {
+
+    if (
+        document.getElementById(
+            "notificationContainer"
+        )
+    ) {
+        return;
+    }
+
+    const container =
+        document.createElement("div");
+
+    container.id =
+        "notificationContainer";
+
+    container.style.cssText = `
+        position:fixed;
+        right:24px;
+        bottom:24px;
+        z-index:99999;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        pointer-events:none;
+        width:min(380px, calc(100vw - 32px));
+    `;
+
+    document.body.appendChild(container);
+
+}
+
+
+function showNotification(
+    message,
+    type = "success"
+) {
+
+    createNotificationContainer();
+
+    const container =
+        document.getElementById(
+            "notificationContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const notification =
+        document.createElement("div");
+
+    const isSuccess =
+        type === "success";
+
+    notification.style.cssText = `
+        pointer-events:auto;
+        display:flex;
+        align-items:flex-start;
+        gap:12px;
+        padding:15px 17px;
+        border-radius:10px;
+        background:${
+            isSuccess
+                ? "#101814"
+                : "#1d1212"
+        };
+        border:1px solid ${
+            isSuccess
+                ? "#285338"
+                : "#5a302d"
+        };
+        color:${
+            isSuccess
+                ? "#dff7e7"
+                : "#ffd7d2"
+        };
+        box-shadow:
+            0 18px 45px rgba(0,0,0,.35);
+        font-size:13px;
+        font-weight:600;
+        line-height:1.45;
+        transform:translateY(20px);
+        opacity:0;
+        transition:
+            transform .25s ease,
+            opacity .25s ease;
+    `;
+
+    const icon =
+        document.createElement("div");
+
+    icon.textContent =
+        isSuccess
+            ? "✓"
+            : "×";
+
+    icon.style.cssText = `
+        width:22px;
+        height:22px;
+        flex:0 0 22px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:50%;
+        background:${
+            isSuccess
+                ? "#1d6b3c"
+                : "#6b2924"
+        };
+        color:#fff;
+        font-size:12px;
+        font-weight:900;
+    `;
+
+    const text =
+        document.createElement("div");
+
+    text.textContent =
+        message;
+
+    text.style.flex = "1";
+
+    const close =
+        document.createElement("button");
+
+    close.type = "button";
+
+    close.textContent = "×";
+
+    close.style.cssText = `
+        border:0;
+        background:none;
+        color:#7f8994;
+        cursor:pointer;
+        font-size:18px;
+        line-height:1;
+        padding:0;
+    `;
+
+    notification.appendChild(icon);
+    notification.appendChild(text);
+    notification.appendChild(close);
+
+    container.appendChild(
+        notification
+    );
+
+    requestAnimationFrame(() => {
+
+        notification.style.transform =
+            "translateY(0)";
+
+        notification.style.opacity =
+            "1";
+
+    });
+
+    let removed = false;
+
+    function removeNotification() {
+
+        if (removed) {
+            return;
+        }
+
+        removed = true;
+
+        notification.style.transform =
+            "translateY(20px)";
+
+        notification.style.opacity =
+            "0";
+
+        setTimeout(() => {
+
+            notification.remove();
+
+        }, 250);
+
+    }
+
+    close.addEventListener(
+        "click",
+        removeNotification
+    );
+
+    setTimeout(
+        removeNotification,
+        3500
+    );
+
+}
 
 
 /* =========================================================
@@ -191,159 +379,6 @@ function getSubstitutePlayers() {
 
 
 /* =========================================================
-   SITE NOTIFICATION
-========================================================= */
-
-function showNotification(
-    message,
-    type = "success"
-) {
-
-    let notification =
-        document.getElementById(
-            "siteNotification"
-        );
-
-    if (!notification) {
-
-        notification =
-            document.createElement(
-                "div"
-            );
-
-        notification.id =
-            "siteNotification";
-
-        notification.innerHTML = `
-
-            <div class="site-notification-icon">
-                ✓
-            </div>
-
-            <div class="site-notification-content">
-
-                <strong class="site-notification-title">
-                    Изменения сохранены
-                </strong>
-
-                <span class="site-notification-text"></span>
-
-            </div>
-
-        `;
-
-        document.body.appendChild(
-            notification
-        );
-
-    }
-
-
-    const title =
-        notification.querySelector(
-            ".site-notification-title"
-        );
-
-    const text =
-        notification.querySelector(
-            ".site-notification-text"
-        );
-
-    const icon =
-        notification.querySelector(
-            ".site-notification-icon"
-        );
-
-
-    notification.classList.remove(
-        "error"
-    );
-
-
-    if (type === "error") {
-
-        notification.classList.add(
-            "error"
-        );
-
-        if (title) {
-
-            title.textContent =
-                "Ошибка";
-
-        }
-
-        if (icon) {
-
-            icon.textContent =
-                "!";
-
-        }
-
-    } else {
-
-        if (title) {
-
-            title.textContent =
-                "Изменения сохранены";
-
-        }
-
-        if (icon) {
-
-            icon.textContent =
-                "✓";
-
-        }
-
-    }
-
-
-    if (text) {
-
-        text.textContent =
-            message;
-
-    }
-
-
-    notification.classList.remove(
-        "show"
-    );
-
-
-    requestAnimationFrame(
-        () => {
-
-            notification.classList.add(
-                "show"
-            );
-
-        }
-    );
-
-
-    clearTimeout(
-        notification._timer
-    );
-
-
-    notification._timer =
-        setTimeout(
-            () => {
-
-                notification.classList.remove(
-                    "show"
-                );
-
-            },
-            3000
-        );
-
-}
-
-
-/* =========================================================
    SUPABASE REQUEST
 ========================================================= */
 
@@ -360,27 +395,19 @@ async function supabaseRequest(
 
     }
 
-
     const sessionResult =
         await supabaseClient.auth.getSession();
 
-
     if (sessionResult.error) {
-
         throw sessionResult.error;
-
     }
 
-
     const session =
-        sessionResult.data?.session ||
-        null;
-
+        sessionResult.data?.session || null;
 
     const accessToken =
         session?.access_token ||
         SUPABASE_KEY;
-
 
     const headers = {
 
@@ -395,7 +422,6 @@ async function supabaseRequest(
 
     };
 
-
     if (options.headers) {
 
         Object.assign(
@@ -404,7 +430,6 @@ async function supabaseRequest(
         );
 
     }
-
 
     const response =
         await fetch(
@@ -425,10 +450,8 @@ async function supabaseRequest(
             }
         );
 
-
     const text =
         await response.text();
-
 
     if (!response.ok) {
 
@@ -445,19 +468,13 @@ async function supabaseRequest(
 
     }
 
-
     if (!text) {
-
         return [];
-
     }
-
 
     try {
 
-        return JSON.parse(
-            text
-        );
+        return JSON.parse(text);
 
     } catch {
 
@@ -469,7 +486,7 @@ async function supabaseRequest(
 
 
 /* =========================================================
-   AUTH CHECK
+   AUTH
 ========================================================= */
 
 async function checkAuth() {
@@ -477,7 +494,6 @@ async function checkAuth() {
     if (!supabaseClient) {
 
         currentUser = null;
-
         isAdmin = false;
 
         updateLoginButton();
@@ -486,38 +502,23 @@ async function checkAuth() {
 
     }
 
-
     try {
 
         const result =
             await supabaseClient.auth.getSession();
 
-
         if (result.error) {
-
             throw result.error;
-
         }
-
 
         currentUser =
             result.data?.session?.user ||
             null;
 
-
-        console.log(
-            "Текущий пользователь:",
-            currentUser
-        );
-
-
         await checkAdmin();
 
-
         updateLoginButton();
-
         updateLoginModalUI();
-
 
     } catch (error) {
 
@@ -526,14 +527,10 @@ async function checkAuth() {
             error
         );
 
-
         currentUser = null;
-
         isAdmin = false;
 
-
         updateLoginButton();
-
         updateLoginModalUI();
 
     }
@@ -541,21 +538,13 @@ async function checkAuth() {
 }
 
 
-/* =========================================================
-   ADMIN CHECK
-========================================================= */
-
 async function checkAdmin() {
 
     isAdmin = false;
 
-
     if (!currentUser) {
-
         return false;
-
     }
-
 
     try {
 
@@ -569,7 +558,6 @@ async function checkAdmin() {
                 )
                 .maybeSingle();
 
-
         if (result.error) {
 
             console.error(
@@ -577,25 +565,14 @@ async function checkAdmin() {
                 result.error
             );
 
-            isAdmin = false;
-
             return false;
 
         }
 
-
         isAdmin =
             !!result.data;
 
-
-        console.log(
-            "Admin check:",
-            isAdmin
-        );
-
-
         return isAdmin;
-
 
     } catch (error) {
 
@@ -620,32 +597,18 @@ async function checkAdmin() {
 function updateLoginButton() {
 
     const button =
-        document.querySelector(
-            ".login"
-        );
-
+        document.querySelector(".login");
 
     if (!button) {
-
         return;
-
     }
-
-
-    if (!currentUser) {
-
-        button.textContent =
-            "Войти";
-
-        return;
-
-    }
-
 
     button.textContent =
-        isAdmin
-            ? "Администратор"
-            : "Аккаунт";
+        !currentUser
+            ? "Войти"
+            : isAdmin
+                ? "Администратор"
+                : "Аккаунт";
 
 }
 
@@ -661,22 +624,16 @@ function openLoginModal() {
             "loginModal"
         );
 
-
     if (!modal) {
-
         return;
-
     }
 
-
     updateLoginModalUI();
-
 
     const error =
         document.getElementById(
             "loginError"
         );
-
 
     if (error) {
 
@@ -688,11 +645,7 @@ function openLoginModal() {
 
     }
 
-
-    modal.classList.remove(
-        "hidden"
-    );
-
+    modal.classList.remove("hidden");
 
     document.body.style.overflow =
         "hidden";
@@ -707,28 +660,17 @@ function closeLoginModal() {
             "loginModal"
         );
 
-
     if (!modal) {
-
         return;
-
     }
 
-
-    modal.classList.add(
-        "hidden"
-    );
-
+    modal.classList.add("hidden");
 
     document.body.style.overflow =
         "";
 
 }
 
-
-/* =========================================================
-   LOGIN MODAL UI
-========================================================= */
 
 function updateLoginModalUI() {
 
@@ -737,25 +679,19 @@ function updateLoginModalUI() {
             "loginStatus"
         );
 
-
     const loginForm =
         document.getElementById(
             "loginForm"
         );
-
 
     const logoutButton =
         document.getElementById(
             "logoutButton"
         );
 
-
     if (!status) {
-
         return;
-
     }
-
 
     if (currentUser) {
 
@@ -777,20 +713,12 @@ function updateLoginModalUI() {
                     "</span>"
             );
 
-
         if (loginForm) {
-
-            loginForm.style.display =
-                "none";
-
+            loginForm.style.display = "none";
         }
 
-
         if (logoutButton) {
-
-            logoutButton.style.display =
-                "block";
-
+            logoutButton.style.display = "block";
         }
 
     } else {
@@ -798,20 +726,12 @@ function updateLoginModalUI() {
         status.textContent =
             "Войдите в свой аккаунт Supabase.";
 
-
         if (loginForm) {
-
-            loginForm.style.display =
-                "flex";
-
+            loginForm.style.display = "flex";
         }
 
-
         if (logoutButton) {
-
-            logoutButton.style.display =
-                "none";
-
+            logoutButton.style.display = "none";
         }
 
     }
@@ -827,7 +747,6 @@ async function login(event) {
 
     event.preventDefault();
 
-
     if (!supabaseClient) {
 
         showLoginError(
@@ -838,18 +757,15 @@ async function login(event) {
 
     }
 
-
     const email =
         document.getElementById(
             "loginEmail"
         );
 
-
     const password =
         document.getElementById(
             "loginPassword"
         );
-
 
     if (!email || !password) {
 
@@ -861,6 +777,30 @@ async function login(event) {
 
     }
 
+    const status =
+        document.getElementById(
+            "loginStatus"
+        );
+
+    const errorElement =
+        document.getElementById(
+            "loginError"
+        );
+
+    if (errorElement) {
+
+        errorElement.style.display =
+            "none";
+
+        errorElement.textContent =
+            "";
+
+    }
+
+    if (status) {
+        status.textContent =
+            "Выполняется вход...";
+    }
 
     try {
 
@@ -876,46 +816,42 @@ async function login(event) {
 
                 });
 
-
         if (result.error) {
-
             throw result.error;
-
         }
-
 
         currentUser =
             result.data.user;
 
-
         await checkAdmin();
 
-
         updateLoginButton();
-
         updateLoginModalUI();
-
 
         await loadPlayers();
 
-
         renderTeams();
-
         renderTeamProfile();
 
+        if (status) {
 
-        showNotification(
-            isAdmin
-                ? "Вы вошли как администратор."
-                : "Вход выполнен."
-        );
+            status.innerHTML =
+                isAdmin
+                    ?
+                    "<span style='color:#8ee6ad'>✓ Вы администратор</span>"
+                    :
+                    "<span style='color:#ffb36b'>Вход выполнен, но прав администратора нет.</span>";
 
+        }
 
         setTimeout(
             closeLoginModal,
             500
         );
 
+        showNotification(
+            "Вход выполнен успешно."
+        );
 
     } catch (error) {
 
@@ -924,11 +860,8 @@ async function login(event) {
             error
         );
 
-
         showLoginError(
-            getAuthErrorMessage(
-                error
-            )
+            getAuthErrorMessage(error)
         );
 
     }
@@ -936,19 +869,12 @@ async function login(event) {
 }
 
 
-/* =========================================================
-   LOGIN ERROR
-========================================================= */
-
-function showLoginError(
-    message
-) {
+function showLoginError(message) {
 
     const error =
         document.getElementById(
             "loginError"
         );
-
 
     if (!error) {
 
@@ -961,10 +887,8 @@ function showLoginError(
 
     }
 
-
     error.textContent =
         message;
-
 
     error.style.display =
         "block";
@@ -972,15 +896,12 @@ function showLoginError(
 }
 
 
-function getAuthErrorMessage(
-    error
-) {
+function getAuthErrorMessage(error) {
 
     const message =
         String(
             error?.message || ""
         ).toLowerCase();
-
 
     if (
         message.includes(
@@ -995,7 +916,6 @@ function getAuthErrorMessage(
 
     }
 
-
     if (
         message.includes(
             "email not confirmed"
@@ -1005,7 +925,6 @@ function getAuthErrorMessage(
         return "Email не подтверждён.";
 
     }
-
 
     return (
         error?.message ||
@@ -1029,11 +948,8 @@ async function logout() {
                 await supabaseClient.auth
                     .signOut();
 
-
             if (result.error) {
-
                 throw result.error;
-
             }
 
         }
@@ -1047,20 +963,15 @@ async function logout() {
 
     }
 
-
     currentUser = null;
-
     isAdmin = false;
 
-
     updateLoginButton();
-
     updateLoginModalUI();
 
     closeLoginModal();
 
     renderTeamProfile();
-
 
     showNotification(
         "Вы вышли из аккаунта."
@@ -1076,11 +987,8 @@ async function logout() {
 function setupAuthListener() {
 
     if (!supabaseClient) {
-
         return;
-
     }
-
 
     supabaseClient.auth.onAuthStateChange(
         async function(
@@ -1092,12 +1000,9 @@ function setupAuthListener() {
                 session?.user ||
                 null;
 
-
             await checkAdmin();
 
-
             updateLoginButton();
-
             updateLoginModalUI();
 
             renderTeamProfile();
@@ -1121,18 +1026,10 @@ async function loadPlayers() {
                 "players?select=*&order=id.asc"
             );
 
-
         players =
             Array.isArray(data)
                 ? data
                 : [];
-
-
-        console.log(
-            "✓ Игроки загружены:",
-            players
-        );
-
 
         return players;
 
@@ -1143,9 +1040,7 @@ async function loadPlayers() {
             error
         );
 
-
         players = [];
-
 
         return [];
 
@@ -1165,13 +1060,9 @@ function renderTeams() {
             "grid"
         );
 
-
     if (!grid) {
-
         return;
-
     }
-
 
     grid.innerHTML = `
 
@@ -1194,9 +1085,7 @@ function renderTeams() {
                             >
                             `
                             :
-                            `
-                            <span>1</span>
-                            `
+                            `<span>1</span>`
                     }
 
                 </div>
@@ -1247,22 +1136,16 @@ function playerCard(
         player.name ||
         "Player";
 
-
     const role =
         player.role ||
         "Игрок";
-
 
     const avatar =
         player.avatar ||
         "";
 
-
     const safeName =
-        safeJSString(
-            name
-        );
-
+        safeJSString(name);
 
     return `
 
@@ -1334,63 +1217,36 @@ function playerCard(
 function openTeam() {
 
     const teams =
-        document.getElementById(
-            "teams"
-        );
-
+        document.getElementById("teams");
 
     const teamPage =
-        document.getElementById(
-            "teamPage"
-        );
-
+        document.getElementById("teamPage");
 
     const playerPage =
-        document.getElementById(
-            "playerPage"
-        );
-
+        document.getElementById("playerPage");
 
     if (teams) {
-
-        teams.classList.add(
-            "hidden"
-        );
-
+        teams.classList.add("hidden");
     }
-
 
     if (playerPage) {
-
-        playerPage.classList.add(
-            "hidden"
-        );
-
+        playerPage.classList.add("hidden");
     }
-
 
     hideOtherPages();
 
-
     if (teamPage) {
-
-        teamPage.classList.remove(
-            "hidden"
-        );
-
+        teamPage.classList.remove("hidden");
     }
 
-
     renderTeamProfile();
-
 
     window.location.hash =
         "teamPage";
 
-
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 
 }
@@ -1407,21 +1263,15 @@ function renderTeamProfile() {
             "teamProfile"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     const starters =
         getStarterPlayers();
 
-
     const substitutes =
         getSubstitutePlayers();
-
 
     const startersHTML =
         starters.length
@@ -1445,7 +1295,6 @@ function renderTeamProfile() {
             </div>
             `;
 
-
     const substitutesHTML =
         substitutes.length
             ?
@@ -1468,9 +1317,7 @@ function renderTeamProfile() {
             </div>
             `;
 
-
     let adminControls = "";
-
 
     if (isAdmin) {
 
@@ -1541,7 +1388,6 @@ function renderTeamProfile() {
 
     }
 
-
     container.innerHTML = `
 
         <div class="team-profile">
@@ -1560,9 +1406,7 @@ function renderTeamProfile() {
                             >
                             `
                             :
-                            `
-                            <span>1</span>
-                            `
+                            `<span>1</span>`
                     }
 
                 </div>
@@ -1630,7 +1474,6 @@ function renderTeamProfile() {
                     ${startersHTML}
                 </div>
 
-
                 <div class="section-head">
 
                     <div>
@@ -1669,7 +1512,6 @@ function openPlayerByName(name) {
     const player =
         findPlayer(name);
 
-
     if (!player) {
 
         showNotification(
@@ -1681,67 +1523,37 @@ function openPlayerByName(name) {
 
     }
 
-
     const teams =
-        document.getElementById(
-            "teams"
-        );
-
+        document.getElementById("teams");
 
     const teamPage =
-        document.getElementById(
-            "teamPage"
-        );
-
+        document.getElementById("teamPage");
 
     const playerPage =
-        document.getElementById(
-            "playerPage"
-        );
-
+        document.getElementById("playerPage");
 
     if (teams) {
-
-        teams.classList.add(
-            "hidden"
-        );
-
+        teams.classList.add("hidden");
     }
-
 
     if (teamPage) {
-
-        teamPage.classList.add(
-            "hidden"
-        );
-
+        teamPage.classList.add("hidden");
     }
-
 
     hideOtherPages();
 
-
     if (playerPage) {
-
-        playerPage.classList.remove(
-            "hidden"
-        );
-
+        playerPage.classList.remove("hidden");
     }
 
-
-    renderPlayerProfile(
-        player
-    );
-
+    renderPlayerProfile(player);
 
     window.location.hash =
         "playerPage";
 
-
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 
 }
@@ -1758,42 +1570,30 @@ function renderPlayerProfile(player) {
             "playerProfile"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     const name =
         player.name ||
         "Player";
 
-
     const role =
         player.role ||
         "Игрок";
-
 
     const country =
         player.country ||
         "";
 
-
     const avatar =
         player.avatar ||
         "";
 
-
     const safeName =
-        safeJSString(
-            name
-        );
-
+        safeJSString(name);
 
     let adminButtons = "";
-
 
     if (isAdmin) {
 
@@ -1802,7 +1602,6 @@ function renderPlayerProfile(player) {
                 player.roster_type ||
                 "starter"
             ) === "substitute";
-
 
         adminButtons = `
 
@@ -1849,7 +1648,6 @@ function renderPlayerProfile(player) {
         `;
 
     }
-
 
     container.innerHTML = `
 
@@ -1989,10 +1787,8 @@ function openPlayerEditor(name) {
 
     }
 
-
     const player =
         findPlayer(name);
-
 
     if (!player) {
 
@@ -2005,100 +1801,50 @@ function openPlayerEditor(name) {
 
     }
 
+    document.getElementById(
+        "playerEditOldName"
+    ).value =
+        player.name || "";
 
-    const oldName =
-        document.getElementById(
-            "playerEditOldName"
-        );
+    document.getElementById(
+        "playerEditTeam"
+    ).value =
+        TEAM_NAME;
 
+    document.getElementById(
+        "playerEditName"
+    ).value =
+        player.name || "";
 
-    const teamInput =
-        document.getElementById(
-            "playerEditTeam"
-        );
+    document.getElementById(
+        "playerEditCountry"
+    ).value =
+        player.country || "";
 
+    document.getElementById(
+        "playerEditRole"
+    ).value =
+        player.role || "Игрок";
 
-    const nameInput =
-        document.getElementById(
-            "playerEditName"
-        );
+    document.getElementById(
+        "playerEditAvatar"
+    ).value =
+        player.avatar || "";
 
+    document.getElementById(
+        "playerEditFaceit"
+    ).value =
+        player.faceit || "";
 
-    const countryInput =
-        document.getElementById(
-            "playerEditCountry"
-        );
-
-
-    const roleInput =
-        document.getElementById(
-            "playerEditRole"
-        );
-
-
-    const avatarInput =
-        document.getElementById(
-            "playerEditAvatar"
-        );
-
-
-    const faceitInput =
-        document.getElementById(
-            "playerEditFaceit"
-        );
-
-
-    const steamInput =
-        document.getElementById(
-            "playerEditSteam"
-        );
-
-
-    if (oldName)
-        oldName.value =
-            player.name || "";
-
-
-    if (teamInput)
-        teamInput.value =
-            TEAM_NAME;
-
-
-    if (nameInput)
-        nameInput.value =
-            player.name || "";
-
-
-    if (countryInput)
-        countryInput.value =
-            player.country || "";
-
-
-    if (roleInput)
-        roleInput.value =
-            player.role || "Игрок";
-
-
-    if (avatarInput)
-        avatarInput.value =
-            player.avatar || "";
-
-
-    if (faceitInput)
-        faceitInput.value =
-            player.faceit || "";
-
-
-    if (steamInput)
-        steamInput.value =
-            player.steam || "";
-
+    document.getElementById(
+        "playerEditSteam"
+    ).value =
+        player.steam || "";
 
     const modal =
         document.getElementById(
             "playerEditModal"
         );
-
 
     if (modal) {
 
@@ -2121,15 +1867,9 @@ function closePlayerEditor() {
             "playerEditModal"
         );
 
-
     if (modal) {
-
-        modal.classList.add(
-            "hidden"
-        );
-
+        modal.classList.add("hidden");
     }
-
 
     document.body.style.overflow =
         "";
@@ -2145,7 +1885,6 @@ async function savePlayer(event) {
 
     event.preventDefault();
 
-
     if (
         !currentUser ||
         !isAdmin
@@ -2160,48 +1899,40 @@ async function savePlayer(event) {
 
     }
 
-
     const oldName =
         document.getElementById(
             "playerEditOldName"
         )?.value.trim();
-
 
     const newName =
         document.getElementById(
             "playerEditName"
         )?.value.trim();
 
-
     const country =
         document.getElementById(
             "playerEditCountry"
         )?.value.trim();
-
 
     const role =
         document.getElementById(
             "playerEditRole"
         )?.value.trim();
 
-
     const avatar =
         document.getElementById(
             "playerEditAvatar"
         )?.value.trim();
-
 
     const faceit =
         document.getElementById(
             "playerEditFaceit"
         )?.value.trim();
 
-
     const steam =
         document.getElementById(
             "playerEditSteam"
         )?.value.trim();
-
 
     if (!oldName || !newName) {
 
@@ -2214,26 +1945,20 @@ async function savePlayer(event) {
 
     }
 
-
     try {
 
         await supabaseRequest(
 
             "players?name=eq." +
-            encodeURIComponent(
-                oldName
-            ),
+            encodeURIComponent(oldName),
 
             {
 
-                method:
-                    "PATCH",
+                method:"PATCH",
 
-                headers: {
-
+                headers:{
                     "Prefer":
                         "return=representation"
-
                 },
 
                 body:
@@ -2263,23 +1988,15 @@ async function savePlayer(event) {
 
         );
 
-
         await loadPlayers();
-
 
         closePlayerEditor();
 
-
         renderTeams();
-
         renderTeamProfile();
 
-
         const updatedPlayer =
-            findPlayer(
-                newName
-            );
-
+            findPlayer(newName);
 
         if (updatedPlayer) {
 
@@ -2289,11 +2006,9 @@ async function savePlayer(event) {
 
         }
 
-
         showNotification(
-            "Профиль игрока успешно обновлён."
+            "Профиль игрока сохранён."
         );
-
 
     } catch (error) {
 
@@ -2301,7 +2016,6 @@ async function savePlayer(event) {
             "Ошибка сохранения игрока:",
             error
         );
-
 
         showNotification(
             "Не удалось сохранить профиль.",
@@ -2324,25 +2038,17 @@ function createAddPlayerModal() {
             "addPlayerModal"
         )
     ) {
-
         return;
-
     }
 
-
     const modal =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     modal.id =
         "addPlayerModal";
 
-
     modal.className =
         "modal hidden";
-
 
     modal.innerHTML = `
 
@@ -2390,49 +2096,17 @@ function createAddPlayerModal() {
 
                     <select id="addPlayerRole">
 
-                        <option value="Игрок">
-                            Игрок
-                        </option>
-
-                        <option value="Капитан">
-                            Капитан
-                        </option>
-
-                        <option value="AWPer">
-                            AWPer
-                        </option>
-
-                        <option value="Sniper">
-                            Sniper
-                        </option>
-
-                        <option value="Rifler">
-                            Rifler
-                        </option>
-
-                        <option value="Rifle">
-                            Rifle
-                        </option>
-
-                        <option value="Entry">
-                            Entry
-                        </option>
-
-                        <option value="Anchor">
-                            Anchor
-                        </option>
-
-                        <option value="Support">
-                            Support
-                        </option>
-
-                        <option value="IGL">
-                            IGL
-                        </option>
-
-                        <option value="IGL + support">
-                            IGL + support
-                        </option>
+                        <option value="Игрок">Игрок</option>
+                        <option value="Капитан">Капитан</option>
+                        <option value="AWPer">AWPer</option>
+                        <option value="Sniper">Sniper</option>
+                        <option value="Rifler">Rifler</option>
+                        <option value="Rifle">Rifle</option>
+                        <option value="Entry">Entry</option>
+                        <option value="Anchor">Anchor</option>
+                        <option value="Support">Support</option>
+                        <option value="IGL">IGL</option>
+                        <option value="IGL + support">IGL + support</option>
 
                     </select>
 
@@ -2498,33 +2172,23 @@ function createAddPlayerModal() {
 
     `;
 
-
-    document.body.appendChild(
-        modal
-    );
-
+    document.body.appendChild(modal);
 
     modal.addEventListener(
         "click",
         function(event) {
 
-            if (
-                event.target === modal
-            ) {
-
+            if (event.target === modal) {
                 closeAddPlayerModal();
-
             }
 
         }
     );
 
-
     const form =
         document.getElementById(
             "addPlayerForm"
         );
-
 
     if (form) {
 
@@ -2537,10 +2201,6 @@ function createAddPlayerModal() {
 
 }
 
-
-/* =========================================================
-   OPEN ADD PLAYER
-========================================================= */
 
 function openAddPlayerModal() {
 
@@ -2555,37 +2215,24 @@ function openAddPlayerModal() {
 
     }
 
-
     createAddPlayerModal();
-
 
     const modal =
         document.getElementById(
             "addPlayerModal"
         );
 
-
     if (!modal) {
-
         return;
-
     }
 
-
-    modal.classList.remove(
-        "hidden"
-    );
-
+    modal.classList.remove("hidden");
 
     document.body.style.overflow =
         "hidden";
 
 }
 
-
-/* =========================================================
-   CLOSE ADD PLAYER
-========================================================= */
 
 function closeAddPlayerModal() {
 
@@ -2594,15 +2241,9 @@ function closeAddPlayerModal() {
             "addPlayerModal"
         );
 
-
     if (modal) {
-
-        modal.classList.add(
-            "hidden"
-        );
-
+        modal.classList.add("hidden");
     }
-
 
     document.body.style.overflow =
         "";
@@ -2618,7 +2259,6 @@ async function addPlayer(event) {
 
     event.preventDefault();
 
-
     if (
         !currentUser ||
         !isAdmin
@@ -2633,48 +2273,40 @@ async function addPlayer(event) {
 
     }
 
-
     const name =
         document.getElementById(
             "addPlayerName"
         )?.value.trim();
-
 
     const country =
         document.getElementById(
             "addPlayerCountry"
         )?.value.trim();
 
-
     const role =
         document.getElementById(
             "addPlayerRole"
         )?.value;
-
 
     const rosterType =
         document.getElementById(
             "addPlayerRoster"
         )?.value;
 
-
     const avatar =
         document.getElementById(
             "addPlayerAvatar"
         )?.value.trim();
-
 
     const faceit =
         document.getElementById(
             "addPlayerFaceit"
         )?.value.trim();
 
-
     const steam =
         document.getElementById(
             "addPlayerSteam"
         )?.value.trim();
-
 
     if (!name) {
 
@@ -2687,7 +2319,6 @@ async function addPlayer(event) {
 
     }
 
-
     if (findPlayer(name)) {
 
         showNotification(
@@ -2699,29 +2330,23 @@ async function addPlayer(event) {
 
     }
 
-
     try {
 
         await supabaseRequest(
             "players",
             {
 
-                method:
-                    "POST",
+                method:"POST",
 
-                headers: {
-
+                headers:{
                     "Prefer":
                         "return=representation"
-
                 },
 
                 body:
                     JSON.stringify({
 
-                        name:
-                            name,
-
+                        name,
                         country:
                             country || "",
 
@@ -2738,8 +2363,7 @@ async function addPlayer(event) {
                             steam || "",
 
                         roster_type:
-                            rosterType ||
-                            "starter",
+                            rosterType || "starter",
 
                         active:
                             true
@@ -2749,22 +2373,16 @@ async function addPlayer(event) {
             }
         );
 
-
         await loadPlayers();
-
 
         closeAddPlayerModal();
 
-
         renderTeams();
-
         renderTeamProfile();
 
-
         showNotification(
-            `Игрок ${name} успешно добавлен.`
+            "Игрок успешно добавлен."
         );
-
 
     } catch (error) {
 
@@ -2772,7 +2390,6 @@ async function addPlayer(event) {
             "Ошибка добавления игрока:",
             error
         );
-
 
         showNotification(
             "Не удалось добавить игрока.",
@@ -2785,7 +2402,7 @@ async function addPlayer(event) {
 
 
 /* =========================================================
-   MOVE TO SUBSTITUTE
+   MOVE PLAYER TO SUBSTITUTE
 ========================================================= */
 
 async function movePlayerToSubstitute(name) {
@@ -2801,10 +2418,8 @@ async function movePlayerToSubstitute(name) {
 
     }
 
-
     const player =
         findPlayer(name);
-
 
     if (!player) {
 
@@ -2817,26 +2432,20 @@ async function movePlayerToSubstitute(name) {
 
     }
 
-
     try {
 
         await supabaseRequest(
 
             "players?name=eq." +
-            encodeURIComponent(
-                player.name
-            ),
+            encodeURIComponent(player.name),
 
             {
 
-                method:
-                    "PATCH",
+                method:"PATCH",
 
-                headers: {
-
+                headers:{
                     "Prefer":
                         "return=representation"
-
                 },
 
                 body:
@@ -2851,26 +2460,21 @@ async function movePlayerToSubstitute(name) {
 
         );
 
-
         await loadPlayers();
 
-
         renderTeamProfile();
-
         renderTeams();
-
 
         showNotification(
             `${player.name} переведён в замены.`
         );
 
-
     } catch (error) {
 
         console.error(
+            "Ошибка перевода в замены:",
             error
         );
-
 
         showNotification(
             "Не удалось изменить состав.",
@@ -2883,7 +2487,7 @@ async function movePlayerToSubstitute(name) {
 
 
 /* =========================================================
-   MOVE TO STARTER
+   MOVE PLAYER TO STARTER
 ========================================================= */
 
 async function movePlayerToStarter(name) {
@@ -2899,10 +2503,8 @@ async function movePlayerToStarter(name) {
 
     }
 
-
     const player =
         findPlayer(name);
-
 
     if (!player) {
 
@@ -2915,26 +2517,20 @@ async function movePlayerToStarter(name) {
 
     }
 
-
     try {
 
         await supabaseRequest(
 
             "players?name=eq." +
-            encodeURIComponent(
-                player.name
-            ),
+            encodeURIComponent(player.name),
 
             {
 
-                method:
-                    "PATCH",
+                method:"PATCH",
 
-                headers: {
-
+                headers:{
                     "Prefer":
                         "return=representation"
-
                 },
 
                 body:
@@ -2949,26 +2545,21 @@ async function movePlayerToStarter(name) {
 
         );
 
-
         await loadPlayers();
 
-
         renderTeamProfile();
-
         renderTeams();
-
 
         showNotification(
             `${player.name} переведён в основной состав.`
         );
 
-
     } catch (error) {
 
         console.error(
+            "Ошибка перевода в основной состав:",
             error
         );
-
 
         showNotification(
             "Не удалось изменить состав.",
@@ -2997,10 +2588,8 @@ async function removePlayerFromRoster(name) {
 
     }
 
-
     const player =
         findPlayer(name);
-
 
     if (!player) {
 
@@ -3013,39 +2602,20 @@ async function removePlayerFromRoster(name) {
 
     }
 
-
-    const confirmed =
-        confirm(
-            `Удалить ${player.name} из состава?`
-        );
-
-
-    if (!confirmed) {
-
-        return;
-
-    }
-
-
     try {
 
         await supabaseRequest(
 
             "players?name=eq." +
-            encodeURIComponent(
-                player.name
-            ),
+            encodeURIComponent(player.name),
 
             {
 
-                method:
-                    "PATCH",
+                method:"PATCH",
 
-                headers: {
-
+                headers:{
                     "Prefer":
                         "return=representation"
-
                 },
 
                 body:
@@ -3060,29 +2630,23 @@ async function removePlayerFromRoster(name) {
 
         );
 
-
         await loadPlayers();
 
-
         renderTeams();
-
         renderTeamProfile();
 
-
         closePlayer();
-
 
         showNotification(
             `${player.name} удалён из состава.`
         );
 
-
     } catch (error) {
 
         console.error(
+            "Ошибка удаления игрока:",
             error
         );
-
 
         showNotification(
             "Не удалось удалить игрока.",
@@ -3111,10 +2675,8 @@ async function restorePlayer(name) {
 
     }
 
-
     const player =
         findPlayer(name);
-
 
     if (!player) {
 
@@ -3127,26 +2689,20 @@ async function restorePlayer(name) {
 
     }
 
-
     try {
 
         await supabaseRequest(
 
             "players?name=eq." +
-            encodeURIComponent(
-                player.name
-            ),
+            encodeURIComponent(player.name),
 
             {
 
-                method:
-                    "PATCH",
+                method:"PATCH",
 
-                headers: {
-
+                headers:{
                     "Prefer":
                         "return=representation"
-
                 },
 
                 body:
@@ -3161,26 +2717,21 @@ async function restorePlayer(name) {
 
         );
 
-
         await loadPlayers();
 
-
         renderTeamProfile();
-
         renderTeams();
-
 
         showNotification(
             `${player.name} снова добавлен в состав.`
         );
 
-
     } catch (error) {
 
         console.error(
+            "Ошибка восстановления игрока:",
             error
         );
-
 
         showNotification(
             "Не удалось восстановить игрока.",
@@ -3209,61 +2760,51 @@ function openEditor() {
 
     }
 
-
     document.getElementById(
         "editTitle"
     ).value =
         team.title;
-
 
     document.getElementById(
         "editTag"
     ).value =
         team.tag;
 
-
     document.getElementById(
         "editCountry"
     ).value =
         team.country;
-
 
     document.getElementById(
         "editLogo"
     ).value =
         team.logo;
 
-
     document.getElementById(
         "editFaceit"
     ).value =
         team.faceit;
-
 
     document.getElementById(
         "editSteam"
     ).value =
         team.steam;
 
-
     document.getElementById(
         "editDescription"
     ).value =
         team.description;
-
 
     const modal =
         document.getElementById(
             "editModal"
         );
 
-
     if (modal) {
 
         modal.classList.remove(
             "hidden"
         );
-
 
         document.body.style.overflow =
             "hidden";
@@ -3280,15 +2821,9 @@ function closeEditor() {
             "editModal"
         );
 
-
     if (modal) {
-
-        modal.classList.add(
-            "hidden"
-        );
-
+        modal.classList.add("hidden");
     }
-
 
     document.body.style.overflow =
         "";
@@ -3304,139 +2839,69 @@ function saveTeamFromForm(event) {
 
     event.preventDefault();
 
-
     if (!isAdmin) {
 
         showNotification(
-            "У вас нет прав администратора.",
+            "Доступ запрещён.",
             "error"
         );
 
         return;
 
     }
-
-
-    const title =
-        document.getElementById(
-            "editTitle"
-        )?.value.trim();
-
-
-    const tag =
-        document.getElementById(
-            "editTag"
-        )?.value.trim();
-
-
-    const country =
-        document.getElementById(
-            "editCountry"
-        )?.value.trim();
-
-
-    const logo =
-        document.getElementById(
-            "editLogo"
-        )?.value.trim();
-
-
-    const faceit =
-        document.getElementById(
-            "editFaceit"
-        )?.value.trim();
-
-
-    const steam =
-        document.getElementById(
-            "editSteam"
-        )?.value.trim();
-
-
-    const description =
-        document.getElementById(
-            "editDescription"
-        )?.value.trim();
-
-
-    if (!title) {
-
-        showNotification(
-            "Введите название команды.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if (!tag) {
-
-        showNotification(
-            "Введите тег команды.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    if (!country) {
-
-        showNotification(
-            "Введите страну команды.",
-            "error"
-        );
-
-        return;
-
-    }
-
 
     team.title =
-        title;
-
+        document.getElementById(
+            "editTitle"
+        )?.value.trim() ||
+        team.title;
 
     team.name =
-        title;
-
+        team.title;
 
     team.tag =
-        tag;
-
+        document.getElementById(
+            "editTag"
+        )?.value.trim() ||
+        team.tag;
 
     team.country =
-        country;
-
+        document.getElementById(
+            "editCountry"
+        )?.value.trim() ||
+        team.country;
 
     team.logo =
-        logo;
-
+        document.getElementById(
+            "editLogo"
+        )?.value.trim() ||
+        "";
 
     team.faceit =
-        faceit;
-
+        document.getElementById(
+            "editFaceit"
+        )?.value.trim() ||
+        "";
 
     team.steam =
-        steam;
-
+        document.getElementById(
+            "editSteam"
+        )?.value.trim() ||
+        "";
 
     team.description =
-        description;
-
+        document.getElementById(
+            "editDescription"
+        )?.value.trim() ||
+        "";
 
     closeEditor();
 
-
     renderTeams();
-
     renderTeamProfile();
 
-
     showNotification(
-        "Данные команды успешно обновлены."
+        "Данные команды обновлены."
     );
 
 }
@@ -3453,56 +2918,36 @@ function closeTeam() {
             "teams"
         );
 
-
     const teamPage =
         document.getElementById(
             "teamPage"
         );
-
 
     const playerPage =
         document.getElementById(
             "playerPage"
         );
 
-
     if (teamPage) {
-
-        teamPage.classList.add(
-            "hidden"
-        );
-
+        teamPage.classList.add("hidden");
     }
-
 
     if (playerPage) {
-
-        playerPage.classList.add(
-            "hidden"
-        );
-
+        playerPage.classList.add("hidden");
     }
-
 
     if (teams) {
-
-        teams.classList.remove(
-            "hidden"
-        );
-
+        teams.classList.remove("hidden");
     }
 
-
     hideOtherPages();
-
 
     window.location.hash =
         "teams";
 
-
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 
 }
@@ -3519,41 +2964,27 @@ function closePlayer() {
             "playerPage"
         );
 
-
     const teamPage =
         document.getElementById(
             "teamPage"
         );
 
-
     if (playerPage) {
-
-        playerPage.classList.add(
-            "hidden"
-        );
-
+        playerPage.classList.add("hidden");
     }
-
 
     if (teamPage) {
-
-        teamPage.classList.remove(
-            "hidden"
-        );
-
+        teamPage.classList.remove("hidden");
     }
 
-
     renderTeamProfile();
-
 
     window.location.hash =
         "teamPage";
 
-
     window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
     });
 
 }
@@ -3571,9 +3002,7 @@ function hideOtherPages() {
         )
         .forEach(
             page =>
-                page.classList.add(
-                    "hidden"
-                )
+                page.classList.add("hidden")
         );
 
 }
@@ -3599,15 +3028,9 @@ function filterTeams(
                 )
         );
 
-
     if (button) {
-
-        button.classList.add(
-            "selected"
-        );
-
+        button.classList.add("selected");
     }
-
 
     renderTeams();
 
@@ -3625,13 +3048,9 @@ function renderRating() {
             "ratingRows"
         );
 
-
     if (!rows) {
-
         return;
-
     }
-
 
     rows.innerHTML = `
 
@@ -3669,13 +3088,9 @@ function renderMatches() {
             "matchesList"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     container.innerHTML = `
 
@@ -3705,13 +3120,9 @@ function renderTournaments() {
             "tournamentsGrid"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     container.innerHTML = `
 
@@ -3739,45 +3150,28 @@ function showHashPage() {
     const hash =
         window.location.hash;
 
-
     const teams =
-        document.getElementById(
-            "teams"
-        );
-
+        document.getElementById("teams");
 
     const teamPage =
-        document.getElementById(
-            "teamPage"
-        );
-
+        document.getElementById("teamPage");
 
     const playerPage =
-        document.getElementById(
-            "playerPage"
-        );
+        document.getElementById("playerPage");
 
+    if (teams) {
+        teams.classList.add("hidden");
+    }
 
-    if (teams)
-        teams.classList.add(
-            "hidden"
-        );
+    if (teamPage) {
+        teamPage.classList.add("hidden");
+    }
 
-
-    if (teamPage)
-        teamPage.classList.add(
-            "hidden"
-        );
-
-
-    if (playerPage)
-        playerPage.classList.add(
-            "hidden"
-        );
-
+    if (playerPage) {
+        playerPage.classList.add("hidden");
+    }
 
     hideOtherPages();
-
 
     if (
         hash === "#rating" ||
@@ -3786,94 +3180,51 @@ function showHashPage() {
     ) {
 
         const page =
-            document.querySelector(
-                hash
-            );
-
+            document.querySelector(hash);
 
         if (page) {
-
-            page.classList.remove(
-                "hidden"
-            );
-
+            page.classList.remove("hidden");
         }
 
-
-        updateActiveNavigation(
-            hash
-        );
-
+        updateActiveNavigation(hash);
 
         return;
 
     }
 
-
-    if (
-        hash === "#teamPage"
-    ) {
+    if (hash === "#teamPage") {
 
         if (teamPage) {
-
-            teamPage.classList.remove(
-                "hidden"
-            );
-
+            teamPage.classList.remove("hidden");
         }
-
 
         renderTeamProfile();
 
-
-        updateActiveNavigation(
-            "#teams"
-        );
-
+        updateActiveNavigation("#teams");
 
         return;
 
     }
 
-
-    if (
-        hash === "#playerPage"
-    ) {
+    if (hash === "#playerPage") {
 
         if (playerPage) {
-
-            playerPage.classList.remove(
-                "hidden"
-            );
-
+            playerPage.classList.remove("hidden");
         }
 
-
-        updateActiveNavigation(
-            "#teams"
-        );
-
+        updateActiveNavigation("#teams");
 
         return;
 
     }
 
-
     if (teams) {
-
-        teams.classList.remove(
-            "hidden"
-        );
-
+        teams.classList.remove("hidden");
     }
-
 
     renderTeams();
 
-
-    updateActiveNavigation(
-        "#teams"
-    );
+    updateActiveNavigation("#teams");
 
 }
 
@@ -3898,21 +3249,15 @@ function updateActiveNavigation(
                         "href"
                     );
 
-
                 if (
-                    href ===
-                    currentHash
+                    href === currentHash
                 ) {
 
-                    link.classList.add(
-                        "active"
-                    );
+                    link.classList.add("active");
 
                 } else {
 
-                    link.classList.remove(
-                        "active"
-                    );
+                    link.classList.remove("active");
 
                 }
 
@@ -3929,96 +3274,43 @@ function updateActiveNavigation(
 async function init() {
 
     console.log(
-        "================================="
-    );
-
-
-    console.log(
         "1Minute запускается..."
     );
 
-
-    console.log(
-        "================================="
-    );
-
+    createNotificationContainer();
 
     const connected =
         initSupabase();
 
-
     if (!connected) {
 
         renderTeams();
-
         renderRating();
-
         renderMatches();
-
         renderTournaments();
-
         showHashPage();
 
         return;
 
     }
 
-
     setupAuthListener();
-
 
     await checkAuth();
 
-
     await loadPlayers();
-
 
     createAddPlayerModal();
 
-
     renderTeams();
-
     renderRating();
-
     renderMatches();
-
     renderTournaments();
-
 
     showHashPage();
 
-
-    console.log(
-        "================================="
-    );
-
-
     console.log(
         "1Minute готов."
-    );
-
-
-    console.log(
-        "User:",
-        currentUser?.id ||
-        "нет"
-    );
-
-
-    console.log(
-        "Admin:",
-        isAdmin
-    );
-
-
-    console.log(
-        "Players:",
-        players.length
-    );
-
-
-    console.log(
-        "================================="
     );
 
 }
@@ -4042,12 +3334,10 @@ document.addEventListener(
     "DOMContentLoaded",
     function() {
 
-
         const playerForm =
             document.getElementById(
                 "playerEditForm"
             );
-
 
         if (playerForm) {
 
@@ -4058,12 +3348,10 @@ document.addEventListener(
 
         }
 
-
         const loginForm =
             document.getElementById(
                 "loginForm"
             );
-
 
         if (loginForm) {
 
@@ -4074,12 +3362,10 @@ document.addEventListener(
 
         }
 
-
         const editForm =
             document.getElementById(
                 "editForm"
             );
-
 
         if (editForm) {
 
@@ -4090,7 +3376,6 @@ document.addEventListener(
 
         }
 
-
         init();
 
     }
@@ -4100,3 +3385,4 @@ document.addEventListener(
 /* =========================================================
    END
 ========================================================= */
+```
