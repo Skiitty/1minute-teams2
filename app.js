@@ -16,22 +16,30 @@ const SUPABASE_KEY =
 
 const TEAM_NAME = "1Minute";
 
+const TEAM_STORAGE_KEY =
+    "1minute_team_data";
+
 
 /* =========================================================
    GLOBAL STATE
 ========================================================= */
 
 let players = [];
+
 let currentUser = null;
+
 let isAdmin = false;
+
 let supabaseClient = null;
+
+let currentPlayer = null;
 
 
 /* =========================================================
-   TEAM
+   DEFAULT TEAM
 ========================================================= */
 
-const team = {
+const defaultTeam = {
 
     name: "1Minute",
 
@@ -53,6 +61,86 @@ const team = {
     status: "active"
 
 };
+
+
+/* =========================================================
+   TEAM
+========================================================= */
+
+let team = loadTeamData();
+
+
+/* =========================================================
+   LOAD TEAM DATA
+========================================================= */
+
+function loadTeamData() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                TEAM_STORAGE_KEY
+            );
+
+        if (!saved) {
+
+            return {
+                ...defaultTeam
+            };
+
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+        return {
+
+            ...defaultTeam,
+
+            ...(parsed || {})
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка загрузки данных команды:",
+            error
+        );
+
+        return {
+            ...defaultTeam
+        };
+
+    }
+
+}
+
+
+/* =========================================================
+   SAVE TEAM DATA
+========================================================= */
+
+function saveTeamData() {
+
+    try {
+
+        localStorage.setItem(
+            TEAM_STORAGE_KEY,
+            JSON.stringify(team)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка сохранения команды:",
+            error
+        );
+
+    }
+
+}
 
 
 /* =========================================================
@@ -139,50 +227,6 @@ function safeJSString(value) {
 }
 
 
-/* =========================================================
-   ROSTER TYPE
-   ВАЖНО:
-   substitute = замена
-   starter = основной состав
-========================================================= */
-
-function getRosterType(player) {
-
-    const value =
-        normalize(
-            player?.roster_type
-        );
-
-    if (
-        value === "substitute" ||
-        value === "sub" ||
-        value === "замена" ||
-        value === "заменa"
-    ) {
-
-        return "substitute";
-
-    }
-
-    return "starter";
-
-}
-
-
-function isSubstitute(player) {
-
-    return getRosterType(player) === "substitute";
-
-}
-
-
-function isStarter(player) {
-
-    return getRosterType(player) === "starter";
-
-}
-
-
 function findPlayer(name) {
 
     const target =
@@ -200,8 +244,7 @@ function getActivePlayers() {
 
     return players.filter(
         player =>
-            player.active !== false &&
-            player.active !== "false"
+            player.active !== false
     );
 
 }
@@ -211,7 +254,10 @@ function getStarterPlayers() {
 
     return getActivePlayers().filter(
         player =>
-            isStarter(player)
+            normalize(
+                player.roster_type ||
+                "starter"
+            ) === "starter"
     );
 
 }
@@ -221,7 +267,10 @@ function getSubstitutePlayers() {
 
     return getActivePlayers().filter(
         player =>
-            isSubstitute(player)
+            normalize(
+                player.roster_type ||
+                "starter"
+            ) === "substitute"
     );
 
 }
@@ -347,9 +396,11 @@ async function checkAuth() {
     if (!supabaseClient) {
 
         currentUser = null;
+
         isAdmin = false;
 
         updateLoginButton();
+
         updateLoginModalUI();
 
         return;
@@ -371,9 +422,15 @@ async function checkAuth() {
             result.data?.session?.user ||
             null;
 
+        console.log(
+            "Текущий пользователь:",
+            currentUser
+        );
+
         await checkAdmin();
 
         updateLoginButton();
+
         updateLoginModalUI();
 
     } catch (error) {
@@ -384,9 +441,11 @@ async function checkAuth() {
         );
 
         currentUser = null;
+
         isAdmin = false;
 
         updateLoginButton();
+
         updateLoginModalUI();
 
     }
@@ -435,6 +494,11 @@ async function checkAdmin() {
 
         isAdmin =
             !!result.data;
+
+        console.log(
+            "Admin:",
+            isAdmin
+        );
 
         return isAdmin;
 
@@ -704,12 +768,12 @@ async function login(event) {
         await checkAdmin();
 
         updateLoginButton();
+
         updateLoginModalUI();
 
         await loadPlayers();
 
-        renderTeams();
-        renderTeamProfile();
+        renderAll();
 
         setTimeout(
             closeLoginModal,
@@ -832,14 +896,16 @@ async function logout() {
     }
 
     currentUser = null;
+
     isAdmin = false;
 
     updateLoginButton();
+
     updateLoginModalUI();
 
     closeLoginModal();
 
-    renderTeamProfile();
+    renderAll();
 
 }
 
@@ -862,6 +928,11 @@ function setupAuthListener() {
             session
         ) {
 
+            console.log(
+                "Auth event:",
+                event
+            );
+
             currentUser =
                 session?.user ||
                 null;
@@ -869,9 +940,10 @@ function setupAuthListener() {
             await checkAdmin();
 
             updateLoginButton();
+
             updateLoginModalUI();
 
-            renderTeamProfile();
+            renderAll();
 
         }
     );
@@ -900,19 +972,6 @@ async function loadPlayers() {
         console.log(
             "✓ Игроки загружены:",
             players
-        );
-
-        players.forEach(
-            player => {
-
-                console.log(
-                    "PLAYER:",
-                    player.name,
-                    "ROSTER:",
-                    player.roster_type
-                );
-
-            }
         );
 
         return players;
@@ -1017,7 +1076,7 @@ function renderTeams() {
 
 function playerCard(
     player,
-    isSubstitutePlayer = false
+    isSubstitute
 ) {
 
     const name =
@@ -1080,7 +1139,7 @@ function playerCard(
             </div>
 
             ${
-                isSubstitutePlayer
+                isSubstitute
                     ?
                     `
                     <div class="player-badge">
@@ -1180,17 +1239,6 @@ function renderTeamProfile() {
 
     const substitutes =
         getSubstitutePlayers();
-
-
-    console.log(
-        "Основной состав:",
-        starters
-    );
-
-    console.log(
-        "Замены:",
-        substitutes
-    );
 
 
     const startersHTML =
@@ -1348,9 +1396,7 @@ function renderTeamProfile() {
                     </h1>
 
                     <p>
-                        ${escapeHTML(
-                            team.description
-                        )}
+                        ${escapeHTML(team.description)}
                     </p>
 
                     <div
@@ -1370,6 +1416,53 @@ function renderTeamProfile() {
                     >
                         <span>●</span>
                         ACTIVE
+                    </div>
+
+
+                    <div
+                        style="
+                            display:flex;
+                            gap:10px;
+                            flex-wrap:wrap;
+                            margin-top:15px;
+                        "
+                    >
+
+                        ${
+                            team.faceit
+                                ?
+                                `
+                                <a
+                                    class="secondary"
+                                    href="${escapeHTML(team.faceit)}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    FACEIT →
+                                </a>
+                                `
+                                :
+                                ""
+                        }
+
+
+                        ${
+                            team.steam
+                                ?
+                                `
+                                <a
+                                    class="secondary"
+                                    href="${escapeHTML(team.steam)}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    STEAM →
+                                </a>
+                                `
+                                :
+                                ""
+                        }
+
                     </div>
 
                 </div>
@@ -1400,9 +1493,7 @@ function renderTeamProfile() {
 
 
                 <div class="player-grid">
-
                     ${startersHTML}
-
                 </div>
 
 
@@ -1424,9 +1515,7 @@ function renderTeamProfile() {
 
 
                 <div class="player-grid">
-
                     ${substitutesHTML}
-
                 </div>
 
             </div>
@@ -1457,6 +1546,9 @@ function openPlayerByName(name) {
         return;
 
     }
+
+    currentPlayer =
+        player;
 
     const teams =
         document.getElementById(
@@ -1547,6 +1639,12 @@ function renderPlayerProfile(player) {
         player.avatar ||
         "";
 
+    const isSubstitute =
+        normalize(
+            player.roster_type ||
+            "starter"
+        ) === "substitute";
+
     const safeName =
         safeJSString(name);
 
@@ -1555,10 +1653,6 @@ function renderPlayerProfile(player) {
 
 
     if (isAdmin) {
-
-        const substitute =
-            isSubstitute(player);
-
 
         adminButtons = `
 
@@ -1575,24 +1669,20 @@ function renderPlayerProfile(player) {
                 class="edit-btn"
                 type="button"
                 onclick="${
-                    substitute
+                    isSubstitute
                         ?
                         `movePlayerToStarter('${safeName}')`
                         :
                         `movePlayerToSubstitute('${safeName}')`
                 }"
             >
-
-                ⇄
-
-                ${
-                    substitute
+                ⇄ ${
+                    isSubstitute
                         ?
                         "В основной состав"
                         :
                         "В замены"
                 }
-
             </button>
 
 
@@ -1656,6 +1746,31 @@ function renderPlayerProfile(player) {
             <div class="player-role">
                 ${escapeHTML(role)}
             </div>
+
+
+            ${
+                isSubstitute
+                    ?
+                    `
+                    <div
+                        style="
+                            display:inline-flex;
+                            margin-top:10px;
+                            padding:5px 10px;
+                            border-radius:6px;
+                            background:#211b0b;
+                            border:1px solid #59491d;
+                            color:#e7c66d;
+                            font-size:10px;
+                            font-weight:800;
+                        "
+                    >
+                        ЗАМЕНА
+                    </div>
+                    `
+                    :
+                    ""
+            }
 
 
             ${
@@ -1772,92 +1887,71 @@ function openPlayerEditor(name) {
     }
 
 
-    const oldName =
-        document.getElementById(
-            "playerEditOldName"
-        );
-
-    const teamInput =
-        document.getElementById(
-            "playerEditTeam"
-        );
-
-    const nameInput =
-        document.getElementById(
-            "playerEditName"
-        );
-
-    const countryInput =
-        document.getElementById(
-            "playerEditCountry"
-        );
-
-    const roleInput =
-        document.getElementById(
-            "playerEditRole"
-        );
-
-    const avatarInput =
-        document.getElementById(
-            "playerEditAvatar"
-        );
-
-    const faceitInput =
-        document.getElementById(
-            "playerEditFaceit"
-        );
-
-    const steamInput =
-        document.getElementById(
-            "playerEditSteam"
-        );
+    document.getElementById(
+        "playerEditOldName"
+    ).value =
+        player.name || "";
 
 
-    if (oldName)
-        oldName.value =
-            player.name || "";
+    document.getElementById(
+        "playerEditTeam"
+    ).value =
+        TEAM_NAME;
 
 
-    if (teamInput)
-        teamInput.value =
-            TEAM_NAME;
+    document.getElementById(
+        "playerEditName"
+    ).value =
+        player.name || "";
 
 
-    if (nameInput)
-        nameInput.value =
-            player.name || "";
+    document.getElementById(
+        "playerEditCountry"
+    ).value =
+        player.country || "";
 
 
-    if (countryInput)
-        countryInput.value =
-            player.country || "";
+    document.getElementById(
+        "playerEditRole"
+    ).value =
+        player.role || "Игрок";
 
 
-    if (roleInput)
-        roleInput.value =
-            player.role || "Игрок";
+    document.getElementById(
+        "playerEditAvatar"
+    ).value =
+        player.avatar || "";
 
 
-    if (avatarInput)
-        avatarInput.value =
-            player.avatar || "";
+    document.getElementById(
+        "playerEditFaceit"
+    ).value =
+        player.faceit || "";
 
 
-    if (faceitInput)
-        faceitInput.value =
-            player.faceit || "";
+    document.getElementById(
+        "playerEditSteam"
+    ).value =
+        player.steam || "";
 
 
-    if (steamInput)
-        steamInput.value =
-            player.steam || "";
+    /*
+       ВАЖНО:
+
+       roster_type НЕ меняем здесь.
+
+       Если игрок был substitute,
+       он останется substitute.
+
+       Если starter —
+       останется starter.
+    */
 
 
     const modal =
         document.getElementById(
             "playerEditModal"
         );
-
 
     if (modal) {
 
@@ -1969,43 +2063,42 @@ async function savePlayer(event) {
     }
 
 
-    const existingPlayer =
+    const current =
         findPlayer(oldName);
 
 
+    if (!current) {
+
+        alert(
+            "Игрок не найден."
+        );
+
+        return;
+
+    }
+
+
+    /*
+       КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ.
+
+       Получаем существующий roster_type
+       из текущего игрока.
+
+       Он НЕ будет сбрасываться в starter.
+    */
+
+    const currentRosterType =
+        normalize(
+            current.roster_type ||
+            "starter"
+        ) === "substitute"
+            ?
+            "substitute"
+            :
+            "starter";
+
+
     try {
-
-        const updateData = {
-
-            name:
-                newName,
-
-            country:
-                country || "",
-
-            role:
-                role || "Игрок",
-
-            avatar:
-                avatar || "",
-
-            faceit:
-                faceit || "",
-
-            steam:
-                steam || "",
-
-            roster_type:
-                existingPlayer
-                    ?
-                    getRosterType(
-                        existingPlayer
-                    )
-                    :
-                    "starter"
-
-        };
-
 
         await supabaseRequest(
 
@@ -2027,9 +2120,34 @@ async function savePlayer(event) {
                 },
 
                 body:
-                    JSON.stringify(
-                        updateData
-                    )
+                    JSON.stringify({
+
+                        name:
+                            newName,
+
+                        country:
+                            country || "",
+
+                        role:
+                            role || "Игрок",
+
+                        avatar:
+                            avatar || "",
+
+                        faceit:
+                            faceit || "",
+
+                        steam:
+                            steam || "",
+
+                        /*
+                           Сохраняем позицию игрока.
+                        */
+
+                        roster_type:
+                            currentRosterType
+
+                    })
 
             }
 
@@ -2038,9 +2156,12 @@ async function savePlayer(event) {
 
         await loadPlayers();
 
+
         closePlayerEditor();
 
+
         renderTeams();
+
         renderTeamProfile();
 
 
@@ -2050,6 +2171,9 @@ async function savePlayer(event) {
 
         if (updatedPlayer) {
 
+            currentPlayer =
+                updatedPlayer;
+
             renderPlayerProfile(
                 updatedPlayer
             );
@@ -2058,7 +2182,7 @@ async function savePlayer(event) {
 
 
         alert(
-            "Профиль игрока сохранён."
+            "✓ Профиль игрока сохранён."
         );
 
 
@@ -2080,7 +2204,7 @@ async function savePlayer(event) {
 
 
 /* =========================================================
-   ADD PLAYER MODAL
+   CREATE ADD PLAYER MODAL
 ========================================================= */
 
 function createAddPlayerModal() {
@@ -2134,6 +2258,7 @@ function createAddPlayerModal() {
 
 
             <form id="addPlayerForm">
+
 
                 <label>
                     Никнейм
@@ -2268,6 +2393,7 @@ function createAddPlayerModal() {
                     Добавить игрока
                 </button>
 
+
             </form>
 
         </div>
@@ -2342,19 +2468,6 @@ function openAddPlayerModal() {
     if (!modal) {
 
         return;
-
-    }
-
-
-    const form =
-        document.getElementById(
-            "addPlayerForm"
-        );
-
-
-    if (form) {
-
-        form.reset();
 
     }
 
@@ -2484,14 +2597,6 @@ async function addPlayer(event) {
     }
 
 
-    const finalRosterType =
-        rosterType === "substitute"
-            ?
-            "substitute"
-            :
-            "starter";
-
-
     try {
 
         await supabaseRequest(
@@ -2530,7 +2635,12 @@ async function addPlayer(event) {
                             steam || "",
 
                         roster_type:
-                            finalRosterType,
+                            rosterType ===
+                            "substitute"
+                                ?
+                                "substitute"
+                                :
+                                "starter",
 
                         active:
                             true
@@ -2543,9 +2653,12 @@ async function addPlayer(event) {
 
         await loadPlayers();
 
+
         closeAddPlayerModal();
 
+
         renderTeams();
+
         renderTeamProfile();
 
 
@@ -2572,13 +2685,10 @@ async function addPlayer(event) {
 
 
 /* =========================================================
-   MOVE PLAYER
+   MOVE PLAYER TO SUBSTITUTE
 ========================================================= */
 
-async function movePlayer(
-    name,
-    newRosterType
-) {
+async function movePlayerToSubstitute(name) {
 
     if (!isAdmin) {
 
@@ -2606,12 +2716,119 @@ async function movePlayer(
     }
 
 
-    const targetType =
-        newRosterType === "substitute"
-            ?
-            "substitute"
-            :
-            "starter";
+    try {
+
+        await supabaseRequest(
+
+            "players?name=eq." +
+            encodeURIComponent(
+                player.name
+            ),
+
+            {
+
+                method:
+                    "PATCH",
+
+                headers: {
+
+                    "Prefer":
+                        "return=representation"
+
+                },
+
+                body:
+                    JSON.stringify({
+
+                        roster_type:
+                            "substitute"
+
+                    })
+
+            }
+
+        );
+
+
+        await loadPlayers();
+
+
+        const updated =
+            findPlayer(
+                player.name
+            );
+
+
+        currentPlayer =
+            updated || null;
+
+
+        renderTeams();
+
+        renderTeamProfile();
+
+
+        if (updated) {
+
+            renderPlayerProfile(
+                updated
+            );
+
+        }
+
+
+        alert(
+            player.name +
+            " переведён в замены."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            "Не удалось изменить состав.\n\n" +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MOVE PLAYER TO STARTER
+========================================================= */
+
+async function movePlayerToStarter(name) {
+
+    if (!isAdmin) {
+
+        alert(
+            "Доступ запрещён."
+        );
+
+        return;
+
+    }
+
+
+    const player =
+        findPlayer(name);
+
+
+    if (!player) {
+
+        alert(
+            "Игрок не найден."
+        );
+
+        return;
+
+    }
 
 
     try {
@@ -2639,7 +2856,7 @@ async function movePlayer(
                     JSON.stringify({
 
                         roster_type:
-                            targetType
+                            "starter"
 
                     })
 
@@ -2650,48 +2867,40 @@ async function movePlayer(
 
         await loadPlayers();
 
-        renderTeams();
-        renderTeamProfile();
 
-
-        const updatedPlayer =
+        const updated =
             findPlayer(
                 player.name
             );
 
 
-        if (updatedPlayer) {
+        currentPlayer =
+            updated || null;
+
+
+        renderTeams();
+
+        renderTeamProfile();
+
+
+        if (updated) {
 
             renderPlayerProfile(
-                updatedPlayer
+                updated
             );
 
         }
 
 
-        if (
-            targetType === "substitute"
-        ) {
-
-            alert(
-                player.name +
-                " переведён в замены."
-            );
-
-        } else {
-
-            alert(
-                player.name +
-                " переведён в основной состав."
-            );
-
-        }
+        alert(
+            player.name +
+            " переведён в основной состав."
+        );
 
 
     } catch (error) {
 
         console.error(
-            "Ошибка изменения состава:",
             error
         );
 
@@ -2701,34 +2910,6 @@ async function movePlayer(
         );
 
     }
-
-}
-
-
-/* =========================================================
-   MOVE TO SUBSTITUTE
-========================================================= */
-
-async function movePlayerToSubstitute(name) {
-
-    await movePlayer(
-        name,
-        "substitute"
-    );
-
-}
-
-
-/* =========================================================
-   MOVE TO STARTER
-========================================================= */
-
-async function movePlayerToStarter(name) {
-
-    await movePlayer(
-        name,
-        "starter"
-    );
 
 }
 
@@ -2815,8 +2996,11 @@ async function removePlayerFromRoster(name) {
 
         await loadPlayers();
 
+
         renderTeams();
+
         renderTeamProfile();
+
 
         closePlayer();
 
@@ -2910,7 +3094,9 @@ async function restorePlayer(name) {
 
         await loadPlayers();
 
+
         renderTeamProfile();
+
         renderTeams();
 
 
@@ -2952,49 +3138,81 @@ function openEditor() {
     }
 
 
-    const fields = {
-
-        editTitle:
-            team.title,
-
-        editTag:
-            team.tag,
-
-        editCountry:
-            team.country,
-
-        editLogo:
-            team.logo,
-
-        editFaceit:
-            team.faceit,
-
-        editSteam:
-            team.steam,
-
-        editDescription:
-            team.description
-
-    };
+    const title =
+        document.getElementById(
+            "editTitle"
+        );
 
 
-    Object.keys(fields).forEach(
-        id => {
+    const tag =
+        document.getElementById(
+            "editTag"
+        );
 
-            const element =
-                document.getElementById(
-                    id
-                );
 
-            if (element) {
+    const country =
+        document.getElementById(
+            "editCountry"
+        );
 
-                element.value =
-                    fields[id];
 
-            }
+    const logo =
+        document.getElementById(
+            "editLogo"
+        );
 
-        }
-    );
+
+    const faceit =
+        document.getElementById(
+            "editFaceit"
+        );
+
+
+    const steam =
+        document.getElementById(
+            "editSteam"
+        );
+
+
+    const description =
+        document.getElementById(
+            "editDescription"
+        );
+
+
+    if (title)
+        title.value =
+            team.title;
+
+
+    if (tag)
+        tag.value =
+            team.tag;
+
+
+    if (country)
+        country.value =
+            team.country;
+
+
+    if (logo)
+        logo.value =
+            team.logo;
+
+
+    if (faceit)
+        faceit.value =
+            team.faceit;
+
+
+    if (steam)
+        steam.value =
+            team.steam;
+
+
+    if (description)
+        description.value =
+            team.description;
 
 
     const modal =
@@ -3016,6 +3234,10 @@ function openEditor() {
 
 }
 
+
+/* =========================================================
+   CLOSE TEAM EDITOR
+========================================================= */
 
 function closeEditor() {
 
@@ -3066,62 +3288,115 @@ function saveTeamFromForm(event) {
         )?.value.trim();
 
 
-    if (title) {
+    const tag =
+        document.getElementById(
+            "editTag"
+        )?.value.trim();
 
-        team.title =
-            title;
 
-        team.name =
-            title;
+    const country =
+        document.getElementById(
+            "editCountry"
+        )?.value.trim();
+
+
+    const logo =
+        document.getElementById(
+            "editLogo"
+        )?.value.trim();
+
+
+    const faceit =
+        document.getElementById(
+            "editFaceit"
+        )?.value.trim();
+
+
+    const steam =
+        document.getElementById(
+            "editSteam"
+        )?.value.trim();
+
+
+    const description =
+        document.getElementById(
+            "editDescription"
+        )?.value.trim();
+
+
+    if (!title) {
+
+        alert(
+            "Введите название команды."
+        );
+
+        return;
 
     }
 
 
+    if (!tag) {
+
+        alert(
+            "Введите тег команды."
+        );
+
+        return;
+
+    }
+
+
+    if (!country) {
+
+        alert(
+            "Введите страну."
+        );
+
+        return;
+
+    }
+
+
+    team.title =
+        title;
+
+
+    team.name =
+        title;
+
+
     team.tag =
-        document.getElementById(
-            "editTag"
-        )?.value.trim() ||
-        team.tag;
+        tag;
 
 
     team.country =
-        document.getElementById(
-            "editCountry"
-        )?.value.trim() ||
-        team.country;
+        country;
 
 
     team.logo =
-        document.getElementById(
-            "editLogo"
-        )?.value.trim() ||
-        "";
+        logo || "";
 
 
     team.faceit =
-        document.getElementById(
-            "editFaceit"
-        )?.value.trim() ||
-        "";
+        faceit || "";
 
 
     team.steam =
-        document.getElementById(
-            "editSteam"
-        )?.value.trim() ||
-        "";
+        steam || "";
 
 
     team.description =
-        document.getElementById(
-            "editDescription"
-        )?.value.trim() ||
-        "";
+        description || "";
+
+
+    saveTeamData();
 
 
     closeEditor();
 
+
     renderTeams();
+
     renderTeamProfile();
 
 
@@ -3143,10 +3418,12 @@ function closeTeam() {
             "teams"
         );
 
+
     const teamPage =
         document.getElementById(
             "teamPage"
         );
+
 
     const playerPage =
         document.getElementById(
@@ -3206,6 +3483,7 @@ function closePlayer() {
         document.getElementById(
             "playerPage"
         );
+
 
     const teamPage =
         document.getElementById(
@@ -3328,7 +3606,9 @@ function renderRating() {
 
             <td>
                 <strong>
-                    ${escapeHTML(TEAM_NAME)}
+                    ${escapeHTML(
+                        team.name
+                    )}
                 </strong>
             </td>
 
@@ -3373,7 +3653,9 @@ function renderMatches() {
                 color:#858c98;
             "
         >
-            Матчи 1Minute пока не добавлены.
+            Матчи ${escapeHTML(
+                team.name
+            )} пока не добавлены.
         </div>
 
     `;
@@ -3409,10 +3691,55 @@ function renderTournaments() {
                 color:#858c98;
             "
         >
-            Турниры 1Minute пока не добавлены.
+            Турниры ${escapeHTML(
+                team.name
+            )} пока не добавлены.
         </div>
 
     `;
+
+}
+
+
+/* =========================================================
+   RENDER ALL
+========================================================= */
+
+function renderAll() {
+
+    renderTeams();
+
+    renderRating();
+
+    renderMatches();
+
+    renderTournaments();
+
+    renderTeamProfile();
+
+
+    if (
+        currentPlayer
+    ) {
+
+        const updated =
+            findPlayer(
+                currentPlayer.name
+            );
+
+
+        if (updated) {
+
+            currentPlayer =
+                updated;
+
+            renderPlayerProfile(
+                updated
+            );
+
+        }
+
+    }
 
 }
 
@@ -3445,22 +3772,31 @@ function showHashPage() {
         );
 
 
-    if (teams)
+    if (teams) {
+
         teams.classList.add(
             "hidden"
         );
 
+    }
 
-    if (teamPage)
+
+    if (teamPage) {
+
         teamPage.classList.add(
             "hidden"
         );
 
+    }
 
-    if (playerPage)
+
+    if (playerPage) {
+
         playerPage.classList.add(
             "hidden"
         );
+
+    }
 
 
     hideOtherPages();
@@ -3531,6 +3867,15 @@ function showHashPage() {
 
             playerPage.classList.remove(
                 "hidden"
+            );
+
+        }
+
+
+        if (currentPlayer) {
+
+            renderPlayerProfile(
+                currentPlayer
             );
 
         }
@@ -3634,10 +3979,8 @@ async function init() {
 
     if (!connected) {
 
-        renderTeams();
-        renderRating();
-        renderMatches();
-        renderTournaments();
+        renderAll();
+
         showHashPage();
 
         return;
@@ -3657,10 +4000,7 @@ async function init() {
     createAddPlayerModal();
 
 
-    renderTeams();
-    renderRating();
-    renderMatches();
-    renderTournaments();
+    renderAll();
 
 
     showHashPage();
@@ -3676,7 +4016,8 @@ async function init() {
 
     console.log(
         "User:",
-        currentUser?.id || "нет"
+        currentUser?.id ||
+        "нет"
     );
 
     console.log(
