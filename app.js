@@ -1,3 +1,4 @@
+```javascript
 const SUPABASE_URL = "https://wzheavazneaybhmgfntn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ZsTLAQNw2ILBetxcMTGY2A_rhMO_hkK";
 
@@ -26,12 +27,16 @@ const team = {
     logo: "",
     faceit: "",
     steam: "",
-    description: "Профили состава, матчи и статистика 1Minute — всё в одном месте."
+    description: "Профили состава, матчи и статистика 1Minute — всё в одном месте.",
+    status: "active"
 };
 
-async function supabase(path, options) {
-    options = options || {};
 
+/* =========================
+   SUPABASE
+========================= */
+
+async function supabase(path, options = {}) {
     const headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": "Bearer " + SUPABASE_KEY,
@@ -52,9 +57,11 @@ async function supabase(path, options) {
     );
 
     if (!response.ok) {
-        const text = await response.text();
-        console.error("Supabase error:", text);
-        throw new Error(text);
+        const errorText = await response.text();
+
+        console.error("Supabase error:", errorText);
+
+        throw new Error(errorText);
     }
 
     const text = await response.text();
@@ -63,12 +70,24 @@ async function supabase(path, options) {
         return [];
     }
 
-    return JSON.parse(text);
+    try {
+        return JSON.parse(text);
+    } catch {
+        return [];
+    }
 }
 
+
+/* =========================
+   HELPERS
+========================= */
+
 function normalize(value) {
-    return String(value || "").trim().toLowerCase();
+    return String(value || "")
+        .trim()
+        .toLowerCase();
 }
+
 
 function escapeHTML(value) {
     return String(value || "")
@@ -78,6 +97,7 @@ function escapeHTML(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
 
 function findPlayer(name) {
     const target = normalize(name);
@@ -90,6 +110,7 @@ function findPlayer(name) {
 
     return null;
 }
+
 
 function getPlayersByNames(names) {
     const result = [];
@@ -105,6 +126,11 @@ function getPlayersByNames(names) {
     return result;
 }
 
+
+/* =========================
+   LOAD PLAYERS
+========================= */
+
 async function loadPlayers() {
     try {
         const data = await supabase(
@@ -116,9 +142,15 @@ async function loadPlayers() {
         console.log("Игроки загружены:", players);
     } catch (error) {
         console.error("Ошибка загрузки игроков:", error);
+
         players = [];
     }
 }
+
+
+/* =========================
+   TEAM LIST
+========================= */
 
 function renderTeams() {
     const grid = document.getElementById("grid");
@@ -127,98 +159,156 @@ function renderTeams() {
         return;
     }
 
+    const logo = team.logo || "";
+
     let html = "";
 
-    html += '<div class="team-card" onclick="openTeam()">';
+    html += `
+        <div class="team-card" onclick="openTeam()">
 
-    html += '<div class="team-card-top">';
+            <div class="team-card-top">
 
-    html += '<div class="team-logo">';
+                <div class="team-logo">
+    `;
 
-    if (team.logo) {
-        html += '<img src="' +
-            escapeHTML(team.logo) +
-            '" alt="1Minute">';
+    if (logo) {
+        html += `
+                    <img
+                        src="${escapeHTML(logo)}"
+                        alt="${escapeHTML(TEAM_NAME)}"
+                    >
+        `;
     } else {
-        html += "<span>1</span>";
+        html += `
+                    <span>1</span>
+        `;
     }
 
-    html += "</div>";
+    html += `
+                </div>
 
-    html += "<div>";
+                <div>
 
-    html += '<div class="team-name">' +
-        escapeHTML(TEAM_NAME) +
-        "</div>";
+                    <div class="team-name">
+                        ${escapeHTML(TEAM_NAME)}
+                    </div>
 
-    html += '<div class="team-tag">1M</div>';
+                    <div class="team-tag">
+                        1M
+                    </div>
 
-    html += "</div>";
+                </div>
 
-    html += "</div>";
+            </div>
 
-    html += '<div class="team-card-bottom">';
+            <div class="team-card-bottom">
 
-    html += "<span>Russia</span>";
+                <span>
+                    Russia
+                </span>
 
-    html += '<span class="status">● ACTIVE</span>';
+                <span class="status active">
+                    ● ACTIVE
+                </span>
 
-    html += "</div>";
+            </div>
 
-    html += "</div>";
+        </div>
+    `;
 
     grid.innerHTML = html;
 }
+
+
+/* =========================
+   PLAYER CARD
+========================= */
 
 function playerCard(player, isSubstitute) {
     const name = player.name || "Player";
     const role = player.role || "Игрок";
     const avatar = player.avatar || "";
 
+    const safeName = escapeHTML(name)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'");
+
     let html = "";
 
-    html += '<div class="player-card" onclick="openPlayerByName(' +
-        "'" +
-        escapeHTML(name).replace(/'/g, "\\'") +
-        "'" +
-        ')">';
+    html += `
+        <div class="player-card">
 
-    html += '<div class="player-avatar">';
+            <div
+                class="player-card-main"
+                onclick="openPlayerByName('${safeName}')"
+            >
+
+                <div class="player-avatar">
+    `;
 
     if (avatar) {
-        html += '<img src="' +
-            escapeHTML(avatar) +
-            '" alt="' +
-            escapeHTML(name) +
-            '">';
+        html += `
+                    <img
+                        src="${escapeHTML(avatar)}"
+                        alt="${escapeHTML(name)}"
+                    >
+        `;
     } else {
-        html += "<span>" +
-            escapeHTML(name.charAt(0).toUpperCase()) +
-            "</span>";
+        html += `
+                    <span>
+                        ${escapeHTML(
+                            String(name).charAt(0).toUpperCase()
+                        )}
+                    </span>
+        `;
     }
 
-    html += "</div>";
+    html += `
+                </div>
 
-    html += '<div class="player-info">';
+                <div class="player-info">
 
-    html += "<h3>" +
-        escapeHTML(name) +
-        "</h3>";
+                    <h3>
+                        ${escapeHTML(name)}
+                    </h3>
 
-    html += "<span>" +
-        escapeHTML(role) +
-        "</span>";
+                    <span>
+                        ${escapeHTML(role)}
+                    </span>
 
-    html += "</div>";
+                </div>
+
+    `;
 
     if (isSubstitute) {
-        html += '<div class="player-badge">ЗАМЕНА</div>';
+        html += `
+                <div class="player-badge">
+                    ЗАМЕНА
+                </div>
+        `;
     }
 
-    html += "</div>";
+    html += `
+            </div>
+
+            <button
+                class="edit-player-btn"
+                type="button"
+                onclick="event.stopPropagation(); openPlayerEditor('${safeName}')"
+            >
+                ✎ Редактировать
+            </button>
+
+        </div>
+    `;
 
     return html;
 }
+
+
+/* =========================
+   TEAM PAGE
+========================= */
 
 function openTeam() {
     const teams = document.getElementById("teams");
@@ -239,6 +329,7 @@ function openTeam() {
     window.location.hash = "teamPage";
 }
 
+
 function renderTeamProfile() {
     const container = document.getElementById("teamProfile");
 
@@ -251,97 +342,163 @@ function renderTeamProfile() {
 
     let html = "";
 
-    html += '<div class="team-profile">';
+    html += `
+        <div class="team-profile">
 
-    html += '<div class="team-profile-header">';
+            <div class="team-profile-header">
 
-    html += '<div class="team-profile-logo">';
+                <div class="team-profile-logo">
+    `;
 
     if (team.logo) {
-        html += '<img src="' +
-            escapeHTML(team.logo) +
-            '" alt="1Minute">';
+        html += `
+                    <img
+                        src="${escapeHTML(team.logo)}"
+                        alt="${escapeHTML(TEAM_NAME)}"
+                    >
+        `;
     } else {
-        html += "<span>1</span>";
+        html += `
+                    <span>1</span>
+        `;
     }
 
-    html += "</div>";
+    html += `
+                </div>
 
-    html += "<div>";
+                <div>
 
-    html += '<div class="eyebrow">TEAM</div>';
+                    <div
+                        class="eyebrow"
+                        style="font-weight:800;"
+                    >
+                        TEAM
+                    </div>
 
-    html += "<h1>" +
-        escapeHTML(TEAM_NAME) +
-        "</h1>";
+                    <h1>
+                        ${escapeHTML(TEAM_NAME)}
+                    </h1>
 
-    html += "<p>" +
-        escapeHTML(team.description) +
-        "</p>";
+                    <p>
+                        ${escapeHTML(team.description)}
+                    </p>
 
-    html += "</div>";
+                    <div
+                        class="team-profile-status"
+                        style="
+                            display:inline-flex;
+                            align-items:center;
+                            gap:7px;
+                            margin-top:10px;
+                            padding:6px 9px;
+                            border-radius:6px;
+                            color:#8ee6ad;
+                            background:#0b1710;
+                            border:1px solid #21452f;
+                            font-size:10px;
+                            font-weight:800;
+                        "
+                    >
+                        <span>●</span>
+                        ACTIVE
+                    </div>
 
-    html += "</div>";
+                </div>
 
-    html += '<div class="roster">';
+            </div>
 
-    html += '<div class="section-head">';
 
-    html += "<div>";
+            <div class="roster">
 
-    html += '<div class="eyebrow">ROSTER</div>';
+                <div class="section-head">
 
-    html += "<h2>Основной состав</h2>";
+                    <div>
 
-    html += "</div>";
+                        <div class="eyebrow">
+                            ROSTER
+                        </div>
 
-    html += "</div>";
+                        <h2>
+                            Основной состав
+                        </h2>
 
-    html += '<div class="player-grid">';
+                    </div>
+
+                </div>
+
+
+                <div class="player-grid">
+    `;
 
     if (starters.length === 0) {
-        html += '<div class="glass" style="padding:24px;">' +
-            "Игроки пока не загружены." +
-            "</div>";
+        html += `
+                    <div
+                        class="glass"
+                        style="padding:24px;"
+                    >
+                        Игроки пока не загружены.
+                    </div>
+        `;
     } else {
         for (let i = 0; i < starters.length; i++) {
             html += playerCard(starters[i], false);
         }
     }
 
-    html += "</div>";
+    html += `
+                </div>
 
-    html += '<div class="section-head">';
 
-    html += "<div>";
+                <div class="section-head">
 
-    html += '<div class="eyebrow">SUBSTITUTES</div>';
+                    <div>
 
-    html += "<h2>Замены</h2>";
+                        <div class="eyebrow">
+                            SUBSTITUTES
+                        </div>
 
-    html += "</div>";
+                        <h2>
+                            Замены
+                        </h2>
 
-    html += "</div>";
+                    </div>
 
-    html += '<div class="player-grid">';
+                </div>
+
+
+                <div class="player-grid">
+    `;
 
     if (substitutes.length === 0) {
-        html += '<div class="glass" style="padding:24px;">' +
-            "Замены пока не загружены." +
-            "</div>";
+        html += `
+                    <div
+                        class="glass"
+                        style="padding:24px;"
+                    >
+                        Замены пока не загружены.
+                    </div>
+        `;
     } else {
         for (let i = 0; i < substitutes.length; i++) {
             html += playerCard(substitutes[i], true);
         }
     }
 
-    html += "</div>";
+    html += `
+                </div>
 
-    html += "</div>";
-    html += "</div>";
+            </div>
+
+        </div>
+    `;
 
     container.innerHTML = html;
 }
+
+
+/* =========================
+   PLAYER PAGE
+========================= */
 
 function openPlayerByName(name) {
     const player = findPlayer(name);
@@ -373,6 +530,7 @@ function openPlayerByName(name) {
     window.location.hash = "playerPage";
 }
 
+
 function renderPlayerProfile(player) {
     const container = document.getElementById("playerProfile");
 
@@ -382,66 +540,111 @@ function renderPlayerProfile(player) {
 
     let html = "";
 
-    html += '<div class="player-profile">';
+    html += `
+        <div class="player-profile">
 
-    html += '<div class="player-profile-avatar">';
+            <div class="player-profile-avatar">
+    `;
 
     if (player.avatar) {
-        html += '<img src="' +
-            escapeHTML(player.avatar) +
-            '" alt="' +
-            escapeHTML(player.name) +
-            '">';
+        html += `
+                <img
+                    src="${escapeHTML(player.avatar)}"
+                    alt="${escapeHTML(player.name)}"
+                >
+        `;
     } else {
-        html += "<span>" +
-            escapeHTML(
-                String(player.name || "P").charAt(0).toUpperCase()
-            ) +
-            "</span>";
+        html += `
+                <span>
+                    ${escapeHTML(
+                        String(player.name || "P")
+                            .charAt(0)
+                            .toUpperCase()
+                    )}
+                </span>
+        `;
     }
 
-    html += "</div>";
+    html += `
+            </div>
 
-    html += '<div class="eyebrow">PLAYER</div>';
+            <div
+                class="eyebrow"
+                style="font-weight:800;"
+            >
+                PLAYER
+            </div>
 
-    html += "<h1>" +
-        escapeHTML(player.name) +
-        "</h1>";
+            <h1>
+                ${escapeHTML(player.name)}
+            </h1>
 
-    html += '<div class="player-role">' +
-        escapeHTML(player.role || "Игрок") +
-        "</div>";
+            <div class="player-role">
+                ${escapeHTML(player.role || "Игрок")}
+            </div>
+    `;
 
     if (player.country) {
-        html += "<p>" +
-            escapeHTML(player.country) +
-            "</p>";
+        html += `
+            <p>
+                ${escapeHTML(player.country)}
+            </p>
+        `;
     }
 
-    html += '<div class="player-links">';
+    html += `
+            <div class="player-links">
+    `;
 
     if (player.faceit) {
-        html += '<a class="secondary" href="' +
-            escapeHTML(player.faceit) +
-            '" target="_blank" rel="noopener noreferrer">' +
-            "FACEIT →" +
-            "</a>";
+        html += `
+                <a
+                    class="secondary"
+                    href="${escapeHTML(player.faceit)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    FACEIT →
+                </a>
+        `;
     }
 
     if (player.steam) {
-        html += '<a class="secondary" href="' +
-            escapeHTML(player.steam) +
-            '" target="_blank" rel="noopener noreferrer">' +
-            "Steam →" +
-            "</a>";
+        html += `
+                <a
+                    class="secondary"
+                    href="${escapeHTML(player.steam)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Steam →
+                </a>
+        `;
     }
 
-    html += "</div>";
+    html += `
+            </div>
 
-    html += "</div>";
+            <div style="margin-top:20px;">
+                <button
+                    class="edit-btn"
+                    type="button"
+                    onclick="openPlayerEditor('${escapeHTML(player.name).replace(/'/g, "\\'")}')"
+                >
+                    ✎ Редактировать профиль
+                </button>
+            </div>
+
+        </div>
+    `;
 
     container.innerHTML = html;
 }
+
+
+/* =========================
+   PAGE CONTROL
+========================= */
 
 function hideOtherPages() {
     const pages = document.querySelectorAll(".page-section");
@@ -450,6 +653,7 @@ function hideOtherPages() {
         pages[i].classList.add("hidden");
     }
 }
+
 
 function closeTeam() {
     const teams = document.getElementById("teams");
@@ -473,6 +677,7 @@ function closeTeam() {
     window.location.hash = "teams";
 }
 
+
 function closePlayer() {
     const playerPage = document.getElementById("playerPage");
     const teamPage = document.getElementById("teamPage");
@@ -490,9 +695,15 @@ function closePlayer() {
     window.location.hash = "teamPage";
 }
 
+
 function filterTeams() {
     renderTeams();
 }
+
+
+/* =========================
+   RATING
+========================= */
 
 function renderRating() {
     const rows = document.getElementById("ratingRows");
@@ -501,15 +712,25 @@ function renderRating() {
         return;
     }
 
-    rows.innerHTML =
-        "<tr>" +
-        "<td>1</td>" +
-        "<td><strong>" + escapeHTML(TEAM_NAME) + "</strong></td>" +
-        "<td>0</td>" +
-        "<td>0</td>" +
-        "<td>—</td>" +
-        "</tr>";
+    rows.innerHTML = `
+        <tr>
+            <td>1</td>
+            <td>
+                <strong>
+                    ${escapeHTML(TEAM_NAME)}
+                </strong>
+            </td>
+            <td>0</td>
+            <td>0</td>
+            <td>—</td>
+        </tr>
+    `;
 }
+
+
+/* =========================
+   MATCHES
+========================= */
 
 function renderMatches() {
     const container = document.getElementById("matchesList");
@@ -518,11 +739,20 @@ function renderMatches() {
         return;
     }
 
-    container.innerHTML =
-        '<div class="glass" style="padding:24px;color:#858c98;">' +
-        "Матчи 1Minute пока не добавлены." +
-        "</div>";
+    container.innerHTML = `
+        <div
+            class="glass"
+            style="padding:24px;color:#858c98;"
+        >
+            Матчи 1Minute пока не добавлены.
+        </div>
+    `;
 }
+
+
+/* =========================
+   TOURNAMENTS
+========================= */
 
 function renderTournaments() {
     const container = document.getElementById("tournamentsGrid");
@@ -531,11 +761,20 @@ function renderTournaments() {
         return;
     }
 
-    container.innerHTML =
-        '<div class="glass" style="padding:24px;color:#858c98;">' +
-        "Турниры 1Minute пока не добавлены." +
-        "</div>";
+    container.innerHTML = `
+        <div
+            class="glass"
+            style="padding:24px;color:#858c98;"
+        >
+            Турниры 1Minute пока не добавлены.
+        </div>
+    `;
 }
+
+
+/* =========================
+   PLAYER EDITOR
+========================= */
 
 function openPlayerEditor(name) {
     const player = findPlayer(name);
@@ -592,6 +831,7 @@ function openPlayerEditor(name) {
     }
 }
 
+
 function closePlayerEditor() {
     const modal = document.getElementById("playerEditModal");
 
@@ -600,16 +840,55 @@ function closePlayerEditor() {
     }
 }
 
+
 async function savePlayer(event) {
     event.preventDefault();
 
-    const oldName = document.getElementById("playerEditOldName").value;
-    const newName = document.getElementById("playerEditName").value.trim();
-    const country = document.getElementById("playerEditCountry").value.trim();
-    const role = document.getElementById("playerEditRole").value;
-    const avatar = document.getElementById("playerEditAvatar").value.trim();
-    const faceit = document.getElementById("playerEditFaceit").value.trim();
-    const steam = document.getElementById("playerEditSteam").value.trim();
+    const oldNameElement =
+        document.getElementById("playerEditOldName");
+
+    const newNameElement =
+        document.getElementById("playerEditName");
+
+    const countryElement =
+        document.getElementById("playerEditCountry");
+
+    const roleElement =
+        document.getElementById("playerEditRole");
+
+    const avatarElement =
+        document.getElementById("playerEditAvatar");
+
+    const faceitElement =
+        document.getElementById("playerEditFaceit");
+
+    const steamElement =
+        document.getElementById("playerEditSteam");
+
+    if (
+        !oldNameElement ||
+        !newNameElement ||
+        !countryElement ||
+        !roleElement ||
+        !avatarElement ||
+        !faceitElement ||
+        !steamElement
+    ) {
+        return;
+    }
+
+    const oldName = oldNameElement.value;
+    const newName = newNameElement.value.trim();
+    const country = countryElement.value.trim();
+    const role = roleElement.value;
+    const avatar = avatarElement.value.trim();
+    const faceit = faceitElement.value.trim();
+    const steam = steamElement.value.trim();
+
+    if (!newName) {
+        alert("Введите никнейм игрока.");
+        return;
+    }
 
     const data = {
         name: newName,
@@ -622,7 +901,8 @@ async function savePlayer(event) {
 
     try {
         await supabase(
-            "players?name=eq." + encodeURIComponent(oldName),
+            "players?name=eq." +
+            encodeURIComponent(oldName),
             {
                 method: "PATCH",
                 headers: {
@@ -635,7 +915,19 @@ async function savePlayer(event) {
         await loadPlayers();
 
         closePlayerEditor();
+
+        renderTeams();
         renderTeamProfile();
+
+        const currentHash = window.location.hash;
+
+        if (currentHash === "#playerPage") {
+            const updatedPlayer = findPlayer(newName);
+
+            if (updatedPlayer) {
+                renderPlayerProfile(updatedPlayer);
+            }
+        }
 
         alert("Игрок успешно сохранён.");
     } catch (error) {
@@ -646,6 +938,11 @@ async function savePlayer(event) {
         );
     }
 }
+
+
+/* =========================
+   TEAM EDITOR
+========================= */
 
 function openEditor() {
     const title = document.getElementById("editTitle");
@@ -661,11 +958,11 @@ function openEditor() {
     }
 
     if (tag) {
-        tag.value = "1M";
+        tag.value = team.tag;
     }
 
     if (country) {
-        country.value = "Russia";
+        country.value = team.country;
     }
 
     if (logo) {
@@ -691,6 +988,7 @@ function openEditor() {
     }
 }
 
+
 function closeEditor() {
     const modal = document.getElementById("editModal");
 
@@ -698,6 +996,11 @@ function closeEditor() {
         modal.classList.add("hidden");
     }
 }
+
+
+/* =========================
+   NAVIGATION
+========================= */
 
 function showHashPage() {
     const hash = window.location.hash;
@@ -757,6 +1060,11 @@ function showHashPage() {
     }
 }
 
+
+/* =========================
+   START
+========================= */
+
 async function init() {
     console.log("1Minute запускается...");
 
@@ -771,15 +1079,18 @@ async function init() {
     console.log("1Minute готов.");
 }
 
+
 window.addEventListener(
     "hashchange",
     showHashPage
 );
 
+
 document.addEventListener(
     "DOMContentLoaded",
     function() {
-        const form = document.getElementById("playerEditForm");
+        const form =
+            document.getElementById("playerEditForm");
 
         if (form) {
             form.addEventListener(
@@ -791,3 +1102,4 @@ document.addEventListener(
         init();
     }
 );
+```
