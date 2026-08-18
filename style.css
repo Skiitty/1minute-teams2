@@ -1803,3 +1803,39 @@ footer {
         padding: 20px;
     }
 }
+/* =========================================================
+   1MINUTE — CENTER MAIN TEAM
+========================================================= */
+
+#teams {
+    text-align: center;
+}
+
+#teams-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#teams-list .section-head {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+}
+
+#grid.team-grid {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#grid .team-card {
+    width: 100%;
+    max-width: 520px;
+    text-align: left;
+}
+
+.filters {
+    display: none !important;
+}
