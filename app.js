@@ -1,992 +1,1834 @@
-const SUPABASE_URL="https://wzheavazneaybhmgfntn.supabase.co";
-const SUPABASE_KEY="sb_publishable_ZsTLAQNw2ILBetxcMTGY2A_rhMO_hkK";
+```css
+/* =========================================================
+   1MINUTE — GLOBAL
+========================================================= */
 
-const TEAM_NAME="1Minute";
-
-const STARTERS=[
-"Hesoko",
-"sk1pp",
-"k9yzo",
-"XXXOLDAR",
-"yoplo"
-];
-
-const SUBSTITUTES=[
-"lqq69",
-"ChapsTea"
-];
-
-let players=[];
-
-const team={
-name:"1Minute",
-title:"1Minute",
-tag:"1M",
-country:"Russia",
-logo:"",
-faceit:"",
-steam:"",
-description:"Профили состава, матчи и статистика 1Minute — всё в одном месте.",
-status:"active"
-};
-
-
-/* =========================
-   SUPABASE
-========================= */
-
-async function supabase(path,options={}){
-const headers={
-apikey:SUPABASE_KEY,
-Authorization:"Bearer "+SUPABASE_KEY,
-"Content-Type":"application/json"
-};
-
-if(options.headers)Object.assign(headers,options.headers);
-
-const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
-method:options.method||"GET",
-headers,
-body:options.body
-});
-
-if(!r.ok){
-const text=await r.text();
-console.error("Supabase:",r.status,text);
-throw new Error(text);
+* {
+    box-sizing: border-box;
 }
 
-const text=await r.text();
+html {
+    scroll-behavior: smooth;
+}
 
-if(!text)return[];
+body {
+    margin: 0;
+    min-height: 100vh;
 
-try{return JSON.parse(text)}
-catch{return[]}
+    background:
+        radial-gradient(
+            circle at 50% -10%,
+            rgba(80, 255, 145, 0.055),
+            transparent 38%
+        ),
+        #080b0e;
+
+    color: #f4f6f8;
+
+    font-family:
+        "Inter",
+        Arial,
+        sans-serif;
+
+    overflow-x: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+}
+
+.hidden {
+    display: none !important;
 }
 
 
-/* =========================
-   HELPERS
-========================= */
+/* =========================================================
+   BACKGROUND GLOW
+========================================================= */
 
-function normalize(v){
-return String(v||"").trim().toLowerCase();
+.glow {
+    position: fixed;
+
+    width: 420px;
+    height: 420px;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    filter: blur(90px);
+
+    opacity: .12;
+
+    z-index: -2;
 }
 
-function escapeHTML(v){
-return String(v||"")
-.replace(/&/g,"&amp;")
-.replace(/</g,"&lt;")
-.replace(/>/g,"&gt;")
-.replace(/"/g,"&quot;")
-.replace(/'/g,"&#039;");
+.glow-a {
+    left: -220px;
+    top: 180px;
+
+    background: #45ff91;
 }
 
-function safeJSString(v){
-return String(v||"")
-.replace(/\\/g,"\\\\")
-.replace(/'/g,"\\'")
-.replace(/"/g,'\\"')
-.replace(/\n/g,"\\n")
-.replace(/\r/g,"\\r");
-}
+.glow-b {
+    right: -240px;
+    top: 420px;
 
-function findPlayer(name){
-const n=normalize(name);
-return players.find(p=>normalize(p.name)===n)||null;
-}
-
-
-/*
-Если игрока нет в Supabase,
-создаём временную карточку.
-*/
-
-function getPlayersByNames(names){
-return names.map(name=>{
-const p=findPlayer(name);
-
-return p||{
-name,
-role:"Игрок",
-country:"",
-avatar:"",
-faceit:"",
-steam:""
-};
-});
+    background: #315c42;
 }
 
 
-/* =========================
-   LOAD PLAYERS
-========================= */
+/* =========================================================
+   HEADER
+========================================================= */
 
-async function loadPlayers(){
-try{
-const data=await supabase("players?select=*&order=id.asc");
-players=Array.isArray(data)?data:[];
-console.log("Players:",players);
-}catch(e){
-console.error("Ошибка игроков:",e);
-players=[];
-}
-}
+.topbar {
+    position: sticky;
 
+    top: 0;
 
-/* =========================
-   TEAM CARD
-========================= */
+    z-index: 100;
 
-function renderTeams(){
-const grid=document.getElementById("grid");
-if(!grid)return;
+    width: 100%;
 
-grid.innerHTML=`
-<div class="team-card" onclick="openTeam()">
+    min-height: 68px;
 
-<div class="team-top">
+    display: flex;
 
-<div class="team-logo">
-${
-team.logo
-?`<img src="${escapeHTML(team.logo)}" alt="1Minute">`
-:`<span>1</span>`
-}
-</div>
+    align-items: center;
 
-<div>
+    gap: 30px;
 
-<div class="team-name">
-${escapeHTML(team.name)}
-</div>
+    padding: 0 32px;
 
-<div class="team-country">
-${escapeHTML(team.country)}
-</div>
+    background:
+        rgba(8, 11, 14, .88);
 
-</div>
+    border-bottom:
+        1px solid #1b2229;
 
-</div>
-
-<div class="team-bottom">
-
-<span>${escapeHTML(team.tag)}</span>
-
-<span class="status active">
-● ACTIVE
-</span>
-
-</div>
-
-</div>
-`;
+    backdrop-filter:
+        blur(18px);
 }
 
 
-/* =========================
+.brand {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 3px;
+
+    text-decoration: none;
+
+    font-size: 19px;
+
+    font-weight: 900;
+
+    letter-spacing: -.04em;
+
+    white-space: nowrap;
+}
+
+.brand span {
+    color: #8ee6ad;
+}
+
+
+.topbar nav {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    flex: 1;
+}
+
+.topbar nav a {
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 9px 12px;
+
+    color: #717b86;
+
+    text-decoration: none;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    border-radius: 6px;
+
+    transition:
+        color .2s ease,
+        background .2s ease;
+}
+
+.topbar nav a:hover {
+    color: #e9edf0;
+
+    background: #11161b;
+}
+
+.topbar nav a.active {
+    color: #ffffff;
+
+    background: #11171c;
+}
+
+
+.login {
+    appearance: none;
+
+    border: 1px solid #29323a;
+
+    background: #11161b;
+
+    color: #c7ced5;
+
+    border-radius: 7px;
+
+    padding: 9px 15px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+.login:hover {
+    background: #181f25;
+
+    border-color: #3b4650;
+
+    transform: translateY(-1px);
+}
+
+
+.mobile-menu {
+    display: none;
+
+    appearance: none;
+
+    border: 1px solid #29323a;
+
+    background: #11161b;
+
+    color: #c7ced5;
+
+    border-radius: 7px;
+
+    width: 40px;
+
+    height: 38px;
+
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   MAIN / SCREEN
+========================================================= */
+
+main {
+    width: 100%;
+}
+
+.screen {
+    width: min(1180px, calc(100% - 40px));
+
+    margin: 0 auto;
+
+    padding: 70px 0 90px;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero {
+    max-width: 850px;
+
+    padding:
+        65px
+        0
+        75px;
+}
+
+.eyebrow {
+    color: #65707b;
+
+    font-size: 10px;
+
+    font-weight: 900;
+
+    letter-spacing: .16em;
+
+    text-transform: uppercase;
+}
+
+.hero h1 {
+    margin: 13px 0 20px;
+
+    font-size:
+        clamp(
+            48px,
+            7vw,
+            82px
+        );
+
+    line-height: .95;
+
+    letter-spacing: -.055em;
+
+    font-weight: 900;
+}
+
+.hero h1 span {
+    color: #8ee6ad;
+}
+
+.hero p {
+    max-width: 600px;
+
+    margin: 0;
+
+    color: #747e89;
+
+    font-size: 15px;
+
+    line-height: 1.75;
+}
+
+
+.hero-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    margin-top: 28px;
+}
+
+
+/* =========================================================
+   BUTTONS / LINKS
+========================================================= */
+
+.primary,
+.secondary {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 40px;
+
+    padding: 10px 15px;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    transition:
+        transform .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
+
+.primary {
+    background: #8ee6ad;
+
+    color: #07100a;
+
+    border: 1px solid #8ee6ad;
+}
+
+.primary:hover {
+    transform: translateY(-2px);
+
+    background: #a5f2bd;
+}
+
+.primary b {
+    margin-left: 10px;
+}
+
+.secondary {
+    background: #11161b;
+
+    color: #aeb7c0;
+
+    border: 1px solid #29323a;
+}
+
+.secondary:hover {
+    transform: translateY(-2px);
+
+    background: #181f25;
+
+    border-color: #3b4650;
+}
+
+
+/* =========================================================
+   SECTION HEAD
+========================================================= */
+
+.section-head {
+    display: flex;
+
+    align-items: flex-end;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 18px;
+}
+
+.section-head h2 {
+    margin: 5px 0 0;
+
+    font-size: 26px;
+
+    line-height: 1;
+
+    font-weight: 900;
+
+    letter-spacing: -.035em;
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.filters {
+    display: flex;
+
+    gap: 5px;
+
+    flex-wrap: wrap;
+}
+
+.filters button {
+    appearance: none;
+
+    border: 1px solid #232b32;
+
+    background: #0d1216;
+
+    color: #69747e;
+
+    border-radius: 6px;
+
+    padding: 7px 10px;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    transition:
+        color .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
+
+.filters button:hover,
+.filters button.selected {
+    color: #dce2e6;
+
+    background: #151b20;
+
+    border-color: #35404a;
+}
+
+
+/* =========================================================
+   TEAM GRID
+========================================================= */
+
+.team-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(270px, 1fr)
+        );
+
+    gap: 15px;
+}
+
+
+.team-card {
+    position: relative;
+
+    padding: 18px;
+
+    min-height: 150px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(21, 27, 33, .96),
+            rgba(11, 14, 18, .96)
+        );
+
+    border: 1px solid #222a32;
+
+    border-radius: 11px;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.team-card::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.045),
+            transparent 45%
+        );
+}
+
+.team-card:hover {
+    transform: translateY(-4px);
+
+    border-color: #35404a;
+
+    box-shadow:
+        0 18px 50px rgba(0,0,0,.3);
+}
+
+
+.team-top {
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+.team-logo {
+    width: 62px;
+    height: 62px;
+
+    flex: 0 0 62px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    overflow: hidden;
+
+    background: #0b0f13;
+
+    border: 1px solid #29323a;
+}
+
+.team-logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+}
+
+.team-logo span {
+    color: #8ee6ad;
+
+    font-size: 30px;
+
+    font-weight: 900;
+}
+
+.team-name {
+    color: #f1f3f5;
+
+    font-size: 17px;
+
+    font-weight: 900;
+
+    letter-spacing: -.025em;
+}
+
+.team-country {
+    margin-top: 4px;
+
+    color: #707a85;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+.team-bottom {
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-top: 18px;
+
+    color: #68737e;
+
+    font-size: 10px;
+
+    font-weight: 800;
+}
+
+.status.active {
+    color: #8ee6ad;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.back {
+    appearance: none;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #737e89;
+
+    padding: 0;
+
+    margin-bottom: 25px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    transition:
+        color .2s ease,
+        transform .2s ease;
+}
+
+.back:hover {
+    color: #ffffff;
+
+    transform: translateX(-3px);
+}
+
+
+/* =========================================================
+   GLASS
+========================================================= */
+
+.glass {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20,25,30,.94),
+            rgba(11,14,18,.94)
+        );
+
+    border: 1px solid #242c34;
+
+    border-radius: 11px;
+}
+
+
+/* =========================================================
+   TEAM PROFILE
+========================================================= */
+
+.team-profile {
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    padding-bottom: 70px;
+}
+
+.team-profile-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 28px;
+
+    padding: 28px;
+
+    margin-bottom: 45px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20,25,30,.94),
+            rgba(11,14,18,.94)
+        );
+
+    border: 1px solid #242c34;
+
+    border-radius: 13px;
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.22);
+}
+
+.team-profile-logo {
+    width: 110px;
+    height: 110px;
+
+    flex: 0 0 110px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background: #0c1014;
+
+    border: 1px solid #29323a;
+
+    overflow: hidden;
+}
+
+.team-profile-logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+}
+
+.team-profile-logo span {
+    color: #8ee6ad;
+
+    font-size: 50px;
+
+    font-weight: 900;
+}
+
+.team-profile-header h1 {
+    margin: 4px 0 8px;
+
+    font-size: 42px;
+
+    line-height: 1;
+
+    font-weight: 900;
+
+    letter-spacing: -.035em;
+}
+
+.team-profile-header p {
+    margin: 0;
+
+    max-width: 600px;
+
+    color: #737d88;
+
+    line-height: 1.7;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   ROSTER
+========================================================= */
+
+.roster .section-head {
+    margin-top: 38px;
+
+    margin-bottom: 16px;
+}
+
+.roster .section-head h2 {
+    margin: 4px 0 0;
+
+    font-size: 25px;
+
+    font-weight: 850;
+
+    letter-spacing: -.02em;
+}
+
+.player-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(230px, 1fr)
+        );
+
+    gap: 14px;
+}
+
+
+/* =========================================================
    PLAYER CARD
-========================= */
+========================================================= */
 
-function playerCard(player,isSubstitute){
+.player-card {
+    position: relative;
 
-const name=player.name||"Player";
-const role=player.role||"Игрок";
-const avatar=player.avatar||"";
-const safeName=safeJSString(name);
+    min-height: 105px;
 
-return`
+    display: flex;
 
-<div
-class="player-card"
-onclick="openPlayerByName('${safeName}')"
->
+    align-items: center;
 
-<div class="player-avatar">
+    gap: 15px;
 
-${
-avatar
-?`
-<img
-src="${escapeHTML(avatar)}"
-alt="${escapeHTML(name)}"
->
-`
-:`
-<span>
-${escapeHTML(name.charAt(0).toUpperCase())}
-</span>
-`
+    padding: 15px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(22,27,33,.96),
+            rgba(12,15,19,.96)
+        );
+
+    border: 1px solid #222a32;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        background .2s ease,
+        box-shadow .2s ease;
 }
 
-</div>
+.player-card::before {
+    content: "";
 
-<div class="player-info">
+    position: absolute;
 
-<h3>
-${escapeHTML(name)}
-</h3>
+    inset: 0;
 
-<span>
-${escapeHTML(role)}
-</span>
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.045),
+            transparent 45%
+        );
 
-</div>
-
-${
-isSubstitute
-?`
-<div class="player-badge">
-ЗАМЕНА
-</div>
-`
-:""
+    pointer-events: none;
 }
 
-</div>
+.player-card:hover {
+    transform: translateY(-3px);
 
-`;
+    border-color: #34404a;
+
+    background:
+        linear-gradient(
+            145deg,
+            #181e24,
+            #101419
+        );
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.28);
 }
 
+.player-avatar {
+    flex: 0 0 68px;
 
-/* =========================
-   TEAM PAGE
-========================= */
+    width: 68px;
+    height: 68px;
 
-function openTeam(){
+    border-radius: 9px;
 
-document.getElementById("teams")?.classList.add("hidden");
-document.getElementById("playerPage")?.classList.add("hidden");
+    overflow: hidden;
 
-hideOtherPages();
+    background: #0c1014;
 
-document.getElementById("teamPage")?.classList.remove("hidden");
+    border: 1px solid #29323a;
 
-renderTeamProfile();
+    display: flex;
 
-location.hash="teamPage";
+    align-items: center;
 
-scrollTo({
-top:0,
-behavior:"smooth"
-});
+    justify-content: center;
 }
 
+.player-avatar img {
+    width: 100%;
+    height: 100%;
 
-function renderTeamProfile(){
-
-const box=document.getElementById("teamProfile");
-if(!box)return;
-
-const starters=getPlayersByNames(STARTERS);
-const substitutes=getPlayersByNames(SUBSTITUTES);
-
-box.innerHTML=`
-
-<div class="team-profile">
-
-<div class="team-profile-header">
-
-<div class="team-profile-logo">
-
-${
-team.logo
-?`
-<img
-src="${escapeHTML(team.logo)}"
-alt="1Minute"
->
-`
-:`
-<span>1</span>
-`
+    object-fit: cover;
 }
 
-</div>
+.player-avatar span {
+    font-size: 25px;
 
-<div>
+    font-weight: 900;
 
-<div class="eyebrow">
-TEAM
-</div>
+    color: #8ee6ad;
+}
 
-<h1>
-${escapeHTML(team.name)}
-</h1>
+.player-info {
+    min-width: 0;
 
-<p>
-${escapeHTML(team.description)}
-</p>
+    position: relative;
 
-<div class="team-meta">
+    z-index: 1;
+}
 
-<span>
-TAG: ${escapeHTML(team.tag)}
-</span>
+.player-info h3 {
+    margin: 0 0 5px;
 
-<span class="tier-badge">
-TIER 3
-</span>
+    color: #f0f2f4;
 
-</div>
+    font-size: 16px;
 
-</div>
+    font-weight: 800;
 
-</div>
+    white-space: nowrap;
 
+    overflow: hidden;
 
-<div class="roster">
+    text-overflow: ellipsis;
+}
 
-<div class="roster-title">
+.player-info span {
+    color: #727c87;
 
-<div class="roster-title-left">
+    font-size: 11px;
 
-<span class="roster-dot blue"></span>
+    font-weight: 700;
 
-<h2>
-ОСНОВНОЙ СОСТАВ (${starters.length})
-</h2>
+    text-transform: uppercase;
 
-</div>
+    letter-spacing: .06em;
+}
 
-<span class="roster-label blue-label">
-STARTING ROSTER
-</span>
+.player-badge {
+    position: absolute;
 
-</div>
+    right: 12px;
 
+    top: 12px;
 
-<div class="player-grid">
+    padding: 4px 7px;
 
-${starters.map(p=>playerCard(p,false)).join("")}
+    border-radius: 5px;
 
-</div>
+    background: #171b20;
 
+    border: 1px solid #303740;
 
-<div class="roster-title substitutes-title">
+    color: #727c87;
 
-<div class="roster-title-left">
+    font-size: 8px;
 
-<span class="roster-dot purple"></span>
+    font-weight: 900;
 
-<h2>
-ЗАМЕНА (${substitutes.length})
-</h2>
-
-</div>
-
-<span class="roster-label purple-label">
-SUBSTITUTES
-</span>
-
-</div>
-
-
-<div class="player-grid">
-
-${substitutes.map(p=>playerCard(p,true)).join("")}
-
-</div>
-
-</div>
-
-</div>
-
-`;
+    letter-spacing: .07em;
 }
 
 
-/* =========================
-   PLAYER PAGE
-========================= */
+/* =========================================================
+   PLAYER PROFILE
+========================================================= */
 
-function openPlayerByName(name){
+.player-profile {
+    position: relative;
 
-const player=findPlayer(name)||{
-name,
-role:"Игрок",
-country:"",
-avatar:"",
-faceit:"",
-steam:""
-};
+    max-width: 1100px;
 
-document.getElementById("teams")?.classList.add("hidden");
-document.getElementById("teamPage")?.classList.add("hidden");
+    margin: 0 auto;
 
-hideOtherPages();
+    padding: 30px 0 80px;
+}
 
-document.getElementById("playerPage")?.classList.remove("hidden");
+.player-profile::before {
+    content: "";
 
-renderPlayerProfile(player);
+    position: absolute;
 
-location.hash="playerPage";
+    width: 500px;
+    height: 500px;
 
-scrollTo({
-top:0,
-behavior:"smooth"
-});
+    left: 50%;
+    top: 80px;
+
+    transform: translateX(-50%);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(80, 255, 145, 0.10),
+            transparent 70%
+        );
+
+    pointer-events: none;
+
+    z-index: -1;
+}
+
+.player-profile-avatar {
+    width: 190px;
+    height: 190px;
+
+    margin: 0 auto 28px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #151a20,
+            #0b0e12
+        );
+
+    border: 1px solid #242b34;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 25px 70px rgba(0,0,0,.45),
+        0 0 0 1px rgba(255,255,255,.02);
+
+    position: relative;
+}
+
+.player-profile-avatar::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: inherit;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.08),
+            transparent 40%
+        );
+
+    pointer-events: none;
+}
+
+.player-profile-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+.player-profile-avatar span {
+    font-size: 72px;
+
+    font-weight: 900;
+
+    color: #8ee6ad;
+}
+
+.player-profile > .eyebrow {
+    text-align: center;
+
+    color: #6e7783;
+
+    letter-spacing: .16em;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    margin-bottom: 8px;
+}
+
+.player-profile > h1 {
+    text-align: center;
+
+    font-size:
+        clamp(
+            42px,
+            7vw,
+            76px
+        );
+
+    line-height: .95;
+
+    letter-spacing: -.045em;
+
+    margin: 0;
+
+    font-weight: 900;
+
+    color: #f4f6f8;
+
+    word-break: break-word;
+}
+
+.player-role {
+    width: fit-content;
+
+    margin: 16px auto 0;
+
+    padding: 7px 13px;
+
+    border-radius: 7px;
+
+    background: #10161b;
+
+    border: 1px solid #273039;
+
+    color: #9ba5b1;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: .08em;
+}
+
+.player-profile > p {
+    text-align: center;
+
+    margin: 14px 0 0;
+
+    color: #727b86;
+
+    font-size: 14px;
 }
 
 
-function renderPlayerProfile(player){
+/* =========================================================
+   PLAYER LINKS
+========================================================= */
 
-const box=document.getElementById("playerProfile");
-if(!box)return;
+.player-links {
+    display: flex;
 
-const name=player.name||"Player";
-const avatar=player.avatar||"";
+    justify-content: center;
 
-box.innerHTML=`
+    gap: 10px;
 
-<div class="player-profile">
+    flex-wrap: wrap;
 
-<div class="player-profile-avatar">
-
-${
-avatar
-?`
-<img
-src="${escapeHTML(avatar)}"
-alt="${escapeHTML(name)}"
->
-`
-:`
-<span>
-${escapeHTML(name.charAt(0).toUpperCase())}
-</span>
-`
+    margin-top: 24px;
 }
 
-</div>
+.player-links a {
+    min-width: 110px;
 
-<div class="eyebrow">
-PLAYER
-</div>
+    justify-content: center;
 
-<h1>
-${escapeHTML(name)}
-</h1>
+    display: inline-flex;
 
-<div class="player-role">
-${escapeHTML(player.role||"Игрок")}
-</div>
+    align-items: center;
 
-${
-player.country
-?`<p>${escapeHTML(player.country)}</p>`
-:""
+    text-decoration: none;
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        background .2s ease;
 }
 
-<div class="player-links">
+.player-links a:hover {
+    transform: translateY(-2px);
 
-${
-player.faceit
-?`
-<a
-class="secondary"
-href="${escapeHTML(player.faceit)}"
-target="_blank"
-rel="noopener noreferrer"
->
-FACEIT →
-</a>
-`
-:""
-}
+    border-color: #40505b;
 
-${
-player.steam
-?`
-<a
-class="secondary"
-href="${escapeHTML(player.steam)}"
-target="_blank"
-rel="noopener noreferrer"
->
-Steam →
-</a>
-`
-:""
-}
-
-</div>
-
-<div
-style="
-margin-top:24px;
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-"
->
-
-<button
-class="edit-btn"
-onclick="openPlayerEditor('${safeJSString(name)}')"
->
-✎ Редактировать профиль
-</button>
-
-<button
-class="edit-btn"
-onclick="closePlayer()"
->
-← Вернуться к команде
-</button>
-
-</div>
-
-</div>
-
-`;
+    background: #161c22;
 }
 
 
-function closeTeam(){
+/* =========================================================
+   PROFILE ACTIONS
+========================================================= */
 
-document.getElementById("teamPage")?.classList.add("hidden");
-document.getElementById("playerPage")?.classList.add("hidden");
+.player-profile-actions {
+    justify-content: center;
+}
 
-hideOtherPages();
+.player-profile-actions .edit-btn {
+    appearance: none;
 
-document.getElementById("teams")?.classList.remove("hidden");
+    border: 1px solid #29323a;
 
-location.hash="teams";
+    background: #11161b;
 
-scrollTo({
-top:0,
-behavior:"smooth"
-});
+    color: #aab3bd;
+
+    border-radius: 7px;
+
+    padding: 10px 15px;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        color .2s ease,
+        transform .2s ease;
+}
+
+.player-profile-actions .edit-btn:hover {
+    background: #181f25;
+
+    border-color: #3b4650;
+
+    color: #ffffff;
+
+    transform: translateY(-1px);
+}
+
+.player-profile::after {
+    content: "";
+
+    display: block;
+
+    max-width: 900px;
+
+    height: 1px;
+
+    margin: 55px auto 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #252d35,
+            transparent
+        );
 }
 
 
-function closePlayer(){
+/* =========================================================
+   TABLE
+========================================================= */
 
-document.getElementById("playerPage")?.classList.add("hidden");
+.table-wrap {
+    overflow-x: auto;
 
-document.getElementById("teamPage")?.classList.remove("hidden");
+    padding: 5px;
+}
 
-renderTeamProfile();
+table {
+    width: 100%;
 
-location.hash="teamPage";
+    border-collapse: collapse;
 
-scrollTo({
-top:0,
-behavior:"smooth"
-});
+    min-width: 650px;
+}
+
+th {
+    padding: 15px;
+
+    color: #66717c;
+
+    font-size: 9px;
+
+    font-weight: 900;
+
+    text-transform: uppercase;
+
+    letter-spacing: .1em;
+
+    text-align: left;
+
+    border-bottom: 1px solid #232b32;
+}
+
+td {
+    padding: 17px 15px;
+
+    color: #b9c1c8;
+
+    font-size: 12px;
+
+    border-bottom: 1px solid #1c232a;
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+tbody tr:hover {
+    background: rgba(255,255,255,.018);
 }
 
 
-function hideOtherPages(){
+/* =========================================================
+   MATCHES / TOURNAMENTS
+========================================================= */
 
-document
-.querySelectorAll(".page-section")
-.forEach(el=>el.classList.add("hidden"));
+.matches,
+.tournament-grid {
+    display: grid;
+
+    gap: 14px;
+}
+
+.matches > .glass,
+.tournament-grid > .glass {
+    min-height: 90px;
 }
 
 
-/* =========================
-   FILTER
-========================= */
+/* =========================================================
+   MODALS
+========================================================= */
 
-function filterTeams(type,button){
+.modal {
+    position: fixed;
 
-document
-.querySelectorAll(".filters button")
-.forEach(b=>b.classList.remove("selected"));
+    inset: 0;
 
-if(button)button.classList.add("selected");
+    z-index: 1000;
 
-renderTeams();
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0,0,0,.72);
+
+    backdrop-filter:
+        blur(10px);
+
+    overflow-y: auto;
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-card {
+    position: relative;
+
+    width: min(520px, 100%);
+
+    max-height: calc(100vh - 40px);
+
+    overflow-y: auto;
+
+    padding: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #151a20,
+            #0c1014
+        );
+
+    border: 1px solid #2a333c;
+
+    border-radius: 13px;
+
+    box-shadow:
+        0 30px 100px rgba(0,0,0,.55);
+}
+
+.modal-card h2 {
+    margin: 6px 0 24px;
+
+    font-size: 25px;
+
+    font-weight: 900;
+
+    letter-spacing: -.035em;
+}
+
+.modal-close {
+    position: absolute;
+
+    right: 15px;
+    top: 12px;
+
+    width: 32px;
+    height: 32px;
+
+    appearance: none;
+
+    border: 1px solid #29323a;
+
+    background: #11161b;
+
+    color: #8a949e;
+
+    border-radius: 6px;
+
+    font-size: 20px;
+
+    line-height: 1;
+
+    transition:
+        background .2s ease,
+        color .2s ease;
+}
+
+.modal-close:hover {
+    background: #1a2127;
+
+    color: #ffffff;
+}
+
+.modal-card form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+}
+
+.modal-card label {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    color: #858f99;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: .08em;
+}
+
+.modal-card input,
+.modal-card textarea,
+.modal-card select {
+    width: 100%;
+
+    appearance: none;
+
+    border: 1px solid #29323a;
+
+    background: #0b1014;
+
+    color: #e8ecef;
+
+    border-radius: 7px;
+
+    padding: 11px 12px;
+
+    outline: none;
+
+    font-size: 13px;
+
+    text-transform: none;
+
+    letter-spacing: normal;
+
+    transition:
+        border-color .2s ease,
+        background .2s ease,
+        box-shadow .2s ease;
+}
+
+.modal-card textarea {
+    resize: vertical;
+
+    min-height: 90px;
+}
+
+.modal-card input:focus,
+.modal-card textarea:focus,
+.modal-card select:focus {
+    border-color: #466052;
+
+    background: #0d1317;
+
+    box-shadow:
+        0 0 0 3px rgba(142,230,173,.06);
+}
+
+.modal-card select option {
+    background: #11161b;
+
+    color: #ffffff;
+}
+
+.save {
+    width: 100%;
+
+    margin-top: 5px;
 }
 
 
-/* =========================
-   RATING
-========================= */
+/* =========================================================
+   LOGIN
+========================================================= */
 
-function renderRating(){
+.login-card {
+    text-align: center;
 
-const rows=document.getElementById("ratingRows");
-if(!rows)return;
+    max-width: 430px;
+}
 
-rows.innerHTML=`
+.login-icon {
+    width: 70px;
+    height: 70px;
 
-<tr>
+    margin: 20px auto;
 
-<td>1</td>
+    display: flex;
 
-<td>
-<strong>
-${escapeHTML(TEAM_NAME)}
-</strong>
-</td>
+    align-items: center;
 
-<td>0</td>
+    justify-content: center;
 
-<td>0</td>
+    border-radius: 14px;
 
-<td>—</td>
+    background: #0d1511;
 
-</tr>
+    border: 1px solid #284633;
 
-`;
+    color: #8ee6ad;
+
+    font-size: 32px;
+
+    font-weight: 900;
 }
 
 
-/* =========================
-   MATCHES
-========================= */
+/* =========================================================
+   FOOTER
+========================================================= */
 
-function renderMatches(){
+footer {
+    padding: 35px 20px 45px;
 
-const box=document.getElementById("matchesList");
-if(!box)return;
+    text-align: center;
 
-box.innerHTML=`
+    color: #4f5963;
 
-<div
-class="glass"
-style="
-padding:24px;
-color:#858c98;
-"
->
-Матчи 1Minute пока не добавлены.
-</div>
+    font-size: 10px;
 
-`;
+    font-weight: 600;
+
+    border-top: 1px solid #151b20;
 }
 
 
-/* =========================
-   TOURNAMENTS
-========================= */
+/* =========================================================
+   MOBILE
+========================================================= */
 
-function renderTournaments(){
+@media (max-width: 700px) {
 
-const box=document.getElementById("tournamentsGrid");
-if(!box)return;
+    .topbar {
+        min-height: 62px;
 
-box.innerHTML=`
+        padding: 0 16px;
 
-<div
-class="glass"
-style="
-padding:24px;
-color:#858c98;
-"
->
-Турниры 1Minute пока не добавлены.
-</div>
+        gap: 12px;
+    }
 
-`;
+    .topbar nav {
+        display: none;
+
+        position: absolute;
+
+        left: 0;
+        right: 0;
+        top: 62px;
+
+        padding: 10px 16px 14px;
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+        background: #0a0e12;
+
+        border-bottom: 1px solid #1d252c;
+    }
+
+    .menu-open .topbar nav {
+        display: flex;
+    }
+
+    .topbar nav a {
+        padding: 12px;
+
+        justify-content: center;
+    }
+
+    .mobile-menu {
+        display: block;
+
+        margin-left: auto;
+    }
+
+    .login {
+        display: none;
+    }
+
+    .screen {
+        width: min(
+            100% - 28px,
+            1180px
+        );
+
+        padding: 45px 0 65px;
+    }
+
+    .hero {
+        padding:
+            35px
+            0
+            50px;
+    }
+
+    .hero h1 {
+        font-size: 47px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .hero-actions a {
+        width: 100%;
+    }
+
+    .section-head {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .filters {
+        width: 100%;
+    }
+
+    .filters button {
+        flex: 1;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .team-profile-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        padding: 20px;
+    }
+
+    .team-profile-logo {
+        width: 85px;
+        height: 85px;
+
+        flex-basis: 85px;
+    }
+
+    .team-profile-header h1 {
+        font-size: 34px;
+    }
+
+    .player-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .player-card {
+        min-height: 90px;
+    }
+
+    .player-avatar {
+        width: 58px;
+        height: 58px;
+
+        flex-basis: 58px;
+    }
+
+    .player-profile {
+        padding: 15px 0 55px;
+    }
+
+    .player-profile-avatar {
+        width: 145px;
+        height: 145px;
+
+        border-radius: 14px;
+    }
+
+    .player-profile-avatar span {
+        font-size: 55px;
+    }
+
+    .player-profile > h1 {
+        font-size: 48px;
+
+        word-break: break-word;
+    }
+
+    .player-links {
+        width: 100%;
+    }
+
+    .player-links a {
+        flex: 1;
+
+        min-width: 130px;
+    }
+
+    .player-profile-actions {
+        flex-direction: column;
+    }
+
+    .player-profile-actions .edit-btn {
+        width: 100%;
+    }
+
+    .modal {
+        align-items: flex-start;
+
+        padding:
+            15px;
+    }
+
+    .modal-card {
+        margin-top: 15px;
+
+        padding: 22px;
+
+        max-height:
+            calc(100vh - 30px);
+    }
 }
 
 
-/* =========================
-   PLAYER EDITOR
-========================= */
+/* =========================================================
+   VERY SMALL SCREEN
+========================================================= */
 
-function openPlayerEditor(name){
+@media (max-width: 420px) {
 
-const player=findPlayer(name);
+    .hero h1 {
+        font-size: 40px;
+    }
 
-if(!player){
+    .player-profile > h1 {
+        font-size: 39px;
+    }
 
-alert(
-"Игрок пока отсутствует в базе Supabase."
-);
+    .player-profile-avatar {
+        width: 125px;
+        height: 125px;
+    }
 
-return;
+    .player-card {
+        padding: 12px;
+    }
+
+    .player-badge {
+        display: none;
+    }
+
+    .team-profile-header {
+        padding: 17px;
+    }
+
+    .team-profile-header h1 {
+        font-size: 30px;
+    }
 }
-
-document.getElementById("playerEditOldName").value=player.name||"";
-
-document.getElementById("playerEditTeam").value=TEAM_NAME;
-
-document.getElementById("playerEditName").value=player.name||"";
-
-document.getElementById("playerEditCountry").value=player.country||"";
-
-document.getElementById("playerEditRole").value=player.role||"Игрок";
-
-document.getElementById("playerEditAvatar").value=player.avatar||"";
-
-document.getElementById("playerEditFaceit").value=player.faceit||"";
-
-document.getElementById("playerEditSteam").value=player.steam||"";
-
-document
-.getElementById("playerEditModal")
-?.classList.remove("hidden");
-
-document.body.style.overflow="hidden";
-}
-
-
-function closePlayerEditor(){
-
-document
-.getElementById("playerEditModal")
-?.classList.add("hidden");
-
-document.body.style.overflow="";
-}
-
-
-async function savePlayer(event){
-
-event.preventDefault();
-
-const oldName=document
-.getElementById("playerEditOldName")
-.value.trim();
-
-const name=document
-.getElementById("playerEditName")
-.value.trim();
-
-if(!name){
-
-alert("Введите никнейм.");
-return;
-}
-
-const data={
-name,
-country:document.getElementById("playerEditCountry").value.trim(),
-role:document.getElementById("playerEditRole").value.trim(),
-avatar:document.getElementById("playerEditAvatar").value.trim(),
-faceit:document.getElementById("playerEditFaceit").value.trim(),
-steam:document.getElementById("playerEditSteam").value.trim()
-};
-
-try{
-
-await supabase(
-"players?name=eq."+encodeURIComponent(oldName),
-{
-method:"PATCH",
-headers:{
-Prefer:"return=representation"
-},
-body:JSON.stringify(data)
-}
-);
-
-await loadPlayers();
-
-closePlayerEditor();
-
-renderTeams();
-renderTeamProfile();
-
-const updated=findPlayer(name);
-
-if(updated){
-renderPlayerProfile(updated);
-}
-
-alert("Профиль игрока сохранён.");
-
-}catch(e){
-
-console.error(e);
-
-alert(
-"Не удалось сохранить профиль. Проверь Supabase RLS."
-);
-}
-}
-
-
-/* =========================
-   TEAM EDITOR
-========================= */
-
-function openEditor(){
-
-document.getElementById("editTitle").value=team.title;
-document.getElementById("editTag").value=team.tag;
-document.getElementById("editCountry").value=team.country;
-document.getElementById("editLogo").value=team.logo;
-document.getElementById("editFaceit").value=team.faceit;
-document.getElementById("editSteam").value=team.steam;
-document.getElementById("editDescription").value=team.description;
-
-document
-.getElementById("editModal")
-?.classList.remove("hidden");
-
-document.body.style.overflow="hidden";
-}
-
-
-function closeEditor(){
-
-document
-.getElementById("editModal")
-?.classList.add("hidden");
-
-document.body.style.overflow="";
-}
-
-
-function saveTeam(event){
-
-event.preventDefault();
-
-team.title=document.getElementById("editTitle").value.trim();
-team.name=team.title||"1Minute";
-
-team.tag=document.getElementById("editTag").value.trim();
-team.country=document.getElementById("editCountry").value.trim();
-team.logo=document.getElementById("editLogo").value.trim();
-team.faceit=document.getElementById("editFaceit").value.trim();
-team.steam=document.getElementById("editSteam").value.trim();
-team.description=document.getElementById("editDescription").value.trim();
-
-closeEditor();
-
-renderTeams();
-renderTeamProfile();
-
-alert("Команда сохранена.");
-}
-
-
-/* =========================
-   NAVIGATION
-========================= */
-
-function updateActiveNavigation(hash){
-
-document
-.querySelectorAll(".topbar nav a")
-.forEach(link=>{
-
-link.classList.toggle(
-"active",
-link.getAttribute("href")===hash
-);
-
-});
-}
-
-
-function showHashPage(){
-
-const hash=location.hash;
-
-document.getElementById("teams")?.classList.add("hidden");
-document.getElementById("teamPage")?.classList.add("hidden");
-document.getElementById("playerPage")?.classList.add("hidden");
-
-hideOtherPages();
-
-
-if(
-hash==="#rating"||
-hash==="#matches"||
-hash==="#tournaments"
-){
-
-document.querySelector(hash)?.classList.remove("hidden");
-
-updateActiveNavigation(hash);
-
-return;
-}
-
-
-if(hash==="#teamPage"){
-
-document.getElementById("teamPage")?.classList.remove("hidden");
-
-renderTeamProfile();
-
-updateActiveNavigation("#teams");
-
-return;
-}
-
-
-if(hash==="#playerPage"){
-
-document.getElementById("playerPage")?.classList.remove("hidden");
-
-updateActiveNavigation("#teams");
-
-return;
-}
-
-
-document.getElementById("teams")?.classList.remove("hidden");
-
-renderTeams();
-
-updateActiveNavigation("#teams");
-}
-
-
-/* =========================
-   INIT
-========================= */
-
-async function init(){
-
-console.log("1Minute запускается...");
-
-await loadPlayers();
-
-renderTeams();
-renderRating();
-renderMatches();
-renderTournaments();
-showHashPage();
-
-console.log("1Minute готов.");
-}
-
-
-/* =========================
-   EVENTS
-========================= */
-
-window.addEventListener(
-"hashchange",
-showHashPage
-);
-
-
-document.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-const playerForm=
-document.getElementById("playerEditForm");
-
-if(playerForm){
-playerForm.addEventListener(
-"submit",
-savePlayer
-);
-}
-
-
-const teamForm=
-document.getElementById("editForm");
-
-if(teamForm){
-teamForm.addEventListener(
-"submit",
-saveTeam
-);
-}
-
-init();
-
-}
-);
+```
