@@ -1046,8 +1046,7 @@ footer {
 
     .player-card {
         min-height: auto;
-    }
-}
-.team-profile-header .eyebrow {
+    }.team-profile-header .eyebrow {
     font-weight: 900;
+    color: #a1a1aa;
 }
