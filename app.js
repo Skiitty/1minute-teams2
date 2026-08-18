@@ -1,6 +1,8 @@
 /* =========================================================
    1MINUTE — APP.JS
-   TEAM DATABASE + SUPABASE + ADMIN + STEAM AVATAR
+   TEAM DATABASE + SUPABASE + ADMIN
+   TEAM SETTINGS SAVED IN SUPABASE
+   STEAM AVATAR AUTO SYNC
 ========================================================= */
 
 
@@ -16,15 +18,6 @@ const SUPABASE_KEY =
 
 const TEAM_NAME = "1Minute";
 
-/*
-   Название Supabase Edge Function.
-
-   Если функция называется steam-avatar,
-   оставляем так.
-*/
-const STEAM_AVATAR_FUNCTION =
-    "steam-avatar";
-
 
 /* =========================================================
    GLOBAL STATE
@@ -37,10 +30,12 @@ let supabaseClient = null;
 
 
 /* =========================================================
-   TEAM
+   TEAM DEFAULT DATA
 ========================================================= */
 
 const team = {
+
+    id: null,
 
     name: "1Minute",
 
@@ -62,161 +57,6 @@ const team = {
     status: "active"
 
 };
-
-
-/* =========================================================
-   NOTIFICATION
-========================================================= */
-
-function showNotification(
-    message,
-    type = "success"
-) {
-
-    let container =
-        document.getElementById(
-            "notificationContainer"
-        );
-
-    if (!container) {
-
-        container =
-            document.createElement(
-                "div"
-            );
-
-        container.id =
-            "notificationContainer";
-
-        container.style.position =
-            "fixed";
-
-        container.style.top =
-            "24px";
-
-        container.style.left =
-            "50%";
-
-        container.style.transform =
-            "translateX(-50%)";
-
-        container.style.zIndex =
-            "99999";
-
-        container.style.display =
-            "flex";
-
-        container.style.flexDirection =
-            "column";
-
-        container.style.gap =
-            "10px";
-
-        container.style.width =
-            "min(420px, calc(100vw - 30px))";
-
-        document.body.appendChild(
-            container
-        );
-
-    }
-
-
-    const notification =
-        document.createElement(
-            "div"
-        );
-
-
-    notification.style.padding =
-        "14px 18px";
-
-    notification.style.borderRadius =
-        "10px";
-
-    notification.style.border =
-        "1px solid rgba(255,255,255,.10)";
-
-    notification.style.background =
-        "rgba(15,18,23,.96)";
-
-    notification.style.backdropFilter =
-        "blur(14px)";
-
-    notification.style.boxShadow =
-        "0 15px 50px rgba(0,0,0,.35)";
-
-    notification.style.color =
-        type === "error"
-            ? "#ff8e82"
-            : "#8ee6ad";
-
-    notification.style.fontSize =
-        "13px";
-
-    notification.style.fontWeight =
-        "700";
-
-    notification.style.lineHeight =
-        "1.5";
-
-    notification.style.textAlign =
-        "center";
-
-    notification.style.opacity =
-        "0";
-
-    notification.style.transform =
-        "translateY(-10px)";
-
-    notification.style.transition =
-        "all .25s ease";
-
-    notification.textContent =
-        message;
-
-
-    container.appendChild(
-        notification
-    );
-
-
-    requestAnimationFrame(
-        function() {
-
-            notification.style.opacity =
-                "1";
-
-            notification.style.transform =
-                "translateY(0)";
-
-        }
-    );
-
-
-    setTimeout(
-        function() {
-
-            notification.style.opacity =
-                "0";
-
-            notification.style.transform =
-                "translateY(-10px)";
-
-            setTimeout(
-                function() {
-
-                    notification.remove();
-
-                },
-                300
-            );
-
-        },
-        3000
-    );
-
-}
 
 
 /* =========================================================
@@ -351,6 +191,143 @@ function getSubstitutePlayers() {
 
 
 /* =========================================================
+   NOTIFICATION
+========================================================= */
+
+function showNotification(
+    message,
+    type = "success"
+) {
+
+    let notification =
+        document.getElementById(
+            "siteNotification"
+        );
+
+    if (!notification) {
+
+        notification =
+            document.createElement(
+                "div"
+            );
+
+        notification.id =
+            "siteNotification";
+
+        notification.style.position =
+            "fixed";
+
+        notification.style.left =
+            "50%";
+
+        notification.style.bottom =
+            "30px";
+
+        notification.style.transform =
+            "translateX(-50%) translateY(20px)";
+
+        notification.style.zIndex =
+            "99999";
+
+        notification.style.padding =
+            "14px 20px";
+
+        notification.style.borderRadius =
+            "10px";
+
+        notification.style.fontSize =
+            "13px";
+
+        notification.style.fontWeight =
+            "700";
+
+        notification.style.maxWidth =
+            "90%";
+
+        notification.style.textAlign =
+            "center";
+
+        notification.style.opacity =
+            "0";
+
+        notification.style.transition =
+            "all .25s ease";
+
+        notification.style.backdropFilter =
+            "blur(15px)";
+
+        document.body.appendChild(
+            notification
+        );
+
+    }
+
+
+    notification.textContent =
+        message;
+
+
+    if (type === "error") {
+
+        notification.style.background =
+            "rgba(80,20,20,.95)";
+
+        notification.style.border =
+            "1px solid rgba(255,100,100,.35)";
+
+        notification.style.color =
+            "#ffb0b0";
+
+    } else {
+
+        notification.style.background =
+            "rgba(20,55,35,.95)";
+
+        notification.style.border =
+            "1px solid rgba(100,255,160,.3)";
+
+        notification.style.color =
+            "#a8ffc5";
+
+    }
+
+
+    requestAnimationFrame(
+        function() {
+
+            notification.style.opacity =
+                "1";
+
+            notification.style.transform =
+                "translateX(-50%) translateY(0)";
+
+        }
+    );
+
+
+    clearTimeout(
+        notification._timer
+    );
+
+
+    notification._timer =
+        setTimeout(
+            function() {
+
+                notification.style.opacity =
+                    "0";
+
+                notification.style.transform =
+                    "translateX(-50%) translateY(20px)";
+
+            },
+            3000
+        );
+
+}
+
+
+/* =========================================================
    SUPABASE REQUEST
 ========================================================= */
 
@@ -367,8 +344,10 @@ async function supabaseRequest(
 
     }
 
+
     const sessionResult =
         await supabaseClient.auth.getSession();
+
 
     if (sessionResult.error) {
 
@@ -376,12 +355,15 @@ async function supabaseRequest(
 
     }
 
+
     const session =
         sessionResult.data?.session || null;
+
 
     const accessToken =
         session?.access_token ||
         SUPABASE_KEY;
+
 
     const headers = {
 
@@ -396,6 +378,7 @@ async function supabaseRequest(
 
     };
 
+
     if (options.headers) {
 
         Object.assign(
@@ -404,6 +387,7 @@ async function supabaseRequest(
         );
 
     }
+
 
     const response =
         await fetch(
@@ -424,8 +408,10 @@ async function supabaseRequest(
             }
         );
 
+
     const text =
         await response.text();
+
 
     if (!response.ok) {
 
@@ -442,11 +428,13 @@ async function supabaseRequest(
 
     }
 
+
     if (!text) {
 
         return [];
 
     }
+
 
     try {
 
@@ -462,87 +450,197 @@ async function supabaseRequest(
 
 
 /* =========================================================
-   STEAM AVATAR
+   LOAD TEAM SETTINGS
 ========================================================= */
 
-/*
-   Отправляем Steam URL в Supabase Edge Function.
-
-   Function ожидает:
-
-   {
-       "steam_url": "https://steamcommunity.com/..."
-   }
-
-   Возвращает:
-
-   {
-       success: true,
-       steam_id: "...",
-       persona_name: "...",
-       avatar: "...",
-       avatar_medium: "...",
-       avatar_small: "...",
-       profile_url: "..."
-   }
-*/
-
-async function getSteamAvatar(
-    steamURL
-) {
-
-    if (!steamURL) {
-
-        return null;
-
-    }
-
-    const url =
-        String(steamURL).trim();
-
-    if (!url) {
-
-        return null;
-
-    }
-
+async function loadTeamSettings() {
 
     try {
 
-        console.log(
-            "Получаем Steam аватар:",
-            url
-        );
+        const data =
+            await supabaseRequest(
+                "team_settings?select=*&order=id.asc&limit=1"
+            );
 
 
-        const sessionResult =
-            await supabaseClient.auth.getSession();
+        if (
+            Array.isArray(data) &&
+            data.length > 0
+        ) {
+
+            const savedTeam =
+                data[0];
 
 
-        if (sessionResult.error) {
+            team.id =
+                savedTeam.id ??
+                null;
 
-            throw sessionResult.error;
+
+            team.name =
+                savedTeam.name ||
+                "1Minute";
+
+
+            team.title =
+                savedTeam.title ||
+                team.name;
+
+
+            team.tag =
+                savedTeam.tag ||
+                "1M";
+
+
+            team.country =
+                savedTeam.country ||
+                "Russia";
+
+
+            team.logo =
+                savedTeam.logo ||
+                "";
+
+
+            team.faceit =
+                savedTeam.faceit ||
+                "";
+
+
+            team.steam =
+                savedTeam.steam ||
+                "";
+
+
+            team.description =
+                savedTeam.description ||
+                "Профили состава, матчи и статистика 1Minute — всё в одном месте.";
+
+
+            team.status =
+                savedTeam.status ||
+                "active";
+
+
+            console.log(
+                "✓ Настройки команды загружены:",
+                team
+            );
+
+        } else {
+
+            console.log(
+                "Настройки команды не найдены."
+            );
 
         }
 
 
-        const session =
-            sessionResult.data?.session ||
-            null;
+        return team;
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка загрузки настроек команды:",
+            error
+        );
+
+        return team;
+
+    }
+
+}
 
 
-        const accessToken =
-            session?.access_token ||
-            SUPABASE_KEY;
+/* =========================================================
+   SAVE TEAM SETTINGS
+========================================================= */
+
+async function saveTeamSettings() {
+
+    if (
+        !currentUser ||
+        !isAdmin
+    ) {
+
+        throw new Error(
+            "Недостаточно прав."
+        );
+
+    }
 
 
-        const response =
-            await fetch(
+    const data = {
 
-                SUPABASE_URL +
-                "/functions/v1/" +
-                STEAM_AVATAR_FUNCTION,
+        name:
+            team.name,
 
+        title:
+            team.title,
+
+        tag:
+            team.tag,
+
+        country:
+            team.country,
+
+        logo:
+            team.logo,
+
+        faceit:
+            team.faceit,
+
+        steam:
+            team.steam,
+
+        description:
+            team.description,
+
+        status:
+            team.status,
+
+        updated_at:
+            new Date().toISOString()
+
+    };
+
+
+    let result;
+
+
+    if (team.id) {
+
+        result =
+            await supabaseRequest(
+                "team_settings?id=eq." +
+                encodeURIComponent(
+                    team.id
+                ),
+                {
+
+                    method:
+                        "PATCH",
+
+                    headers: {
+
+                        "Prefer":
+                            "return=representation"
+
+                    },
+
+                    body:
+                        JSON.stringify(
+                            data
+                        )
+
+                }
+            );
+
+    } else {
+
+        result =
+            await supabaseRequest(
+                "team_settings",
                 {
 
                     method:
@@ -550,98 +648,40 @@ async function getSteamAvatar(
 
                     headers: {
 
-                        "Content-Type":
-                            "application/json",
-
-                        "apikey":
-                            SUPABASE_KEY,
-
-                        "Authorization":
-                            "Bearer " +
-                            accessToken
+                        "Prefer":
+                            "return=representation"
 
                     },
 
                     body:
-                        JSON.stringify({
-
-                            steam_url:
-                                url
-
-                        })
+                        JSON.stringify(
+                            data
+                        )
 
                 }
-
             );
-
-
-        const text =
-            await response.text();
-
-
-        let data = null;
-
-
-        try {
-
-            data =
-                JSON.parse(text);
-
-        } catch {
-
-            data = null;
-
-        }
-
-
-        if (!response.ok) {
-
-            console.error(
-                "Steam avatar function error:",
-                response.status,
-                data || text
-            );
-
-            throw new Error(
-                data?.error ||
-                text ||
-                "Не удалось получить Steam аватар."
-            );
-
-        }
 
 
         if (
-            !data ||
-            data.success !== true
+            Array.isArray(result) &&
+            result.length > 0
         ) {
 
-            throw new Error(
-                data?.error ||
-                "Steam не вернул данные игрока."
-            );
+            team.id =
+                result[0].id;
 
         }
 
-
-        console.log(
-            "✓ Steam данные:",
-            data
-        );
-
-
-        return data;
-
-    } catch (error) {
-
-        console.error(
-            "Ошибка получения Steam аватара:",
-            error
-        );
-
-        throw error;
-
     }
+
+
+    console.log(
+        "✓ Настройки команды сохранены:",
+        result
+    );
+
+
+    await loadTeamSettings();
 
 }
 
@@ -663,10 +703,12 @@ async function checkAuth() {
 
     }
 
+
     try {
 
         const result =
             await supabaseClient.auth.getSession();
+
 
         if (result.error) {
 
@@ -674,11 +716,20 @@ async function checkAuth() {
 
         }
 
+
         currentUser =
             result.data?.session?.user ||
             null;
 
+
+        console.log(
+            "Текущий пользователь:",
+            currentUser
+        );
+
+
         await checkAdmin();
+
 
         updateLoginButton();
         updateLoginModalUI();
@@ -690,8 +741,10 @@ async function checkAuth() {
             error
         );
 
+
         currentUser = null;
         isAdmin = false;
+
 
         updateLoginButton();
         updateLoginModalUI();
@@ -709,11 +762,13 @@ async function checkAdmin() {
 
     isAdmin = false;
 
+
     if (!currentUser) {
 
         return false;
 
     }
+
 
     try {
 
@@ -742,6 +797,12 @@ async function checkAdmin() {
 
         isAdmin =
             !!result.data;
+
+
+        console.log(
+            "Admin:",
+            isAdmin
+        );
 
 
         return isAdmin;
@@ -773,11 +834,13 @@ function updateLoginButton() {
             ".login"
         );
 
+
     if (!button) {
 
         return;
 
     }
+
 
     if (!currentUser) {
 
@@ -787,6 +850,7 @@ function updateLoginButton() {
         return;
 
     }
+
 
     button.textContent =
         isAdmin
@@ -807,18 +871,22 @@ function openLoginModal() {
             "loginModal"
         );
 
+
     if (!modal) {
 
         return;
 
     }
 
+
     updateLoginModalUI();
+
 
     const error =
         document.getElementById(
             "loginError"
         );
+
 
     if (error) {
 
@@ -830,9 +898,11 @@ function openLoginModal() {
 
     }
 
+
     modal.classList.remove(
         "hidden"
     );
+
 
     document.body.style.overflow =
         "hidden";
@@ -847,15 +917,18 @@ function closeLoginModal() {
             "loginModal"
         );
 
+
     if (!modal) {
 
         return;
 
     }
 
+
     modal.classList.add(
         "hidden"
     );
+
 
     document.body.style.overflow =
         "";
@@ -874,15 +947,18 @@ function updateLoginModalUI() {
             "loginStatus"
         );
 
+
     const loginForm =
         document.getElementById(
             "loginForm"
         );
 
+
     const logoutButton =
         document.getElementById(
             "logoutButton"
         );
+
 
     if (!status) {
 
@@ -961,6 +1037,7 @@ async function login(event) {
 
     event.preventDefault();
 
+
     if (!supabaseClient) {
 
         showLoginError(
@@ -976,6 +1053,7 @@ async function login(event) {
         document.getElementById(
             "loginEmail"
         );
+
 
     const password =
         document.getElementById(
@@ -1027,6 +1105,7 @@ async function login(event) {
         updateLoginModalUI();
 
 
+        await loadTeamSettings();
         await loadPlayers();
 
 
@@ -1036,14 +1115,14 @@ async function login(event) {
 
         showNotification(
             isAdmin
-                ? "Вы вошли как администратор."
+                ? "Вход выполнен. Вы администратор."
                 : "Вход выполнен."
         );
 
 
         setTimeout(
             closeLoginModal,
-            400
+            500
         );
 
 
@@ -1053,6 +1132,7 @@ async function login(event) {
             "Ошибка входа:",
             error
         );
+
 
         showLoginError(
             getAuthErrorMessage(
@@ -1076,16 +1156,17 @@ function showLoginError(message) {
             "loginError"
         );
 
-    if (!error) {
 
-        alert(message);
+    if (!error) {
 
         return;
 
     }
 
+
     error.textContent =
         message;
+
 
     error.style.display =
         "block";
@@ -1144,15 +1225,7 @@ async function logout() {
 
         if (supabaseClient) {
 
-            const result =
-                await supabaseClient.auth
-                    .signOut();
-
-            if (result.error) {
-
-                throw result.error;
-
-            }
+            await supabaseClient.auth.signOut();
 
         }
 
@@ -1173,7 +1246,9 @@ async function logout() {
     updateLoginButton();
     updateLoginModalUI();
 
+
     closeLoginModal();
+
 
     renderTeamProfile();
 
@@ -1199,24 +1274,35 @@ function setupAuthListener() {
 
 
     supabaseClient.auth.onAuthStateChange(
-        async function(
+        function(
             event,
             session
         ) {
+
+            console.log(
+                "Auth event:",
+                event
+            );
+
 
             currentUser =
                 session?.user ||
                 null;
 
 
-            await checkAdmin();
+            setTimeout(
+                async function() {
 
+                    await checkAdmin();
 
-            updateLoginButton();
-            updateLoginModalUI();
+                    updateLoginButton();
+                    updateLoginModalUI();
 
+                    renderTeamProfile();
 
-            renderTeamProfile();
+                },
+                0
+            );
 
         }
     );
@@ -1244,6 +1330,12 @@ async function loadPlayers() {
                 : [];
 
 
+        console.log(
+            "✓ Игроки загружены:",
+            players
+        );
+
+
         return players;
 
     } catch (error) {
@@ -1253,7 +1345,9 @@ async function loadPlayers() {
             error
         );
 
+
         players = [];
+
 
         return [];
 
@@ -1272,6 +1366,7 @@ function renderTeams() {
         document.getElementById(
             "grid"
         );
+
 
     if (!grid) {
 
@@ -1302,7 +1397,13 @@ function renderTeams() {
                             `
                             :
                             `
-                            <span>1</span>
+                            <span>
+                                ${escapeHTML(
+                                    team.name
+                                        .charAt(0)
+                                        .toUpperCase()
+                                )}
+                            </span>
                             `
                     }
 
@@ -1401,7 +1502,6 @@ function playerCard(
 
             </div>
 
-
             <div class="player-info">
 
                 <h3>
@@ -1413,7 +1513,6 @@ function playerCard(
                 </span>
 
             </div>
-
 
             ${
                 isSubstitute
@@ -1614,7 +1713,6 @@ function renderTeamProfile() {
 
                     </div>
 
-
                     <div
                         style="
                             display:flex;
@@ -1630,7 +1728,6 @@ function renderTeamProfile() {
                         >
                             + Добавить игрока
                         </button>
-
 
                         <button
                             class="secondary"
@@ -1670,12 +1767,17 @@ function renderTeamProfile() {
                             `
                             :
                             `
-                            <span>1</span>
+                            <span>
+                                ${escapeHTML(
+                                    team.name
+                                        .charAt(0)
+                                        .toUpperCase()
+                                )}
+                            </span>
                             `
                     }
 
                 </div>
-
 
                 <div>
 
@@ -1683,18 +1785,15 @@ function renderTeamProfile() {
                         TEAM
                     </div>
 
-
                     <h1>
                         ${escapeHTML(team.name)}
                     </h1>
-
 
                     <p>
                         ${escapeHTML(
                             team.description
                         )}
                     </p>
-
 
                     <div
                         style="
@@ -1714,6 +1813,59 @@ function renderTeamProfile() {
                         <span>●</span>
                         ACTIVE
                     </div>
+
+                    ${
+                        team.faceit || team.steam
+                            ?
+                            `
+                            <div
+                                style="
+                                    display:flex;
+                                    gap:10px;
+                                    margin-top:16px;
+                                    flex-wrap:wrap;
+                                "
+                            >
+
+                                ${
+                                    team.faceit
+                                        ?
+                                        `
+                                        <a
+                                            class="secondary"
+                                            href="${escapeHTML(team.faceit)}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            FACEIT →
+                                        </a>
+                                        `
+                                        :
+                                        ""
+                                }
+
+                                ${
+                                    team.steam
+                                        ?
+                                        `
+                                        <a
+                                            class="secondary"
+                                            href="${escapeHTML(team.steam)}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            STEAM →
+                                        </a>
+                                        `
+                                        :
+                                        ""
+                                }
+
+                            </div>
+                            `
+                            :
+                            ""
+                    }
 
                 </div>
 
@@ -2214,8 +2366,101 @@ function closePlayerEditor() {
 
 
 /* =========================================================
+   STEAM AVATAR SYNC
+========================================================= */
+
+async function syncSteamAvatar(
+    steamUrl
+) {
+
+    if (!steamUrl) {
+
+        return null;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                SUPABASE_URL +
+                "/functions/v1/steam-avatar",
+                {
+
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            steam_url:
+                                steamUrl
+
+                        })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Steam avatar error:",
+                data
+            );
+
+            return null;
+
+        }
+
+
+        if (
+            data.success &&
+            data.avatar
+        ) {
+
+            console.log(
+                "✓ Steam avatar:",
+                data.avatar
+            );
+
+
+            return data.avatar;
+
+        }
+
+
+        return null;
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка Steam avatar:",
+            error
+        );
+
+
+        return null;
+
+    }
+
+}
+
+
+/* =========================================================
    SAVE PLAYER
-   AUTOMATIC STEAM AVATAR
 ========================================================= */
 
 async function savePlayer(event) {
@@ -2262,7 +2507,7 @@ async function savePlayer(event) {
         )?.value.trim();
 
 
-    const manualAvatar =
+    let avatar =
         document.getElementById(
             "playerEditAvatar"
         )?.value.trim();
@@ -2292,83 +2537,33 @@ async function savePlayer(event) {
     }
 
 
-    const player =
-        findPlayer(oldName);
-
-
-    if (!player) {
-
-        showNotification(
-            "Игрок не найден.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
     try {
 
-        /*
-           По умолчанию оставляем существующий аватар.
-        */
-
-        let avatar =
-            manualAvatar ||
-            "";
-
-
-        /*
-           Если указан Steam URL —
-           автоматически получаем актуальный аватар.
-        */
+        /* ================================================
+           STEAM AVATAR
+        ================================================ */
 
         if (steam) {
 
-            try {
-
-                const steamData =
-                    await getSteamAvatar(
-                        steam
-                    );
-
-
-                if (
-                    steamData?.avatar
-                ) {
-
-                    avatar =
-                        steamData.avatar;
-
-                    console.log(
-                        "✓ Steam аватар обновлён"
-                    );
-
-                }
-
-            } catch (steamError) {
-
-                console.error(
-                    "Steam avatar error:",
-                    steamError
+            const steamAvatar =
+                await syncSteamAvatar(
+                    steam
                 );
 
 
-                /*
-                   Если Steam не ответил,
-                   не ломаем сохранение профиля.
-                */
+            if (steamAvatar) {
 
-                showNotification(
-                    "Профиль сохраняется, но Steam-аватар получить не удалось.",
-                    "error"
-                );
+                avatar =
+                    steamAvatar;
 
             }
 
         }
 
+
+        /* ================================================
+           SAVE
+        ================================================ */
 
         await supabaseRequest(
 
@@ -2402,7 +2597,7 @@ async function savePlayer(event) {
                             role || "Игрок",
 
                         avatar:
-                            avatar,
+                            avatar || "",
 
                         faceit:
                             faceit || "",
@@ -2428,7 +2623,9 @@ async function savePlayer(event) {
 
 
         const updatedPlayer =
-            findPlayer(newName);
+            findPlayer(
+                newName
+            );
 
 
         if (updatedPlayer) {
@@ -2441,9 +2638,7 @@ async function savePlayer(event) {
 
 
         showNotification(
-            steam && avatar
-                ? "Профиль сохранён. Steam-аватар обновлён."
-                : "Профиль игрока сохранён."
+            "Профиль игрока сохранён."
         );
 
 
@@ -2620,7 +2815,7 @@ function createAddPlayerModal() {
                     <input
                         id="addPlayerAvatar"
                         type="url"
-                        placeholder="Можно оставить пустым"
+                        placeholder="https://..."
                     >
                 </label>
 
@@ -2774,7 +2969,6 @@ function closeAddPlayerModal() {
 
 /* =========================================================
    ADD PLAYER
-   AUTOMATIC STEAM AVATAR
 ========================================================= */
 
 async function addPlayer(event) {
@@ -2821,7 +3015,7 @@ async function addPlayer(event) {
         )?.value;
 
 
-    const manualAvatar =
+    let avatar =
         document.getElementById(
             "addPlayerAvatar"
         )?.value.trim();
@@ -2865,41 +3059,22 @@ async function addPlayer(event) {
 
     try {
 
-        /*
-           Если аватар вручную не указан,
-           пробуем получить его из Steam.
-        */
-
-        let avatar =
-            manualAvatar ||
-            "";
-
+        /* ================================================
+           STEAM AVATAR
+        ================================================ */
 
         if (steam) {
 
-            try {
-
-                const steamData =
-                    await getSteamAvatar(
-                        steam
-                    );
-
-
-                if (
-                    steamData?.avatar
-                ) {
-
-                    avatar =
-                        steamData.avatar;
-
-                }
-
-            } catch (steamError) {
-
-                console.error(
-                    "Steam avatar error:",
-                    steamError
+            const steamAvatar =
+                await syncSteamAvatar(
+                    steam
                 );
+
+
+            if (steamAvatar) {
+
+                avatar =
+                    steamAvatar;
 
             }
 
@@ -2933,7 +3108,7 @@ async function addPlayer(event) {
                             role || "Игрок",
 
                         avatar:
-                            avatar,
+                            avatar || "",
 
                         faceit:
                             faceit || "",
@@ -2965,9 +3140,7 @@ async function addPlayer(event) {
 
 
         showNotification(
-            steam && avatar
-                ? "Игрок добавлен. Steam-аватар получен автоматически."
-                : "Игрок успешно добавлен."
+            "Игрок успешно добавлен."
         );
 
 
@@ -3012,11 +3185,6 @@ async function movePlayerToSubstitute(name) {
 
 
     if (!player) {
-
-        showNotification(
-            "Игрок не найден.",
-            "error"
-        );
 
         return;
 
@@ -3111,11 +3279,6 @@ async function movePlayerToStarter(name) {
 
     if (!player) {
 
-        showNotification(
-            "Игрок не найден.",
-            "error"
-        );
-
         return;
 
     }
@@ -3209,11 +3372,6 @@ async function removePlayerFromRoster(name) {
 
     if (!player) {
 
-        showNotification(
-            "Игрок не найден.",
-            "error"
-        );
-
         return;
 
     }
@@ -3290,103 +3448,6 @@ async function removePlayerFromRoster(name) {
 
         showNotification(
             "Не удалось удалить игрока.",
-            "error"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   RESTORE PLAYER
-========================================================= */
-
-async function restorePlayer(name) {
-
-    if (!isAdmin) {
-
-        showNotification(
-            "Доступ запрещён.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    const player =
-        findPlayer(name);
-
-
-    if (!player) {
-
-        showNotification(
-            "Игрок не найден.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        await supabaseRequest(
-
-            "players?name=eq." +
-            encodeURIComponent(
-                player.name
-            ),
-
-            {
-
-                method:
-                    "PATCH",
-
-                headers: {
-
-                    "Prefer":
-                        "return=representation"
-
-                },
-
-                body:
-                    JSON.stringify({
-
-                        active:
-                            true
-
-                    })
-
-            }
-
-        );
-
-
-        await loadPlayers();
-
-
-        renderTeamProfile();
-        renderTeams();
-
-
-        showNotification(
-            "Игрок снова добавлен в состав."
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            error
-        );
-
-
-        showNotification(
-            "Не удалось восстановить игрока.",
             "error"
         );
 
@@ -3475,6 +3536,10 @@ function openEditor() {
 }
 
 
+/* =========================================================
+   CLOSE TEAM EDITOR
+========================================================= */
+
 function closeEditor() {
 
     const modal =
@@ -3502,12 +3567,15 @@ function closeEditor() {
    SAVE TEAM
 ========================================================= */
 
-function saveTeamFromForm(event) {
+async function saveTeamFromForm(event) {
 
     event.preventDefault();
 
 
-    if (!isAdmin) {
+    if (
+        !currentUser ||
+        !isAdmin
+    ) {
 
         showNotification(
             "Доступ запрещён.",
@@ -3519,69 +3587,152 @@ function saveTeamFromForm(event) {
     }
 
 
-    team.title =
-        document.getElementById(
-            "editTitle"
-        )?.value.trim() ||
-        team.title;
+    try {
+
+        const title =
+            document.getElementById(
+                "editTitle"
+            )?.value.trim();
 
 
-    team.name =
-        team.title;
+        const tag =
+            document.getElementById(
+                "editTag"
+            )?.value.trim();
 
 
-    team.tag =
-        document.getElementById(
-            "editTag"
-        )?.value.trim() ||
-        team.tag;
+        const country =
+            document.getElementById(
+                "editCountry"
+            )?.value.trim();
 
 
-    team.country =
-        document.getElementById(
-            "editCountry"
-        )?.value.trim() ||
-        team.country;
+        const logo =
+            document.getElementById(
+                "editLogo"
+            )?.value.trim();
 
 
-    team.logo =
-        document.getElementById(
-            "editLogo"
-        )?.value.trim() ||
-        "";
+        const faceit =
+            document.getElementById(
+                "editFaceit"
+            )?.value.trim();
 
 
-    team.faceit =
-        document.getElementById(
-            "editFaceit"
-        )?.value.trim() ||
-        "";
+        const steam =
+            document.getElementById(
+                "editSteam"
+            )?.value.trim();
 
 
-    team.steam =
-        document.getElementById(
-            "editSteam"
-        )?.value.trim() ||
-        "";
+        const description =
+            document.getElementById(
+                "editDescription"
+            )?.value.trim();
 
 
-    team.description =
-        document.getElementById(
-            "editDescription"
-        )?.value.trim() ||
-        "";
+        if (!title) {
+
+            showNotification(
+                "Введите название команды.",
+                "error"
+            );
+
+            return;
+
+        }
 
 
-    closeEditor();
+        if (!tag) {
+
+            showNotification(
+                "Введите тег команды.",
+                "error"
+            );
+
+            return;
+
+        }
 
 
-    renderTeams();
-    renderTeamProfile();
+        /* ================================================
+           UPDATE LOCAL TEAM
+        ================================================ */
+
+        team.title =
+            title;
 
 
-    showNotification(
-        "Данные команды обновлены."
-    );
+        team.name =
+            title;
+
+
+        team.tag =
+            tag;
+
+
+        team.country =
+            country ||
+            "Russia";
+
+
+        team.logo =
+            logo ||
+            "";
+
+
+        team.faceit =
+            faceit ||
+            "";
+
+
+        team.steam =
+            steam ||
+            "";
+
+
+        team.description =
+            description ||
+            "";
+
+
+        /* ================================================
+           SAVE TO SUPABASE
+        ================================================ */
+
+        await saveTeamSettings();
+
+
+        /* ================================================
+           REFRESH
+        ================================================ */
+
+        closeEditor();
+
+
+        renderTeams();
+        renderTeamProfile();
+
+
+        showNotification(
+            "✓ Изменения команды сохранены."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Ошибка сохранения команды:",
+            error
+        );
+
+
+        showNotification(
+            "Не удалось сохранить изменения команды.",
+            "error"
+        );
+
+    }
 
 }
 
@@ -3732,12 +3883,6 @@ function filterTeams(
     button
 ) {
 
-    /*
-       В текущей версии фильтры
-       оставляем как декоративные.
-       Команда у нас одна.
-    */
-
     document
         .querySelectorAll(
             ".filters button"
@@ -3791,7 +3936,7 @@ function renderRating() {
 
             <td>
                 <strong>
-                    ${escapeHTML(TEAM_NAME)}
+                    ${escapeHTML(team.name)}
                 </strong>
             </td>
 
@@ -3836,7 +3981,8 @@ function renderMatches() {
                 color:#858c98;
             "
         >
-            Матчи 1Minute пока не добавлены.
+            Матчи ${escapeHTML(team.name)}
+            пока не добавлены.
         </div>
 
     `;
@@ -3872,7 +4018,8 @@ function renderTournaments() {
                 color:#858c98;
             "
         >
-            Турниры 1Minute пока не добавлены.
+            Турниры ${escapeHTML(team.name)}
+            пока не добавлены.
         </div>
 
     `;
@@ -4079,7 +4226,17 @@ function updateActiveNavigation(
 async function init() {
 
     console.log(
+        "================================="
+    );
+
+
+    console.log(
         "1Minute запускается..."
+    );
+
+
+    console.log(
+        "================================="
     );
 
 
@@ -4106,6 +4263,17 @@ async function init() {
     await checkAuth();
 
 
+    /* ================================================
+       LOAD TEAM SETTINGS FIRST
+    ================================================ */
+
+    await loadTeamSettings();
+
+
+    /* ================================================
+       LOAD PLAYERS
+    ================================================ */
+
     await loadPlayers();
 
 
@@ -4122,7 +4290,19 @@ async function init() {
 
 
     console.log(
-        "✓ 1Minute готов."
+        "================================="
+    );
+
+
+    console.log(
+        "1Minute готов."
+    );
+
+
+    console.log(
+        "User:",
+        currentUser?.id ||
+        "нет"
     );
 
 
@@ -4135,6 +4315,17 @@ async function init() {
     console.log(
         "Players:",
         players.length
+    );
+
+
+    console.log(
+        "Team:",
+        team
+    );
+
+
+    console.log(
+        "================================="
     );
 
 }
@@ -4159,7 +4350,9 @@ document.addEventListener(
     function() {
 
 
-        /* PLAYER EDIT FORM */
+        /* ================================================
+           PLAYER EDIT FORM
+        ================================================ */
 
         const playerForm =
             document.getElementById(
@@ -4177,7 +4370,9 @@ document.addEventListener(
         }
 
 
-        /* LOGIN FORM */
+        /* ================================================
+           LOGIN FORM
+        ================================================ */
 
         const loginForm =
             document.getElementById(
@@ -4195,7 +4390,9 @@ document.addEventListener(
         }
 
 
-        /* TEAM EDIT FORM */
+        /* ================================================
+           TEAM EDIT FORM
+        ================================================ */
 
         const editForm =
             document.getElementById(
@@ -4213,7 +4410,9 @@ document.addEventListener(
         }
 
 
-        /* START */
+        /* ================================================
+           START
+        ================================================ */
 
         init();
 
