@@ -9,9 +9,22 @@ html {
 body {
     margin: 0;
     min-height: 100vh;
-    background: #050608;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(139, 92, 246, 0.08), transparent 35%),
+        #050608;
     color: #f5f5f7;
-    font-family: Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
+}
+
+a {
+    color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+    font-family: inherit;
 }
 
 .topbar {
@@ -24,6 +37,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(15px);
 }
 
 .brand {
@@ -31,6 +45,7 @@ body {
     font-size: 23px;
     font-weight: 900;
     text-decoration: none;
+    letter-spacing: -1px;
 }
 
 .brand span {
@@ -66,6 +81,16 @@ body {
     background: white;
     color: #050608;
     font-weight: 700;
+    cursor: pointer;
+}
+
+.mobile-menu {
+    display: none;
+    margin-left: 10px;
+    border: 0;
+    background: transparent;
+    color: white;
+    font-size: 22px;
     cursor: pointer;
 }
 
@@ -113,12 +138,16 @@ body {
 
 .primary,
 .secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 12px 18px;
     border-radius: 8px;
     text-decoration: none;
     font-size: 12px;
     font-weight: 800;
     transition: 0.2s;
+    cursor: pointer;
 }
 
 .primary {
@@ -135,7 +164,9 @@ body {
 .primary:hover,
 .secondary:hover {
     transform: translateY(-2px);
-}.section-head {
+}
+
+.section-head {
     display: flex;
     justify-content: space-between;
     align-items: end;
@@ -143,7 +174,7 @@ body {
 }
 
 .section-head h2 {
-    margin: 0;
+    margin: 5px 0 0;
     font-size: 30px;
     letter-spacing: -1px;
 }
@@ -168,7 +199,9 @@ body {
     border-color: #8b5cf6;
 }
 
-/* Команды */
+/* =========================
+   TEAM LIST
+========================= */
 
 .team-grid {
     display: grid;
@@ -192,7 +225,7 @@ body {
     box-shadow: 0 15px 40px rgba(139, 92, 246, 0.08);
 }
 
-.team-top {
+.team-card-top {
     display: flex;
     align-items: center;
     gap: 14px;
@@ -201,12 +234,14 @@ body {
 .team-logo {
     width: 58px;
     height: 58px;
+    flex: 0 0 58px;
     border-radius: 12px;
     background: #15171d;
     border: 1px solid #292d36;
     display: grid;
     place-items: center;
     font-weight: 900;
+    font-size: 20px;
     overflow: hidden;
 }
 
@@ -221,13 +256,13 @@ body {
     font-weight: 800;
 }
 
-.team-country {
+.team-tag {
     margin-top: 5px;
     color: #676c77;
     font-size: 10px;
 }
 
-.team-bottom {
+.team-card-bottom {
     display: flex;
     justify-content: space-between;
     margin-top: 18px;
@@ -240,18 +275,263 @@ body {
 .status {
     padding: 4px 7px;
     border-radius: 5px;
-    border: 1px solid #292d35;
-}
-
-.status.active {
+    border: 1px solid #21452f;
     color: #8ee6ad;
     background: #0b1710;
-    border-color: #21452f;
-}/* Страница команды */
-
-.page-section {
-    padding: 70px 0 100px;
 }
+
+/* =========================
+   TEAM PAGE
+========================= */
+
+#teamPage {
+    padding-top: 35px;
+    padding-bottom: 100px;
+}
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #272a32;
+    background: #0d0f13;
+    color: #b9bcc4;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s;
+    margin-bottom: 28px;
+}
+
+.back:hover {
+    color: white;
+    border-color: #8b5cf6;
+    transform: translateX(-2px);
+}
+
+.team-profile {
+    width: 100%;
+}
+
+.team-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid #242730;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(139, 92, 246, 0.08),
+            rgba(11, 13, 17, 0.95) 45%
+        );
+}
+
+.team-profile-logo {
+    width: 110px;
+    height: 110px;
+    flex: 0 0 110px;
+    border-radius: 20px;
+    background: #15171d;
+    border: 1px solid #292d36;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-size: 35px;
+    font-weight: 900;
+    color: #8b5cf6;
+}
+
+.team-profile-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.team-profile-header h1 {
+    margin: 7px 0 10px;
+    font-size: clamp(34px, 5vw, 55px);
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.team-profile-header p {
+    max-width: 650px;
+    margin: 0;
+    color: #777b86;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* =========================
+   ROSTER
+========================= */
+
+.roster {
+    margin-top: 35px;
+}
+
+.roster .section-head {
+    margin-top: 40px;
+}
+
+.roster .section-head h2 {
+    font-size: 25px;
+}
+
+.player-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+}
+
+.player-card {
+    position: relative;
+    min-height: 210px;
+    padding: 20px;
+    border-radius: 13px;
+    border: 1px solid #1e2128;
+    background: #0b0d11;
+    cursor: pointer;
+    transition: 0.2s;
+    overflow: hidden;
+}
+
+.player-card:hover {
+    transform: translateY(-4px);
+    border-color: #6d4fd7;
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.08);
+}
+
+.player-avatar {
+    width: 75px;
+    height: 75px;
+    border-radius: 15px;
+    background: #15171d;
+    border: 1px solid #292d36;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #8b5cf6;
+    font-size: 25px;
+    font-weight: 900;
+    margin-bottom: 18px;
+}
+
+.player-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.player-info h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.player-info span {
+    display: block;
+    margin-top: 6px;
+    color: #6f7480;
+    font-size: 10px;
+}
+
+.player-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 5px 7px;
+    border-radius: 5px;
+    background: #17111f;
+    border: 1px solid #4a3470;
+    color: #b894ff;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+/* =========================
+   PLAYER PAGE
+========================= */
+
+#playerPage {
+    padding-top: 35px;
+    padding-bottom: 100px;
+}
+
+.player-profile {
+    max-width: 700px;
+    margin: 30px auto 0;
+    padding: 45px;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px solid #242730;
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(139, 92, 246, 0.09),
+            transparent 45%
+        ),
+        #0b0d11;
+}
+
+.player-profile-avatar {
+    width: 125px;
+    height: 125px;
+    margin: 0 auto 25px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #15171d;
+    border: 1px solid #292d36;
+    display: grid;
+    place-items: center;
+    color: #8b5cf6;
+    font-size: 42px;
+    font-weight: 900;
+}
+
+.player-profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.player-profile h1 {
+    margin: 10px 0 5px;
+    font-size: 42px;
+    letter-spacing: -2px;
+}
+
+.player-role {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #15121f;
+    border: 1px solid #39285a;
+    color: #a984ee;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.player-profile p {
+    color: #737883;
+    font-size: 12px;
+}
+
+.player-links {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 25px;
+}
+
+/* =========================
+   OLD PROFILE CLASSES
+========================= */
 
 .profile-hero {
     padding: 30px;
@@ -319,8 +599,6 @@ body {
     border-color: #8b5cf6;
 }
 
-/* Статистика */
-
 .profile-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -346,8 +624,6 @@ body {
     color: #656a75;
     font-size: 9px;
 }
-
-/* Игроки */
 
 .profile-grid {
     display: grid;
@@ -397,7 +673,9 @@ body {
     font-size: 9px;
 }
 
-/* Кнопки */
+/* =========================
+   EDIT BUTTONS
+========================= */
 
 .panel-actions {
     display: flex;
@@ -420,36 +698,30 @@ body {
     background: #15121f;
 }
 
-/* Модальное окно */
+/* =========================
+   MODALS
+========================= */
 
 .modal {
     position: fixed;
     inset: 0;
     z-index: 500;
-
     display: grid;
     place-items: center;
-
     padding: 20px;
-
     background: rgba(0, 0, 0, .82);
     backdrop-filter: blur(10px);
 }
 
 .modal-card {
     position: relative;
-
     width: min(520px, 100%);
     max-height: 90vh;
     overflow: auto;
-
     padding: 28px;
-
     border-radius: 13px;
     border: 1px solid #292d36;
-
     background: #0b0d11;
-
     box-shadow: 0 30px 100px #000;
 }
 
@@ -461,68 +733,67 @@ body {
     position: absolute;
     top: 10px;
     right: 15px;
-
     border: 0;
     background: none;
-
     color: #737883;
     font-size: 25px;
-
     cursor: pointer;
 }
 
 .modal-card label {
     display: block;
     margin: 13px 0;
-
     color: #858a94;
     font-size: 10px;
 }
 
 .modal-card input,
-.modal-card textarea {
+.modal-card textarea,
+.modal-card select {
     width: 100%;
     margin-top: 6px;
-
     padding: 10px;
-
     border-radius: 7px;
     border: 1px solid #242730;
-
     outline: none;
-
     background: #07090c;
     color: white;
-
     font-family: inherit;
 }
 
+.modal-card select option {
+    background: #07090c;
+    color: white;
+}
+
 .modal-card input:focus,
-.modal-card textarea:focus {
+.modal-card textarea:focus,
+.modal-card select:focus {
     border-color: #8b5cf6;
 }
 
 .save {
     width: 100%;
     margin-top: 10px;
-    justify-content: center;
 }
 
-/* Матчи */
+/* =========================
+   MATCHES
+========================= */
+
+.page-section {
+    padding: 70px 0 100px;
+}
 
 .match {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     padding: 17px 19px;
     margin-bottom: 8px;
-
     border-radius: 10px;
     border: 1px solid #1e2128;
-
     background: #0b0d11;
-
     transition: .2s;
 }
 
@@ -546,7 +817,9 @@ body {
     font-weight: 900;
 }
 
-/* Турниры */
+/* =========================
+   TOURNAMENTS
+========================= */
 
 .tournament-grid {
     display: grid;
@@ -556,12 +829,9 @@ body {
 
 .tournament {
     padding: 20px;
-
     border-radius: 11px;
     border: 1px solid #1e2128;
-
     background: #0b0d11;
-
     transition: .2s;
 }
 
@@ -580,7 +850,15 @@ body {
     font-size: 10px;
 }
 
-/* Таблицы */
+/* =========================
+   TABLE
+========================= */
+
+.glass {
+    background: #0b0d11;
+    border: 1px solid #1e2128;
+    border-radius: 12px;
+}
 
 .table-wrap {
     overflow-x: auto;
@@ -613,18 +891,160 @@ tbody tr:hover {
     background: #0e1015;
 }
 
-/* Footer */
+/* =========================
+   FOOTER
+========================= */
 
 footer {
     padding: 30px;
     text-align: center;
-
     color: #454a54;
     font-size: 9px;
-
     border-top: 1px solid #17191f;
 }
 
 .hidden {
     display: none !important;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 900px) {
+
+    .topbar {
+        padding: 0 20px;
+    }
+
+    .topbar nav {
+        margin-left: 20px;
+    }
+
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .player-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .tournament-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 650px) {
+
+    .topbar {
+        height: 64px;
+    }
+
+    .topbar nav {
+        display: none;
+    }
+
+    .mobile-menu {
+        display: block;
+    }
+
+    body.menu-open .topbar nav {
+        display: flex;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        margin: 0;
+        padding: 10px 20px;
+        flex-direction: column;
+        background: #08090c;
+        border-bottom: 1px solid #1b1d23;
+    }
+
+    .hero {
+        padding: 70px 0 55px;
+    }
+
+    .hero h1 {
+        font-size: 48px;
+        letter-spacing: -3px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .team-profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 22px;
+    }
+
+    .team-profile-logo {
+        width: 90px;
+        height: 90px;
+        flex-basis: 90px;
+    }
+
+    .team-profile-header h1 {
+        font-size: 38px;
+    }
+
+    .player-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .player-card {
+        min-height: 190px;
+    }
+
+    .player-profile {
+        padding: 30px 20px;
+    }
+
+    .player-profile h1 {
+        font-size: 34px;
+    }
+
+    .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tournament-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .login {
+        display: none;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .screen {
+        width: min(100% - 24px, 1180px);
+    }
+
+    .player-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .player-card {
+        min-height: auto;
+    }
 }
