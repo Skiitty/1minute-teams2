@@ -1,22 +1,21 @@
 <!doctype html>
-
 <html lang="ru">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>1Minute — Teams</title>
+    <title>1Minute — Teams</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
 
-<link
-href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-rel="stylesheet">
-
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -24,685 +23,999 @@ rel="stylesheet">
 <div class="glow glow-a"></div>
 <div class="glow glow-b"></div>
 
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
 <header class="topbar">
 
-<a class="brand" href="#teams">
-<span>1</span>Minute
-</a>
+    <a class="brand" href="#teams">
+        <span>1</span>Minute
+    </a>
 
-<nav>
+    <nav>
 
-<a class="active" href="#teams">
-Команды
-</a>
+        <a class="active" href="#teams">
+            Команды
+        </a>
 
-<a href="#rating">
-Рейтинг
-</a>
+        <a href="#rating">
+            Рейтинг
+        </a>
 
-<a href="#matches">
-Матчи
-</a>
+        <a href="#matches">
+            Матчи
+        </a>
 
-<a href="#tournaments">
-Турниры
-</a>
+        <a href="#tournaments">
+            Турниры
+        </a>
 
-</nav>
+    </nav>
 
-<button
-class="login"
-onclick="openLoginModal()"
+    <button
+        class="login"
+        type="button"
+        onclick="openLoginModal()"
+    >
+        Войти
+    </button>
 
->
-
-Войти </button>
-
-<button
-class="mobile-menu"
-onclick="document.body.classList.toggle('menu-open')"
-
->
-
-☰ </button>
+    <button
+        class="mobile-menu"
+        type="button"
+        onclick="document.body.classList.toggle('menu-open')"
+    >
+        ☰
+    </button>
 
 </header>
 
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
 <main>
 
-<!-- КОМАНДЫ -->
 
-<section
-id="teams"
-class="screen"
->
+    <!-- =================================================
+         TEAMS
+    ================================================== -->
 
-<div class="hero">
+    <section
+        id="teams"
+        class="screen"
+    >
 
-<div class="eyebrow">
-1MINUTE
-</div>
+        <div class="hero">
 
-<h1>
-Команда, которая<br>
-<span>играет на победу.</span>
-</h1>
+            <div class="eyebrow">
+                1MINUTE
+            </div>
 
-<p>
-Профили состава, матчи и статистика 1Minute — всё в одном месте.
-</p>
+            <h1>
+                Команда, которая<br>
+                <span>играет на победу.</span>
+            </h1>
 
-<div class="hero-actions">
+            <p>
+                Профили состава, матчи и статистика 1Minute —
+                всё в одном месте.
+            </p>
 
-<a
-href="#teams-list"
-class="primary"
+            <div class="hero-actions">
 
->
+                <a
+                    href="#teams-list"
+                    class="primary"
+                >
+                    Смотреть команду <b>↓</b>
+                </a>
 
-Смотреть команду <b>↓</b> </a>
+                <a
+                    href="#rating"
+                    class="secondary"
+                >
+                    Рейтинг →
+                </a>
 
-<a
-href="#rating"
-class="secondary"
+            </div>
 
->
+        </div>
 
-Рейтинг → </a>
 
-</div>
+        <div
+            id="teams-list"
+            class="section-head"
+        >
 
-</div>
+            <div>
 
-<div
-id="teams-list"
-class="section-head"
->
+                <div class="eyebrow">
+                    TEAM
+                </div>
 
-<div>
+                <h2>
+                    1Minute
+                </h2>
 
-<div class="eyebrow">
-TEAM
-</div>
+            </div>
 
-<h2>
-1Minute
-</h2>
 
-</div>
+            <div class="filters">
 
-<div class="filters">
+                <button
+                    class="selected"
+                    onclick="filterTeams('all', this)"
+                    type="button"
+                >
+                    Все
+                </button>
 
-<button
-class="selected"
-onclick="filterTeams('all',this)"
+                <button
+                    onclick="filterTeams('active', this)"
+                    type="button"
+                >
+                    Активные
+                </button>
 
->
+                <button
+                    onclick="filterTeams('inactive', this)"
+                    type="button"
+                >
+                    Неактивные
+                </button>
 
-Все </button>
+            </div>
 
-<button
-onclick="filterTeams('active',this)"
+        </div>
 
->
 
-Активные </button>
+        <div
+            id="grid"
+            class="team-grid"
+        ></div>
 
-<button
-onclick="filterTeams('inactive',this)"
+    </section>
 
->
 
-Неактивные </button>
 
-</div>
+    <!-- =================================================
+         TEAM PAGE
+    ================================================== -->
 
-</div>
+    <section
+        id="teamPage"
+        class="screen hidden"
+    >
 
-<div
-id="grid"
-class="team-grid"
-></div>
+        <button
+            class="back"
+            type="button"
+            onclick="closeTeam()"
+        >
+            ← Все команды
+        </button>
 
-</section>
+        <div id="teamProfile"></div>
 
-<!-- СТРАНИЦА КОМАНДЫ -->
+    </section>
 
-<section
-id="teamPage"
-class="screen hidden"
->
 
-<button
-class="back"
-onclick="closeTeam()"
 
->
+    <!-- =================================================
+         PLAYER PAGE
+    ================================================== -->
 
-← Все команды </button>
+    <section
+        id="playerPage"
+        class="screen hidden"
+    >
 
-<div id="teamProfile"></div>
+        <button
+            class="back"
+            type="button"
+            onclick="closePlayer()"
+        >
+            ← Команда
+        </button>
 
-</section>
+        <div id="playerProfile"></div>
 
-<!-- СТРАНИЦА ИГРОКА -->
+    </section>
 
-<section
-id="playerPage"
-class="screen hidden"
->
 
-<button
-class="back"
-onclick="closePlayer()"
 
->
+    <!-- =================================================
+         RATING
+    ================================================== -->
 
-← Команда </button>
+    <section
+        id="rating"
+        class="screen page-section hidden"
+    >
 
-<div id="playerProfile"></div>
+        <div class="section-head">
 
-</section>
+            <div>
 
-<!-- РЕЙТИНГ -->
+                <div class="eyebrow">
+                    RANKING
+                </div>
 
-<section
-id="rating"
-class="screen page-section"
->
+                <h2>
+                    Рейтинг команд
+                </h2>
 
-<div class="section-head">
+            </div>
 
-<div>
+        </div>
 
-<div class="eyebrow">
-RANKING
-</div>
 
-<h2>
-Рейтинг команд
-</h2>
+        <div class="glass table-wrap">
 
-</div>
+            <table>
 
-</div>
+                <thead>
 
-<div class="glass table-wrap">
+                    <tr>
 
-<table>
+                        <th>
+                            #
+                        </th>
 
-<thead>
+                        <th>
+                            Команда
+                        </th>
 
-<tr>
+                        <th>
+                            Матчи
+                        </th>
 
-<th>#</th>
+                        <th>
+                            Победы
+                        </th>
 
-<th>
-Команда
-</th>
+                        <th>
+                            ELO
+                        </th>
 
-<th>
-Матчи
-</th>
+                    </tr>
 
-<th>
-Победы
-</th>
+                </thead>
 
-<th>
-ELO
-</th>
+                <tbody id="ratingRows"></tbody>
 
-</tr>
+            </table>
 
-</thead>
+        </div>
 
-<tbody id="ratingRows"></tbody>
+    </section>
 
-</table>
 
-</div>
 
-</section>
+    <!-- =================================================
+         MATCHES
+    ================================================== -->
 
-<!-- МАТЧИ -->
+    <section
+        id="matches"
+        class="screen page-section hidden"
+    >
 
-<section
-id="matches"
-class="screen page-section"
->
+        <div class="section-head">
 
-<div class="section-head">
+            <div>
 
-<div>
+                <div class="eyebrow">
+                    MATCHES
+                </div>
 
-<div class="eyebrow">
-MATCHES
-</div>
+                <h2>
+                    Последние матчи
+                </h2>
 
-<h2>
-Последние матчи
-</h2>
+            </div>
 
-</div>
+        </div>
 
-</div>
 
-<div
-id="matchesList"
-class="matches"
-></div>
+        <div
+            id="matchesList"
+            class="matches"
+        ></div>
 
-</section>
+    </section>
 
-<!-- ТУРНИРЫ -->
 
-<section
-id="tournaments"
-class="screen page-section"
->
 
-<div class="section-head">
+    <!-- =================================================
+         TOURNAMENTS
+    ================================================== -->
 
-<div>
+    <section
+        id="tournaments"
+        class="screen page-section hidden"
+    >
 
-<div class="eyebrow">
-TOURNAMENTS
-</div>
+        <div class="section-head">
 
-<h2>
-Турниры
-</h2>
+            <div>
 
-</div>
+                <div class="eyebrow">
+                    TOURNAMENTS
+                </div>
 
-</div>
+                <h2>
+                    Турниры
+                </h2>
 
-<div
-id="tournamentsGrid"
-class="tournament-grid"
-></div>
+            </div>
 
-</section>
+        </div>
+
+
+        <div
+            id="tournamentsGrid"
+            class="tournament-grid"
+        ></div>
+
+    </section>
 
 </main>
 
-<!-- РЕДАКТОР КОМАНДЫ -->
+
+
+<!-- =====================================================
+     TEAM EDITOR
+===================================================== -->
 
 <div
-id="editModal"
-class="modal hidden"
+    id="editModal"
+    class="modal hidden"
+    onclick="if(event.target === this) closeEditor()"
 >
 
-<div class="modal-card">
+    <div class="modal-card">
 
-<button
-class="modal-close"
-onclick="closeEditor()"
+        <button
+            class="modal-close"
+            type="button"
+            onclick="closeEditor()"
+        >
+            ×
+        </button>
 
->
+        <div class="eyebrow">
+            TEAM EDITOR
+        </div>
 
-× </button>
+        <h2>
+            Редактировать команду
+        </h2>
 
-<div class="eyebrow">
-TEAM EDITOR
+
+        <form id="editForm">
+
+            <input
+                type="hidden"
+                id="editName"
+            >
+
+
+            <label>
+                Название
+
+                <input
+                    id="editTitle"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Тег
+
+                <input
+                    id="editTag"
+                    maxlength="5"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Страна
+
+                <input
+                    id="editCountry"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Логотип URL
+
+                <input
+                    id="editLogo"
+                    type="url"
+                    placeholder="https://..."
+                >
+            </label>
+
+
+            <label>
+                FACEIT URL
+
+                <input
+                    id="editFaceit"
+                    type="url"
+                    placeholder="https://www.faceit.com/..."
+                >
+            </label>
+
+
+            <label>
+                Steam URL
+
+                <input
+                    id="editSteam"
+                    type="url"
+                    placeholder="https://steamcommunity.com/..."
+                >
+            </label>
+
+
+            <label>
+                Описание
+
+                <textarea
+                    id="editDescription"
+                    rows="3"
+                ></textarea>
+
+            </label>
+
+
+            <button
+                class="primary save"
+                type="submit"
+            >
+                Сохранить изменения
+            </button>
+
+        </form>
+
+    </div>
+
 </div>
 
-<h2>
-Редактировать команду
-</h2>
 
-<form id="editForm">
 
-<input
-type="hidden"
-id="editName"
-
->
-
-<label>
-Название
-
-<input
-id="editTitle"
-required
-
->
-
-</label>
-
-<label>
-Тег
-
-<input
-id="editTag"
-maxlength="5"
-required
-
->
-
-</label>
-
-<label>
-Страна
-
-<input
-id="editCountry"
-required
-
->
-
-</label>
-
-<label>
-Логотип URL
-
-<input
-id="editLogo"
-placeholder="https://..."
-
->
-
-</label>
-
-<label>
-FACEIT URL
-
-<input
-id="editFaceit"
-placeholder="https://www.faceit.com/..."
-
->
-
-</label>
-
-<label>
-Steam URL
-
-<input
-id="editSteam"
-placeholder="https://steamcommunity.com/..."
-
->
-
-</label>
-
-<label>
-Описание
-
-<textarea
-id="editDescription"
-rows="3"
-></textarea>
-
-</label>
-
-<button
-class="primary save"
-type="submit"
-
->
-
-Сохранить изменения </button>
-
-</form>
-
-</div>
-
-</div>
-
-<!-- РЕДАКТОР ИГРОКА -->
+<!-- =====================================================
+     PLAYER EDITOR
+===================================================== -->
 
 <div
-id="playerEditModal"
-class="modal hidden"
+    id="playerEditModal"
+    class="modal hidden"
+    onclick="if(event.target === this) closePlayerEditor()"
 >
 
-<div class="modal-card">
+    <div class="modal-card">
 
-<button
-class="modal-close"
-onclick="closePlayerEditor()"
+        <button
+            class="modal-close"
+            type="button"
+            onclick="closePlayerEditor()"
+        >
+            ×
+        </button>
 
->
 
-× </button>
+        <div class="eyebrow">
+            PLAYER EDITOR
+        </div>
 
-<div class="eyebrow">
-PLAYER EDITOR
+        <h2>
+            Профиль игрока
+        </h2>
+
+
+        <form id="playerEditForm">
+
+            <input
+                type="hidden"
+                id="playerEditOldName"
+            >
+
+            <input
+                type="hidden"
+                id="playerEditTeam"
+            >
+
+
+            <label>
+                Никнейм
+
+                <input
+                    id="playerEditName"
+                    required
+                    placeholder="Например: XXXOLDAR"
+                >
+            </label>
+
+
+            <label>
+                Страна
+
+                <input
+                    id="playerEditCountry"
+                    placeholder="Russia"
+                >
+            </label>
+
+
+            <label>
+                Роль
+
+                <select id="playerEditRole">
+
+                    <option value="Игрок">
+                        Игрок
+                    </option>
+
+                    <option value="Капитан">
+                        Капитан
+                    </option>
+
+                    <option value="AWPer">
+                        AWPer
+                    </option>
+
+                    <option value="Sniper">
+                        Sniper
+                    </option>
+
+                    <option value="Rifler">
+                        Rifler
+                    </option>
+
+                    <option value="Rifle">
+                        Rifle
+                    </option>
+
+                    <option value="Entry">
+                        Entry
+                    </option>
+
+                    <option value="Anchor">
+                        Anchor
+                    </option>
+
+                    <option value="Support">
+                        Support
+                    </option>
+
+                    <option value="IGL">
+                        IGL
+                    </option>
+
+                    <option value="IGL + support">
+                        IGL + support
+                    </option>
+
+                </select>
+
+            </label>
+
+
+            <label>
+                Аватар URL
+
+                <input
+                    id="playerEditAvatar"
+                    type="url"
+                    placeholder="https://..."
+                >
+            </label>
+
+
+            <label>
+                FACEIT URL
+
+                <input
+                    id="playerEditFaceit"
+                    type="url"
+                    placeholder="https://www.faceit.com/..."
+                >
+            </label>
+
+
+            <label>
+                Steam URL
+
+                <input
+                    id="playerEditSteam"
+                    type="url"
+                    placeholder="https://steamcommunity.com/..."
+                >
+            </label>
+
+
+            <button
+                class="primary save"
+                type="submit"
+            >
+                Сохранить игрока
+            </button>
+
+        </form>
+
+    </div>
+
 </div>
 
-<h2>
-Профиль игрока
-</h2>
 
-<form id="playerEditForm">
 
-<input
-type="hidden"
-id="playerEditOldName"
-
->
-
-<input
-type="hidden"
-id="playerEditTeam"
-
->
-
-<label>
-Никнейм
-
-<input
-id="playerEditName"
-required
-placeholder="Например: XXXOLDAR"
-
->
-
-</label>
-
-<label>
-Страна
-
-<input
-id="playerEditCountry"
-placeholder="Russia"
-
->
-
-</label>
-
-<label>
-Роль
-
-<select id="playerEditRole">
-
-<option>
-Игрок
-</option>
-
-<option>
-Капитан
-</option>
-
-<option>
-AWPer
-</option>
-
-<option>
-Sniper
-</option>
-
-<option>
-Rifler
-</option>
-
-<option>
-Rifle
-</option>
-
-<option>
-Entry
-</option>
-
-<option>
-Anchor
-</option>
-
-<option>
-Support
-</option>
-
-<option>
-IGL
-</option>
-
-<option>
-IGL + support
-</option>
-
-</select>
-
-</label>
-
-<label>
-Аватар URL
-
-<input
-id="playerEditAvatar"
-placeholder="https://..."
-
->
-
-</label>
-
-<label>
-FACEIT URL
-
-<input
-id="playerEditFaceit"
-placeholder="https://www.faceit.com/..."
-
->
-
-</label>
-
-<label>
-Steam URL
-
-<input
-id="playerEditSteam"
-placeholder="https://steamcommunity.com/..."
-
->
-
-</label>
-
-<button
-class="primary save"
-type="submit"
-
->
-
-Сохранить игрока </button>
-
-</form>
-
-</div>
-
-</div>
-
-<!-- ВХОД -->
+<!-- =====================================================
+     LOGIN MODAL
+===================================================== -->
 
 <div
-id="loginModal"
-class="modal hidden"
-onclick="if(event.target===this)closeLoginModal()"
+    id="loginModal"
+    class="modal hidden"
+    onclick="if(event.target === this) closeLoginModal()"
 >
 
-<div class="modal-card login-card">
+    <div class="modal-card login-card">
 
-<button
-class="modal-close"
-onclick="closeLoginModal()"
+        <button
+            class="modal-close"
+            type="button"
+            onclick="closeLoginModal()"
+        >
+            ×
+        </button>
 
->
 
-× </button>
+        <div class="eyebrow">
+            1MINUTE ACCOUNT
+        </div>
 
-<div class="eyebrow">
-1MINUTE ACCOUNT
+
+        <div class="login-icon">
+            1
+        </div>
+
+
+        <h2>
+            Вход в аккаунт
+        </h2>
+
+
+        <p
+            id="loginStatus"
+            style="
+                color:#858c98;
+                line-height:1.7;
+                font-size:14px;
+                margin:10px 0 20px;
+            "
+        >
+            Войдите через свой аккаунт.
+        </p>
+
+
+        <!-- ОШИБКА -->
+
+        <div
+            id="loginError"
+            style="
+                display:none;
+                margin-bottom:15px;
+                padding:10px 12px;
+                border-radius:7px;
+                border:1px solid #5a302d;
+                background:#211311;
+                color:#ff8e82;
+                font-size:12px;
+                line-height:1.5;
+                text-align:left;
+            "
+        ></div>
+
+
+        <!-- ФОРМА ВХОДА -->
+
+        <form id="loginForm">
+
+            <label>
+                Email
+
+                <input
+                    id="loginEmail"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="admin@example.com"
+                    required
+                >
+            </label>
+
+
+            <label>
+                Пароль
+
+                <input
+                    id="loginPassword"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Введите пароль"
+                    required
+                >
+            </label>
+
+
+            <button
+                class="primary save"
+                type="submit"
+            >
+                Войти
+            </button>
+
+        </form>
+
+
+        <!-- КНОПКА ВЫХОДА -->
+
+        <button
+            id="logoutButton"
+            class="secondary save"
+            type="button"
+            onclick="logout()"
+            style="display:none;margin-top:10px;"
+        >
+            Выйти из аккаунта
+        </button>
+
+    </div>
+
 </div>
 
-<div class="login-icon">
-1
-</div>
 
-<h2>
-Авторизация будет позже
-</h2>
 
-<p style="
-color:#858c98;
-line-height:1.7;
-font-size:14px;
-margin:10px 0 22px
-">
-Система авторизации пока находится в разработке.
-Скоро здесь можно будет войти в аккаунт и управлять
-своим профилем.
-</p>
-
-<button
-class="primary save"
-type="button"
-onclick="closeLoginModal()"
-
->
-
-Понятно </button>
-
-</div>
-
-</div>
+<!-- =====================================================
+     FOOTER
+===================================================== -->
 
 <footer>
-© 2026 1Minute · Teams database
+    © 2026 1Minute · Teams database
 </footer>
+
+
+
+<!-- =====================================================
+     SUPABASE
+===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- =====================================================
+     APP
+===================================================== -->
 
 <script src="app.js"></script>
 
+
 <script>
 
-function openLoginModal(){
+/* =====================================================
+   LOGIN UI
+===================================================== */
 
-const modal =
-document.getElementById("loginModal");
+function openLoginModal() {
 
-if(!modal) return;
+    const modal =
+        document.getElementById("loginModal");
 
-modal.classList.remove("hidden");
+    if (!modal) {
+        return;
+    }
 
-document.body.style.overflow =
-"hidden";
+
+    const email =
+        document.getElementById("loginEmail");
+
+    const password =
+        document.getElementById("loginPassword");
+
+    const error =
+        document.getElementById("loginError");
+
+    const status =
+        document.getElementById("loginStatus");
+
+    const loginForm =
+        document.getElementById("loginForm");
+
+    const logoutButton =
+        document.getElementById("logoutButton");
+
+
+    if (error) {
+
+        error.style.display = "none";
+        error.textContent = "";
+
+    }
+
+
+    if (currentUser) {
+
+        if (status) {
+
+            status.innerHTML =
+                "Вы вошли как <strong>" +
+                escapeHTML(
+                    currentUser.email || "пользователь"
+                ) +
+                "</strong>" +
+                (
+                    isAdmin
+                        ? "<br><span style='color:#8ee6ad'>✓ Вы администратор</span>"
+                        : "<br><span style='color:#ffb36b'>У вас нет прав администратора</span>"
+                );
+
+        }
+
+
+        if (loginForm) {
+            loginForm.style.display = "none";
+        }
+
+
+        if (logoutButton) {
+            logoutButton.style.display = "block";
+        }
+
+    } else {
+
+        if (status) {
+
+            status.textContent =
+                "Войдите в свой аккаунт Supabase.";
+
+        }
+
+
+        if (loginForm) {
+            loginForm.style.display = "flex";
+        }
+
+
+        if (logoutButton) {
+            logoutButton.style.display = "none";
+        }
+
+
+        if (email) {
+            email.value = "";
+        }
+
+        if (password) {
+            password.value = "";
+        }
+
+    }
+
+
+    modal.classList.remove("hidden");
+
+    document.body.style.overflow = "hidden";
 
 }
 
 
-function closeLoginModal(){
+function closeLoginModal() {
 
-const modal =
-document.getElementById("loginModal");
+    const modal =
+        document.getElementById("loginModal");
 
-if(!modal) return;
+    if (!modal) {
+        return;
+    }
 
-modal.classList.add("hidden");
 
-document.body.style.overflow =
-"";
+    modal.classList.add("hidden");
+
+    document.body.style.overflow = "";
 
 }
+
+
+
+/* =====================================================
+   UPDATE LOGIN WINDOW AFTER AUTH
+===================================================== */
+
+function updateLoginModalUI() {
+
+    const status =
+        document.getElementById("loginStatus");
+
+    const loginForm =
+        document.getElementById("loginForm");
+
+    const logoutButton =
+        document.getElementById("logoutButton");
+
+    if (!status) {
+        return;
+    }
+
+
+    if (currentUser) {
+
+        status.innerHTML =
+            "Вы вошли как <strong>" +
+            escapeHTML(
+                currentUser.email || "пользователь"
+            ) +
+            "</strong>" +
+            (
+                isAdmin
+                    ? "<br><span style='color:#8ee6ad'>✓ Доступ администратора</span>"
+                    : "<br><span style='color:#ffb36b'>У вас нет прав администратора</span>"
+            );
+
+
+        if (loginForm) {
+            loginForm.style.display = "none";
+        }
+
+
+        if (logoutButton) {
+            logoutButton.style.display = "block";
+        }
+
+    } else {
+
+        status.textContent =
+            "Войдите в свой аккаунт Supabase.";
+
+
+        if (loginForm) {
+            loginForm.style.display = "flex";
+        }
+
+
+        if (logoutButton) {
+            logoutButton.style.display = "none";
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   WATCH AUTH
+===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        setTimeout(
+            updateLoginModalUI,
+            500
+        );
+
+    }
+);
 
 </script>
 
