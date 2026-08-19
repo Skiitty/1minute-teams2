@@ -18,43 +18,28 @@
         document.head.appendChild(style);
 
         nav.innerHTML = `
-            <a href="#teams" data-nav="home">ГЛАВНАЯ</a>
             <a href="#teams-list" data-nav="teams" class="nav-with-count">TEAMS <b>55</b></a>
             <a href="#matches" data-nav="matches">ВСЕ МАТЧИ</a>
             <a href="#tournaments" data-nav="tournaments">TOURNAMENTS</a>
         `;
 
         let sectionHistory = [];
-        let currentSection = "home";
+        let currentSection = "teams";
 
-        /*
-         * app.js rebuilds the team profile with innerHTML. That removes
-         * the matches block immediately after matches.js inserts it.
-         * Keep a template and restore it after the roster is rebuilt.
-         */
         function protectRecentMatches() {
             const profile = document.getElementById("teamProfile");
             if (!profile || profile.dataset.matchesGuard === "1") return;
             profile.dataset.matchesGuard = "1";
-
             let template = null;
-
             const sync = () => {
                 const existing = profile.querySelector(".one-minute-recent-matches");
-                if (existing) {
-                    template = existing.cloneNode(true);
-                    return;
-                }
-
+                if (existing) { template = existing.cloneNode(true); return; }
                 const roster = profile.querySelector(".roster");
                 if (roster && template && !profile.querySelector(".one-minute-recent-matches")) {
                     roster.insertAdjacentElement("afterend", template.cloneNode(true));
                 }
             };
-
-            const observer = new MutationObserver(() => {
-                requestAnimationFrame(sync);
-            });
+            const observer = new MutationObserver(() => requestAnimationFrame(sync));
             observer.observe(profile, { childList: true, subtree: true });
             sync();
         }
@@ -63,7 +48,6 @@
             const matchesList = document.getElementById("matchesList");
             if (!matchesList || matchesList.dataset.matchesGuard === "1") return;
             matchesList.dataset.matchesGuard = "1";
-
             const observer = new MutationObserver(() => {
                 if (!matchesList.querySelector(".all-matches-page") && typeof window.renderAllOneMinuteMatches === "function") {
                     window.renderAllOneMinuteMatches();
@@ -87,18 +71,15 @@
             back.className = "back site-section-back";
             back.textContent = "← Вернуться назад";
             back.addEventListener("click", () => {
-                const previous = sectionHistory.pop() || "home";
+                const previous = sectionHistory.pop() || "teams";
                 navigateTo(previous, false);
             });
             screen.insertBefore(back, screen.firstElementChild);
         }
 
         function renderAllMatchesPage() {
-            if (typeof window.renderAllOneMinuteMatches === "function") {
-                window.renderAllOneMinuteMatches();
-            }
-            const matches = document.getElementById("matches");
-            if (matches) matches.classList.remove("hidden");
+            if (typeof window.renderAllOneMinuteMatches === "function") window.renderAllOneMinuteMatches();
+            document.getElementById("matches")?.classList.remove("hidden");
         }
 
         function navigateTo(target, remember = true) {
@@ -111,7 +92,6 @@
                 matches?.classList.remove("hidden");
                 injectBackButton("matches");
                 protectAllMatches();
-                document.getElementById("matchesList")?.scrollIntoView({ behavior: "smooth", block: "start" });
                 nav.querySelectorAll("a").forEach(link => link.classList.toggle("active", link.dataset.nav === "matches"));
                 document.body.classList.remove("menu-open");
                 return;
@@ -151,13 +131,9 @@
 
         function handleRouteFromHash() {
             const hash = (window.location.hash || "").replace(/^#/, "");
-            if (hash === "matches") {
-                navigateTo("matches", false);
-            } else if (hash === "tournaments") {
-                navigateTo("tournaments", false);
-            } else if (hash === "teams" || hash === "teams-list" || !hash) {
-                navigateTo("home", false);
-            }
+            if (hash === "matches") navigateTo("matches", false);
+            else if (hash === "tournaments") navigateTo("tournaments", false);
+            else if (hash === "teams" || hash === "teams-list" || !hash) navigateTo("teams", false);
         }
 
         window.addEventListener("hashchange", handleRouteFromHash);
@@ -171,7 +147,7 @@
             setTimeout(() => target.classList.remove("is-pressed"), 180);
         }, { passive: true });
 
-        nav.querySelector('[data-nav="home"]')?.classList.add("active");
+        nav.querySelector('[data-nav="teams"]')?.classList.add("active");
 
         setTimeout(() => {
             protectRecentMatches();
