@@ -23,11 +23,6 @@
 <div class="glow glow-a"></div>
 <div class="glow glow-b"></div>
 
-
-<!-- =====================================================
-     HEADER
-===================================================== -->
-
 <header class="topbar">
 
     <a class="brand" href="#teams">
@@ -35,23 +30,10 @@
     </a>
 
     <nav>
-
-        <a class="active" href="#teams">
-            Команды
-        </a>
-
-        <a href="#rating">
-            Рейтинг
-        </a>
-
-        <a href="#matches">
-            Матчи
-        </a>
-
-        <a href="#tournaments">
-            Турниры
-        </a>
-
+        <a class="active" href="#teams">Команды</a>
+        <a href="#rating">Рейтинг</a>
+        <a href="#matches">Матчи</a>
+        <a href="#tournaments">Турниры</a>
     </nav>
 
     <button
@@ -72,27 +54,12 @@
 
 </header>
 
-
-<!-- =====================================================
-     MAIN
-===================================================== -->
-
 <main>
 
-    <!-- =================================================
-         TEAMS
-    ================================================== -->
-
-    <section
-        id="teams"
-        class="screen"
-    >
+    <section id="teams" class="screen">
 
         <div class="hero">
-
-            <div class="eyebrow">
-                1MINUTE
-            </div>
+            <div class="eyebrow">1MINUTE</div>
 
             <h1>
                 Команда, которая<br>
@@ -105,587 +72,234 @@
             </p>
 
             <div class="hero-actions">
-
-                <a
-                    href="#teams-list"
-                    class="primary"
-                >
+                <a href="#teams-list" class="primary">
                     Смотреть команду <b>↓</b>
                 </a>
 
-                <a
-                    href="#rating"
-                    class="secondary"
-                >
+                <a href="#rating" class="secondary">
                     Рейтинг →
                 </a>
-
             </div>
-
         </div>
 
-
-        <div
-            id="teams-list"
-            class="section-head"
-        >
-
+        <div id="teams-list" class="section-head">
             <div>
-
-                <div class="eyebrow">
-                    TEAM
-                </div>
-
-                <h2>
-                    1Minute
-                </h2>
-
+                <div class="eyebrow">TEAM</div>
+                <h2>1Minute</h2>
             </div>
-
 
             <div class="filters">
-
-                <button
-                    class="selected"
-                    type="button"
-                    onclick="filterTeams('all', this)"
-                >
+                <button class="selected" type="button" onclick="filterTeams('all', this)">
                     Все
                 </button>
-
-                <button
-                    type="button"
-                    onclick="filterTeams('active', this)"
-                >
+                <button type="button" onclick="filterTeams('active', this)">
                     Активные
                 </button>
-
-                <button
-                    type="button"
-                    onclick="filterTeams('inactive', this)"
-                >
+                <button type="button" onclick="filterTeams('inactive', this)">
                     Неактивные
                 </button>
-
             </div>
-
         </div>
 
-
-        <div
-            id="grid"
-            class="team-grid"
-        ></div>
+        <div id="grid" class="team-grid"></div>
 
     </section>
 
-
-    <!-- =================================================
-         TEAM PAGE
-    ================================================== -->
-
-    <section
-        id="teamPage"
-        class="screen hidden"
-    >
-
-        <button
-            class="back"
-            type="button"
-            onclick="closeTeam()"
-        >
+    <section id="teamPage" class="screen hidden">
+        <button class="back" type="button" onclick="closeTeam()">
             ← Все команды
         </button>
 
         <div id="teamProfile"></div>
-
     </section>
 
-
-    <!-- =================================================
-         PLAYER PAGE
-    ================================================== -->
-
-    <section
-        id="playerPage"
-        class="screen hidden"
-    >
-
-        <button
-            class="back"
-            type="button"
-            onclick="closePlayer()"
-        >
+    <section id="playerPage" class="screen hidden">
+        <button class="back" type="button" onclick="closePlayer()">
             ← Команда
         </button>
 
         <div id="playerProfile"></div>
-
     </section>
 
-
-    <!-- =================================================
-         RATING
-    ================================================== -->
-
-    <section
-        id="rating"
-        class="screen page-section hidden"
-    >
-
+    <section id="rating" class="screen page-section hidden">
         <div class="section-head">
-
             <div>
-
-                <div class="eyebrow">
-                    RANKING
-                </div>
-
-                <h2>
-                    Рейтинг команд
-                </h2>
-
+                <div class="eyebrow">RANKING</div>
+                <h2>Рейтинг команд</h2>
             </div>
-
         </div>
-
 
         <div class="glass table-wrap">
-
             <table>
-
                 <thead>
-
                     <tr>
-
                         <th>#</th>
-
-                        <th>
-                            Команда
-                        </th>
-
-                        <th>
-                            Матчи
-                        </th>
-
-                        <th>
-                            Победы
-                        </th>
-
-                        <th>
-                            ELO
-                        </th>
-
+                        <th>Команда</th>
+                        <th>Матчи</th>
+                        <th>Победы</th>
+                        <th>ELO</th>
                     </tr>
-
                 </thead>
-
                 <tbody id="ratingRows"></tbody>
-
             </table>
-
         </div>
-
     </section>
 
-
-    <!-- =================================================
-         MATCHES
-    ================================================== -->
-
-    <section
-        id="matches"
-        class="screen page-section hidden"
-    >
-
+    <section id="matches" class="screen page-section hidden">
         <div class="section-head">
-
             <div>
-
-                <div class="eyebrow">
-                    MATCHES
-                </div>
-
-                <h2>
-                    Последние матчи
-                </h2>
-
+                <div class="eyebrow">MATCHES</div>
+                <h2>Последние матчи</h2>
             </div>
-
         </div>
 
-
-        <div
-            id="matchesList"
-            class="matches"
-        ></div>
-
+        <div id="matchesList" class="matches"></div>
     </section>
 
-
-    <!-- =================================================
-         TOURNAMENTS
-    ================================================== -->
-
-    <section
-        id="tournaments"
-        class="screen page-section hidden"
-    >
-
+    <section id="tournaments" class="screen page-section hidden">
         <div class="section-head">
-
             <div>
-
-                <div class="eyebrow">
-                    TOURNAMENTS
-                </div>
-
-                <h2>
-                    Турниры
-                </h2>
-
+                <div class="eyebrow">TOURNAMENTS</div>
+                <h2>Турниры</h2>
             </div>
-
         </div>
 
-
-        <div
-            id="tournamentsGrid"
-            class="tournament-grid"
-        ></div>
-
+        <div id="tournamentsGrid" class="tournament-grid"></div>
     </section>
 
 </main>
-
-
-<!-- =====================================================
-     TEAM EDITOR
-===================================================== -->
 
 <div
     id="editModal"
     class="modal hidden"
     onclick="if(event.target === this) closeEditor()"
 >
-
     <div class="modal-card">
+        <button class="modal-close" type="button" onclick="closeEditor()">×</button>
 
-        <button
-            class="modal-close"
-            type="button"
-            onclick="closeEditor()"
-        >
-            ×
-        </button>
-
-        <div class="eyebrow">
-            TEAM EDITOR
-        </div>
-
-        <h2>
-            Редактировать команду
-        </h2>
-
+        <div class="eyebrow">TEAM EDITOR</div>
+        <h2>Редактировать команду</h2>
 
         <form id="editForm">
-
-            <input
-                type="hidden"
-                id="editName"
-            >
-
+            <input type="hidden" id="editName">
 
             <label>
                 Название
-
-                <input
-                    id="editTitle"
-                    required
-                >
+                <input id="editTitle" required>
             </label>
-
 
             <label>
                 Тег
-
-                <input
-                    id="editTag"
-                    maxlength="5"
-                    required
-                >
+                <input id="editTag" maxlength="5" required>
             </label>
-
 
             <label>
                 Страна
-
-                <input
-                    id="editCountry"
-                    required
-                >
+                <input id="editCountry" required>
             </label>
-
 
             <label>
                 Логотип URL
-
-                <input
-                    id="editLogo"
-                    type="url"
-                    placeholder="https://..."
-                >
+                <input id="editLogo" type="url" placeholder="https://...">
             </label>
-
 
             <label>
                 FACEIT URL
-
-                <input
-                    id="editFaceit"
-                    type="url"
-                    placeholder="https://www.faceit.com/..."
-                >
+                <input id="editFaceit" type="url" placeholder="https://www.faceit.com/...">
             </label>
-
 
             <label>
                 Steam URL
-
-                <input
-                    id="editSteam"
-                    type="url"
-                    placeholder="https://steamcommunity.com/..."
-                >
+                <input id="editSteam" type="url" placeholder="https://steamcommunity.com/...">
             </label>
-
 
             <label>
                 Описание
-
-                <textarea
-                    id="editDescription"
-                    rows="3"
-                ></textarea>
-
+                <textarea id="editDescription" rows="3"></textarea>
             </label>
 
-
-            <button
-                class="primary save"
-                type="submit"
-            >
+            <button class="primary save" type="submit">
                 Сохранить изменения
             </button>
-
         </form>
-
     </div>
-
 </div>
-
-
-<!-- =====================================================
-     PLAYER EDITOR
-===================================================== -->
 
 <div
     id="playerEditModal"
     class="modal hidden"
     onclick="if(event.target === this) closePlayerEditor()"
 >
-
     <div class="modal-card">
+        <button class="modal-close" type="button" onclick="closePlayerEditor()">×</button>
 
-        <button
-            class="modal-close"
-            type="button"
-            onclick="closePlayerEditor()"
-        >
-            ×
-        </button>
-
-
-        <div class="eyebrow">
-            PLAYER EDITOR
-        </div>
-
-        <h2>
-            Профиль игрока
-        </h2>
-
+        <div class="eyebrow">PLAYER EDITOR</div>
+        <h2>Профиль игрока</h2>
 
         <form id="playerEditForm">
-
-            <input
-                type="hidden"
-                id="playerEditOldName"
-            >
-
-            <input
-                type="hidden"
-                id="playerEditTeam"
-                value="1Minute"
-            >
-
+            <input type="hidden" id="playerEditOldName">
+            <input type="hidden" id="playerEditTeam" value="1Minute">
 
             <label>
                 Никнейм
-
-                <input
-                    id="playerEditName"
-                    required
-                    placeholder="Например: XXXOLDAR"
-                >
+                <input id="playerEditName" required placeholder="Например: XXXOLDAR">
             </label>
-
 
             <label>
                 Страна
-
-                <input
-                    id="playerEditCountry"
-                    placeholder="Russia"
-                >
+                <input id="playerEditCountry" placeholder="Russia">
             </label>
-
 
             <label>
                 Роль
-
                 <select id="playerEditRole">
-
-                    <option value="Игрок">
-                        Игрок
-                    </option>
-
-                    <option value="Капитан">
-                        Капитан
-                    </option>
-
-                    <option value="AWPer">
-                        AWPer
-                    </option>
-
-                    <option value="Sniper">
-                        Sniper
-                    </option>
-
-                    <option value="Rifler">
-                        Rifler
-                    </option>
-
-                    <option value="Rifle">
-                        Rifle
-                    </option>
-
-                    <option value="Entry">
-                        Entry
-                    </option>
-
-                    <option value="Anchor">
-                        Anchor
-                    </option>
-
-                    <option value="Support">
-                        Support
-                    </option>
-
-                    <option value="IGL">
-                        IGL
-                    </option>
-
-                    <option value="IGL + support">
-                        IGL + support
-                    </option>
-
+                    <option value="Игрок">Игрок</option>
+                    <option value="Капитан">Капитан</option>
+                    <option value="AWPer">AWPer</option>
+                    <option value="Sniper">Sniper</option>
+                    <option value="Rifler">Rifler</option>
+                    <option value="Rifle">Rifle</option>
+                    <option value="Entry">Entry</option>
+                    <option value="Anchor">Anchor</option>
+                    <option value="Support">Support</option>
+                    <option value="IGL">IGL</option>
+                    <option value="IGL + support">IGL + support</option>
                 </select>
-
             </label>
-
 
             <label>
                 Аватар URL
-
-                <input
-                    id="playerEditAvatar"
-                    type="url"
-                    placeholder="https://..."
-                >
+                <input id="playerEditAvatar" type="url" placeholder="https://...">
             </label>
-
 
             <label>
                 FACEIT URL
-
-                <input
-                    id="playerEditFaceit"
-                    type="url"
-                    placeholder="https://www.faceit.com/..."
-                >
+                <input id="playerEditFaceit" type="url" placeholder="https://www.faceit.com/...">
             </label>
-
 
             <label>
                 Steam URL
-
-                <input
-                    id="playerEditSteam"
-                    type="url"
-                    placeholder="https://steamcommunity.com/..."
-                >
+                <input id="playerEditSteam" type="url" placeholder="https://steamcommunity.com/...">
             </label>
 
-
-            <button
-                class="primary save"
-                type="submit"
-            >
+            <button class="primary save" type="submit">
                 Сохранить игрока
             </button>
-
         </form>
-
     </div>
-
 </div>
-
-
-<!-- =====================================================
-     LOGIN MODAL
-===================================================== -->
 
 <div
     id="loginModal"
     class="modal hidden"
     onclick="if(event.target === this) closeLoginModal()"
 >
-
     <div class="modal-card login-card">
+        <button class="modal-close" type="button" onclick="closeLoginModal()">×</button>
 
-        <button
-            class="modal-close"
-            type="button"
-            onclick="closeLoginModal()"
-        >
-            ×
-        </button>
-
-
-        <div class="eyebrow">
-            1MINUTE ACCOUNT
-        </div>
-
-
-        <div class="login-icon">
-            1
-        </div>
-
-
-        <h2>
-            Вход в аккаунт
-        </h2>
-
+        <div class="eyebrow">1MINUTE ACCOUNT</div>
+        <div class="login-icon">1</div>
+        <h2>Вход в аккаунт</h2>
 
         <p
             id="loginStatus"
@@ -698,7 +312,6 @@
         >
             Войдите через свой аккаунт.
         </p>
-
 
         <div
             id="loginError"
@@ -716,85 +329,41 @@
             "
         ></div>
 
-
         <form id="loginForm">
-
             <label>
                 Email
-
-                <input
-                    id="loginEmail"
-                    type="email"
-                    autocomplete="email"
-                    placeholder="admin@example.com"
-                    required
-                >
+                <input id="loginEmail" type="email" autocomplete="email" placeholder="admin@example.com" required>
             </label>
-
 
             <label>
                 Пароль
-
-                <input
-                    id="loginPassword"
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="Введите пароль"
-                    required
-                >
+                <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required>
             </label>
 
-
-            <button
-                class="primary save"
-                type="submit"
-            >
+            <button class="primary save" type="submit">
                 Войти
             </button>
-
         </form>
-
 
         <button
             id="logoutButton"
             class="secondary save"
             type="button"
             onclick="logout()"
-            style="
-                display:none;
-                margin-top:10px;
-            "
+            style="display:none; margin-top:10px;"
         >
             Выйти из аккаунта
         </button>
-
     </div>
-
 </div>
-
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
 
 <footer>
     © 2026 1Minute · Teams database
 </footer>
 
-
-<!-- =====================================================
-     SUPABASE
-===================================================== -->
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-<!-- =====================================================
-     APP.JS
-===================================================== -->
-
 <script src="app.js"></script>
-
+<script src="matches.js"></script>
 
 </body>
 </html>
