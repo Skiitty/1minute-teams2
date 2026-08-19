@@ -1,0 +1,23 @@
+/* Final visual overrides */
+.roster .substitutes .section-head::before{
+    content:"" !important;
+    display:block !important;
+    width:9px !important;
+    height:9px !important;
+    flex:0 0 9px !important;
+    margin-right:-9px !important;
+    align-self:center !important;
+    border-radius:50% !important;
+    background:#ffc21c !important;
+    box-shadow:0 0 12px rgba(255,194,28,.35) !important;
+}
+#teamPage .substitutes-title-spacer.substitutes-has-dot::before{
+    content:none !important;
+    display:none !important;
+}
+.roster .substitutes .section-head::after{
+    content:"ЗАМЕНА" !important;
+    color:#ffc21c !important;
+    border-color:rgba(255,194,28,.42) !important;
+    background:rgba(255,194,28,.08) !important;
+}
