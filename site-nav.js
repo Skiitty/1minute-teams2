@@ -58,6 +58,19 @@
                 margin-top: 44px !important;
                 padding-top: 2px !important;
             }
+            #teamPage .substitutes-title-spacer.substitutes-has-dot {
+                display: flex !important;
+                align-items: center;
+                gap: 9px;
+            }
+            #teamPage .substitutes-title-spacer.substitutes-has-dot::before {
+                content: "";
+                width: 9px;
+                height: 9px;
+                flex: 0 0 9px;
+                border-radius: 50%;
+                background: #ffc21c;
+            }
 
             /* Compact player cards */
             .player-grid {
@@ -238,7 +251,6 @@
                 const text = raw.toUpperCase();
 
                 if (text === "SUBSTITUTES" || text === "ЗАМЕНЫ") {
-                    /* Rename the English roster label to the Russian label. */
                     if (text === "SUBSTITUTES") {
                         el.textContent = "ЗАМЕНА";
                     }
@@ -246,7 +258,7 @@
                     const block = el.closest(
                         "section, .section, .roster-block, .roster-group, .roster-section, div"
                     ) || el;
-                    block.classList.add("substitutes-title-spacer");
+                    block.classList.add("substitutes-title-spacer", "substitutes-has-dot");
                 }
             });
         }
