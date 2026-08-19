@@ -146,6 +146,69 @@
             }
             .player-links a:hover { background: #111; border-color: #444; transform: translateY(-1px); }
 
+            /* Login modal — compact horizontal form */
+            #loginModal .login-card {
+                width: min(720px, calc(100vw - 32px)) !important;
+                padding: 22px 24px !important;
+            }
+            #loginModal .login-card h2 {
+                margin: 8px 0 6px !important;
+                font-size: 22px !important;
+            }
+            #loginModal .login-card > p#loginStatus {
+                margin: 4px 0 16px !important;
+                font-size: 11px !important;
+                line-height: 1.45 !important;
+            }
+            #loginModal #loginForm {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+                align-items: end;
+                gap: 8px;
+            }
+            #loginModal #loginForm label {
+                display: block;
+                margin: 0 !important;
+                font-size: 9px !important;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .05em;
+                color: #7f8791;
+            }
+            #loginModal #loginForm input {
+                width: 100%;
+                height: 38px;
+                margin-top: 5px;
+                padding: 0 10px;
+                border-radius: 7px;
+                font-size: 12px;
+                box-sizing: border-box;
+            }
+            #loginModal #loginForm .primary.save {
+                width: auto !important;
+                min-width: 88px;
+                height: 38px;
+                min-height: 38px;
+                padding: 0 14px !important;
+                border-radius: 7px !important;
+                font-size: 10px !important;
+                white-space: nowrap;
+                margin: 0 !important;
+            }
+            #loginModal .login-icon {
+                width: 34px !important;
+                height: 34px !important;
+                font-size: 15px !important;
+                margin-bottom: 2px !important;
+            }
+            #loginModal #logoutButton {
+                width: auto !important;
+                min-height: 34px !important;
+                padding: 8px 12px !important;
+                border-radius: 7px !important;
+                font-size: 10px !important;
+            }
+
             /* PLAYER PROFILE */
             #playerPage .player-profile-avatar,
             #playerPage .player-profile-avatar img { border-radius: 14px !important; }
@@ -238,6 +301,9 @@
                 #playerPage .player-profile-actions { gap: 8px; }
                 #playerPage .player-profile-actions a,
                 #playerPage .player-profile-actions button { flex: 1 1 145px; }
+                #loginModal .login-card { width: min(520px, calc(100vw - 24px)) !important; padding: 20px 16px !important; }
+                #loginModal #loginForm { grid-template-columns: 1fr; }
+                #loginModal #loginForm .primary.save { width: 100% !important; }
             }
             @media (max-width: 430px) {
                 .player-grid { grid-template-columns: 1fr; }
@@ -266,7 +332,6 @@
                     ) || el;
                     block.classList.add("substitutes-title-spacer", "substitutes-has-dot");
 
-                    /* Remove existing small circle markers in the heading wrapper. */
                     Array.from(block.children).forEach(child => {
                         if (child === el) return;
                         const rect = child.getBoundingClientRect();
