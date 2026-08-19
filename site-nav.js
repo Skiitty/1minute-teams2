@@ -232,12 +232,20 @@
             const page = document.getElementById("teamPage");
             if (!page) return;
 
-            const all = page.querySelectorAll("*");
-            all.forEach(el => {
+            page.querySelectorAll("*").forEach(el => {
                 if (el.children.length > 0) return;
-                const text = (el.textContent || "").trim().toUpperCase();
+                const raw = (el.textContent || "").trim();
+                const text = raw.toUpperCase();
+
                 if (text === "SUBSTITUTES" || text === "ЗАМЕНЫ") {
-                    const block = el.closest("section, .section, .roster-block, .roster-group, .roster-section, div") || el;
+                    /* Rename the English roster label to the Russian label. */
+                    if (text === "SUBSTITUTES") {
+                        el.textContent = "ЗАМЕНА";
+                    }
+
+                    const block = el.closest(
+                        "section, .section, .roster-block, .roster-group, .roster-section, div"
+                    ) || el;
                     block.classList.add("substitutes-title-spacer");
                 }
             });
