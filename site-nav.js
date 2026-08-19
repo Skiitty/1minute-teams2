@@ -27,6 +27,51 @@
         let sectionHistory = [];
         let currentSection = "home";
 
+        /*
+         * app.js rebuilds the team profile with innerHTML. That removes
+         * the matches block immediately after matches.js inserts it.
+         * Keep a template and restore it after the roster is rebuilt.
+         */
+        function protectRecentMatches() {
+            const profile = document.getElementById("teamProfile");
+            if (!profile || profile.dataset.matchesGuard === "1") return;
+            profile.dataset.matchesGuard = "1";
+
+            let template = null;
+
+            const sync = () => {
+                const existing = profile.querySelector(".one-minute-recent-matches");
+                if (existing) {
+                    template = existing.cloneNode(true);
+                    return;
+                }
+
+                const roster = profile.querySelector(".roster");
+                if (roster && template && !profile.querySelector(".one-minute-recent-matches")) {
+                    roster.insertAdjacentElement("afterend", template.cloneNode(true));
+                }
+            };
+
+            const observer = new MutationObserver(() => {
+                requestAnimationFrame(sync);
+            });
+            observer.observe(profile, { childList: true, subtree: true });
+            sync();
+        }
+
+        function protectAllMatches() {
+            const matchesList = document.getElementById("matchesList");
+            if (!matchesList || matchesList.dataset.matchesGuard === "1") return;
+            matchesList.dataset.matchesGuard = "1";
+
+            const observer = new MutationObserver(() => {
+                if (!matchesList.querySelector(".all-matches-page") && typeof window.renderAllOneMinuteMatches === "function") {
+                    window.renderAllOneMinuteMatches();
+                }
+            });
+            observer.observe(matchesList, { childList: true, subtree: true });
+        }
+
         function rememberSection(target) {
             if (!target || target === currentSection) return;
             sectionHistory.push(currentSection);
@@ -65,6 +110,7 @@
                 const matches = document.getElementById("matches");
                 matches?.classList.remove("hidden");
                 injectBackButton("matches");
+                protectAllMatches();
                 document.getElementById("matchesList")?.scrollIntoView({ behavior: "smooth", block: "start" });
                 nav.querySelectorAll("a").forEach(link => link.classList.toggle("active", link.dataset.nav === "matches"));
                 document.body.classList.remove("menu-open");
@@ -127,7 +173,11 @@
 
         nav.querySelector('[data-nav="home"]')?.classList.add("active");
 
-        setTimeout(handleRouteFromHash, 0);
+        setTimeout(() => {
+            protectRecentMatches();
+            protectAllMatches();
+            handleRouteFromHash();
+        }, 0);
     }
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
