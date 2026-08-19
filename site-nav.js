@@ -53,19 +53,10 @@
                 text-align: left;
             }
 
-            /* Extra spacing before the substitutes section */
-            #teamPage .roster-section + .roster-section,
-            #teamPage .roster-group + .roster-group,
-            #teamPage .roster-block + .roster-block,
-            #teamPage .substitutes,
-            #teamPage .substitute-section,
-            #teamPage .substitutes-section {
-                margin-top: 42px !important;
-            }
-            #teamPage .substitutes .section-title,
-            #teamPage .substitute-section .section-title,
-            #teamPage .substitutes-section .section-title {
-                margin-top: 0 !important;
+            /* Clear visual gap before the substitutes block */
+            #teamPage .substitutes-title-spacer {
+                margin-top: 44px !important;
+                padding-top: 2px !important;
             }
 
             .player-grid {
@@ -228,6 +219,21 @@
         `;
         document.head.appendChild(style);
 
+        function spaceSubstitutes() {
+            const page = document.getElementById("teamPage");
+            if (!page) return;
+
+            const all = page.querySelectorAll("*");
+            all.forEach(el => {
+                if (el.children.length > 0) return;
+                const text = (el.textContent || "").trim().toUpperCase();
+                if (text === "SUBSTITUTES" || text === "ЗАМЕНЫ") {
+                    const block = el.closest("section, .section, .roster-block, .roster-group, .roster-section, div") || el;
+                    block.classList.add("substitutes-title-spacer");
+                }
+            });
+        }
+
         nav.innerHTML = `
             <a href="#teams" data-nav="home">ГЛАВНАЯ</a>
             <a href="#teams-list" data-nav="teams" class="nav-with-count">TEAMS <b>55</b></a>
@@ -261,6 +267,10 @@
             requestAnimationFrame(() => target.classList.add("is-pressed"));
             setTimeout(() => target.classList.remove("is-pressed"), 180);
         }, { passive: true });
+
+        const observer = new MutationObserver(spaceSubstitutes);
+        observer.observe(document.body, { childList: true, subtree: true });
+        spaceSubstitutes();
 
         nav.querySelector('[data-nav="home"]')?.classList.add("active");
     }
