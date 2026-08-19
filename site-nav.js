@@ -9,14 +9,10 @@
 
         const style = document.createElement("style");
         style.textContent = `
-            /* ---- Clean top navigation ---- */
             .topbar nav { gap: 10px; }
             .topbar nav a { min-width: 0; }
-
-            /* ---- Remove the filter buttons completely ---- */
             #teams-list .filters { display: none !important; }
 
-            /* ---- Center the hero ---- */
             #teams .hero {
                 min-height: 520px;
                 max-width: 1180px;
@@ -35,25 +31,16 @@
                 line-height: .91;
                 letter-spacing: -.075em;
             }
-            #teams .hero p {
-                max-width: 780px;
-                margin: 0 auto;
-            }
-            #teams .hero-actions {
-                justify-content: center;
-            }
+            #teams .hero p { max-width: 780px; margin: 0 auto; }
+            #teams .hero-actions { justify-content: center; }
 
-            /* ---- Center the team directory/card ---- */
             #teams-list {
                 width: 100%;
                 justify-content: center;
                 text-align: center;
                 margin-top: 5px;
             }
-            #teams-list > div:first-child {
-                width: 100%;
-                text-align: center;
-            }
+            #teams-list > div:first-child { width: 100%; text-align: center; }
             #grid.team-grid {
                 width: 100%;
                 display: flex;
@@ -66,7 +53,6 @@
                 text-align: left;
             }
 
-            /* ---- Player cards: light, compact EFL style ---- */
             .player-grid {
                 grid-template-columns: repeat(5, minmax(0, 1fr));
                 gap: 16px;
@@ -95,11 +81,7 @@
                 background: #050505;
                 box-shadow: none;
             }
-            .player-card h3 {
-                font-size: 14px;
-                font-weight: 800;
-                letter-spacing: -.015em;
-            }
+            .player-card h3 { font-size: 14px; font-weight: 800; letter-spacing: -.015em; }
             .player-role {
                 margin-top: 8px;
                 padding: 4px 8px;
@@ -127,13 +109,83 @@
                 font-size: 8px;
                 font-weight: 800;
             }
-            .player-links a:hover {
-                background: #111;
-                border-color: #444;
-                transform: translateY(-1px);
+            .player-links a:hover { background: #111; border-color: #444; transform: translateY(-1px); }
+
+            /* PLAYER PROFILE */
+            #playerPage .player-profile-avatar,
+            #playerPage .player-profile-avatar img {
+                border-radius: 14px !important;
+            }
+            #playerPage .player-profile-avatar { overflow: hidden; }
+
+            #playerPage .player-profile-actions {
+                display: flex !important;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+                margin-top: 24px !important;
+            }
+            #playerPage .player-profile-actions a,
+            #playerPage .player-profile-actions button,
+            #playerPage .player-profile-actions .primary,
+            #playerPage .player-profile-actions .secondary,
+            #playerPage .player-profile-actions .edit-btn {
+                appearance: none !important;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                min-height: 38px;
+                padding: 9px 14px !important;
+                border: 1px solid #2b2b2b !important;
+                border-radius: 8px !important;
+                background: #0d0d0d !important;
+                color: #d7d7d7 !important;
+                text-decoration: none !important;
+                font-size: 10px;
+                font-weight: 800;
+                line-height: 1;
+                cursor: pointer;
+                box-shadow: none !important;
+                transition: transform .18s ease, background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+            }
+            #playerPage .player-profile-actions a:hover,
+            #playerPage .player-profile-actions button:hover,
+            #playerPage .player-profile-actions .primary:hover,
+            #playerPage .player-profile-actions .secondary:hover,
+            #playerPage .player-profile-actions .edit-btn:hover {
+                background: #171717 !important;
+                border-color: #444 !important;
+                color: #fff !important;
+                transform: translateY(-2px);
+                box-shadow: 0 10px 28px rgba(0,0,0,.28) !important;
+            }
+            #playerPage .player-profile-actions .danger,
+            #playerPage .player-profile-actions .remove-btn,
+            #playerPage .player-profile-actions [class*="danger"] {
+                background: #120909 !important;
+                border-color: rgba(210,60,60,.38) !important;
+                color: #ff8b8b !important;
+            }
+            #playerPage .back {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                min-height: 36px;
+                padding: 8px 13px !important;
+                border: 1px solid #292929 !important;
+                border-radius: 8px !important;
+                background: #0d0d0d !important;
+                color: #aaa !important;
+                text-decoration: none !important;
+                transition: transform .18s ease, background .2s ease, border-color .2s ease, color .2s ease;
+            }
+            #playerPage .back:hover {
+                background: #151515 !important;
+                border-color: #414141 !important;
+                color: #fff !important;
+                transform: translateX(-2px);
             }
 
-            /* ---- Press animation ---- */
             .is-pressed { transform: scale(.965) !important; }
 
             @media (max-width: 1050px) {
@@ -141,16 +193,18 @@
                 .player-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
             }
             @media (max-width: 760px) {
-                #teams .hero {
-                    min-height: 440px;
-                    padding: 55px 6px 70px;
-                }
+                #teams .hero { min-height: 440px; padding: 55px 6px 70px; }
                 #teams .hero h1 { font-size: clamp(42px, 11vw, 62px); }
                 #teams .hero p { font-size: 12px; }
                 #grid .team-card { width: 100%; }
                 .player-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
                 .player-card { min-height: 230px; padding: 14px 12px 12px; }
                 .player-avatar { width: 58px; height: 58px; flex-basis: 58px; }
+                #playerPage .player-profile-avatar { width: 150px; height: 150px; border-radius: 13px !important; }
+                #playerPage .player-profile-avatar img { border-radius: 13px !important; }
+                #playerPage .player-profile-actions { gap: 8px; }
+                #playerPage .player-profile-actions a,
+                #playerPage .player-profile-actions button { flex: 1 1 145px; }
             }
             @media (max-width: 430px) {
                 .player-grid { grid-template-columns: 1fr; }
@@ -167,46 +221,27 @@
 
         function showPage(target) {
             const id = target === "tournaments" ? "tournaments" : "teams";
-
-            document.querySelectorAll("main > .screen").forEach(section => {
-                section.classList.add("hidden");
-            });
-
+            document.querySelectorAll("main > .screen").forEach(section => section.classList.add("hidden"));
             document.getElementById(id)?.classList.remove("hidden");
-
             if (target === "teams") {
-                document.getElementById("teams-list")?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
+                document.getElementById("teams-list")?.scrollIntoView({ behavior: "smooth", block: "start" });
             } else {
-                document.getElementById(id)?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
+                document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
             }
-
-            nav.querySelectorAll("a").forEach(link => {
-                link.classList.toggle("active", link.dataset.nav === target);
-            });
-
+            nav.querySelectorAll("a").forEach(link => link.classList.toggle("active", link.dataset.nav === target));
             document.body.classList.remove("menu-open");
         }
 
         nav.addEventListener("click", function (event) {
             const link = event.target.closest("a[data-nav]");
             if (!link) return;
-
             event.preventDefault();
             showPage(link.dataset.nav);
         });
 
         document.addEventListener("pointerdown", function (event) {
-            const target = event.target.closest(
-                "button, .primary, .secondary, .player-card, .team-card, .back"
-            );
+            const target = event.target.closest("button, .primary, .secondary, .player-card, .team-card, .back");
             if (!target) return;
-
             target.classList.remove("is-pressed");
             requestAnimationFrame(() => target.classList.add("is-pressed"));
             setTimeout(() => target.classList.remove("is-pressed"), 180);
