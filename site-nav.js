@@ -332,11 +332,18 @@
                     ) || el;
                     block.classList.add("substitutes-title-spacer", "substitutes-has-dot");
 
-                    Array.from(block.children).forEach(child => {
+                    /* Remove every real circular marker inside the heading.
+                       Keep the CSS pseudo-element as the single yellow marker. */
+                    block.querySelectorAll("*").forEach(child => {
                         if (child === el) return;
                         const rect = child.getBoundingClientRect();
-                        const radius = getComputedStyle(child).borderRadius;
-                        if (rect.width <= 20 && rect.height <= 20 && /50%/.test(radius)) {
+                        const cs = getComputedStyle(child);
+                        const radius = cs.borderRadius;
+                        const bg = cs.backgroundColor;
+                        const isTiny = rect.width > 0 && rect.width <= 20 && rect.height > 0 && rect.height <= 20;
+                        const isCircle = /50%/.test(radius) || Math.abs(rect.width - rect.height) <= 2;
+                        const isColoredDot = /^rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)$/.test(bg) && bg !== "rgb(0, 0, 0)";
+                        if (isTiny && isCircle && isColoredDot) {
                             child.remove();
                         }
                     });
