@@ -128,9 +128,15 @@
         roster.insertAdjacentElement("afterend", section);
     }
 
+    let allMatchesSignature = "";
+
     function renderAll() {
         const list = document.getElementById("matchesList");
         if (!list) return;
+        const signature = JSON.stringify(MATCHES);
+        if (list.dataset.oneMinuteAllMatches === "1" && allMatchesSignature === signature) return;
+
+        allMatchesSignature = signature;
         list.dataset.oneMinuteAllMatches = "1";
         list.innerHTML = `
             <section class="all-matches-page">
@@ -154,7 +160,7 @@
         if (!link) return;
         event.preventDefault();
         history.pushState({}, "", "#matches");
-        window.dispatchEvent(new HashChangeEvent("hashchange"));
+        window.dispatchEvent(new Event("hashchange"));
     }
 
     function boot() {
