@@ -3,10 +3,10 @@
     "use strict";
 
     const MATCHES = [
-        ["19 авг.", "B03", "UPCOMING", "KINDEST PPL", "BE KIND", "VS", "upcoming"],
-        ["18 авг.", "B01", "WIN", "WS TEAM", "WS", "13 : 11", "win"],
-        ["17 авг.", "B01", "", "ZERZERION TEAM", "ZER", "13 : 8", "win"],
-        ["16 авг.", "B01", "WIN", "TEAM PATRIOT", "PTR", "13 : 0", "win"]
+        ["19 авг.", "B03", "UPCOMING", "KINDEST PPL", "BE KIND", "VS", "upcoming", ""],
+        ["18 авг.", "B01", "WIN", "WS TEAM", "WS", "13 : 11", "win", "https://cybershoke.net/ru/match/10943235"],
+        ["17 авг.", "B01", "", "ZERZERION TEAM", "ZER", "13 : 8", "win", "https://cybershoke.net/ru/match/10901723"],
+        ["16 авг.", "B01", "WIN", "TEAM PATRIOT", "PTR", "13 : 0", "win", "https://cybershoke.net/ru/match/10868408"]
     ];
 
     function esc(v) {
@@ -30,8 +30,9 @@
             .om-yellow-dot{width:15px;height:15px;flex:0 0 15px;border-radius:50%;background:#ffc21c}
             .om-all-matches{color:#ffc21c;text-decoration:none;font-size:11px;font-weight:900;white-space:nowrap}
             .om-match-list{display:grid;gap:11px}
-            .om-match-card{padding:18px 20px;border:1px solid #242a30;border-radius:11px;background:#090c0f;transition:transform .2s ease}
-            .om-match-card:hover{transform:translateY(-2px)}
+            .om-match-card{display:block;text-decoration:none;color:inherit;padding:18px 20px;border:1px solid #242a30;border-radius:11px;background:#090c0f;transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;cursor:pointer}
+            .om-match-card:hover{transform:translateY(-2px);border-color:#414951;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+            .om-match-card:active{transform:translateY(0) scale(.992)}
             .om-win{border-color:rgba(0,195,135,.48);background:linear-gradient(110deg,rgba(0,70,49,.18),rgba(7,12,12,.96))}
             .om-loss{border-color:rgba(200,30,35,.55);background:linear-gradient(110deg,rgba(65,0,4,.20),rgba(10,7,8,.96))}
             .om-upcoming{border-color:rgba(196,101,0,.68);background:linear-gradient(110deg,rgba(80,42,0,.16),rgba(10,10,9,.96))}
@@ -42,6 +43,7 @@
             .om-win .om-match-status{color:#00d99b;border:1px solid rgba(0,217,155,.55);background:rgba(0,130,90,.17)}
             .om-loss .om-match-status{color:#ff666b;border:1px solid rgba(255,35,45,.65);background:rgba(130,0,8,.18)}
             .om-upcoming .om-match-status{color:#ffb32c;border:1px solid rgba(215,100,0,.75);background:rgba(130,58,0,.18)}
+            .om-match-status:empty{display:none}
             .om-match-divider{height:1px;margin:13px 0 15px;background:rgba(255,255,255,.08)}
             .om-match-main{display:flex;align-items:center;justify-content:space-between;gap:18px}
             .om-opponent{min-width:0;display:flex;align-items:center;gap:14px}
@@ -52,7 +54,6 @@
             .om-opponent-name strong{color:#f3f5f7;font-size:16px;font-weight:900;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
             .om-score{min-width:110px;padding:12px 15px;border:1px solid #292e33;border-radius:9px;background:#151719;color:#f5f6f7;text-align:center;font-size:20px;line-height:1;font-weight:900;white-space:nowrap}
             .om-score-upcoming{min-width:78px}
-            .om-match-status:empty{display:none}
             @media(max-width:700px){
                 .one-minute-recent-matches{margin-top:18px;padding:18px 14px;border-radius:11px}
                 .om-section-head{align-items:flex-start;margin-bottom:15px}
@@ -74,7 +75,6 @@
         const roster = profile.querySelector(".roster");
         if (!roster) return;
 
-        /* Important: do not rewrite our own block, otherwise MutationObserver loops forever. */
         if (profile.querySelector(".one-minute-recent-matches")) return;
 
         const section = document.createElement("section");
@@ -89,8 +89,8 @@
                 <a href="#matches" class="om-all-matches">ВСЕ МАТЧИ →</a>
             </div>
             <div class="om-match-list">
-                ${MATCHES.map(m => `
-                    <article class="om-match-card om-${m[6]}">
+                ${MATCHES.map(m => {
+                    const inner = `
                         <div class="om-match-top">
                             <div class="om-match-date">${esc(m[0])}<span>•</span>${esc(m[1])}</div>
                             <div class="om-match-status">${esc(m[2])}</div>
@@ -100,14 +100,17 @@
                             <div class="om-opponent">
                                 <div class="om-opponent-logo"><span>${esc(m[4])}</span></div>
                                 <div class="om-opponent-name">
-                                    <span>VS ${esc(m[4])}${esc(m[3])}</span>
+                                    <span>VS ${esc(m[4])}</span>
                                     <strong>${esc(m[3])}</strong>
                                 </div>
                             </div>
                             <div class="om-score ${m[2] === "UPCOMING" ? "om-score-upcoming" : ""}">${esc(m[5])}</div>
                         </div>
-                    </article>
-                `).join("")}
+                    `;
+                    return m[7]
+                        ? `<a class="om-match-card om-${m[6]}" href="${esc(m[7])}" target="_blank" rel="noopener noreferrer">${inner}</a>`
+                        : `<article class="om-match-card om-${m[6]}">${inner}</article>`;
+                }).join("")}
             </div>
         `;
 
