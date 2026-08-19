@@ -19,7 +19,6 @@
 
         nav.innerHTML = `
             <a href="#teams" data-nav="home">ГЛАВНАЯ</a>
-            <a href="#teams-list" data-nav="teams" class="nav-with-count">TEAMS <b>55</b></a>
             <a href="#matches" data-nav="matches">ВСЕ МАТЧИ</a>
             <a href="#tournaments" data-nav="tournaments">TOURNAMENTS</a>
         `;
@@ -124,8 +123,6 @@
             requestAnimationFrame(() => target.classList.add("is-pressed"));
             setTimeout(() => target.classList.remove("is-pressed"), 180);
         }, { passive: true });
-
-        window.renderAllOneMinuteMatches = window.renderAllOneMinuteMatches || function () {};
 
         nav.querySelector('[data-nav="home"]')?.classList.add("active");
 
