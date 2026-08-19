@@ -130,7 +130,7 @@
 
     function renderAll() {
         const list = document.getElementById("matchesList");
-        if (!list || list.dataset.oneMinuteAllMatches === "1") return;
+        if (!list) return;
         list.dataset.oneMinuteAllMatches = "1";
         list.innerHTML = `
             <section class="all-matches-page">
@@ -147,14 +147,14 @@
         `;
     }
 
+    window.renderAllOneMinuteMatches = renderAll;
+
     function showAllMatches(event) {
         const link = event.target.closest(".om-all-matches");
         if (!link) return;
         event.preventDefault();
-        renderAll();
-        document.querySelectorAll("main > .screen").forEach(section => section.classList.add("hidden"));
-        document.getElementById("matches")?.classList.remove("hidden");
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        history.pushState({}, "", "#matches");
+        window.dispatchEvent(new HashChangeEvent("hashchange"));
     }
 
     function boot() {
@@ -165,7 +165,9 @@
 
         const bodyObserver = new MutationObserver(function () {
             renderRecent();
-            renderAll();
+            if (!document.getElementById("matches")?.classList.contains("hidden")) {
+                renderAll();
+            }
         });
         bodyObserver.observe(document.body, { childList: true, subtree: true });
     }
