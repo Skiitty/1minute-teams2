@@ -71,6 +71,11 @@
                 border-radius: 50%;
                 background: #ffc21c;
             }
+            #teamPage .substitutes-title-spacer .substitutes-label::before,
+            #teamPage .substitutes-title-spacer .substitutes-label::after {
+                content: none !important;
+                display: none !important;
+            }
 
             /* Compact player cards */
             .player-grid {
@@ -254,11 +259,22 @@
                     if (text === "SUBSTITUTES") {
                         el.textContent = "ЗАМЕНА";
                     }
+                    el.classList.add("substitutes-label");
 
                     const block = el.closest(
                         "section, .section, .roster-block, .roster-group, .roster-section, div"
                     ) || el;
                     block.classList.add("substitutes-title-spacer", "substitutes-has-dot");
+
+                    /* Remove existing small circle markers in the heading wrapper. */
+                    Array.from(block.children).forEach(child => {
+                        if (child === el) return;
+                        const rect = child.getBoundingClientRect();
+                        const radius = getComputedStyle(child).borderRadius;
+                        if (rect.width <= 20 && rect.height <= 20 && /50%/.test(radius)) {
+                            child.remove();
+                        }
+                    });
                 }
             });
         }
