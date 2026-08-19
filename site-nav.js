@@ -59,13 +59,15 @@
                 padding-top: 2px !important;
             }
 
+            /* Compact player cards */
             .player-grid {
                 grid-template-columns: repeat(5, minmax(0, 1fr));
                 gap: 16px;
             }
             .player-card {
-                min-height: 250px;
-                padding: 18px 18px 13px;
+                min-height: 205px;
+                height: auto;
+                padding: 12px 13px 9px;
                 border: 1px solid #242424;
                 border-radius: 9px;
                 background: #090909;
@@ -78,50 +80,57 @@
                 box-shadow: 0 14px 36px rgba(0,0,0,.28);
             }
             .player-avatar {
-                width: 60px;
-                height: 60px;
-                flex: 0 0 60px;
-                margin: 2px auto 14px;
-                border-radius: 9px;
+                width: 54px;
+                height: 54px;
+                flex: 0 0 54px;
+                margin: 1px auto 8px;
+                border-radius: 8px;
                 border: 1px solid #292929;
                 background: #050505;
                 box-shadow: none;
             }
-            .player-card h3 { font-size: 14px; font-weight: 800; letter-spacing: -.015em; }
+            .player-card h3 {
+                margin: 0;
+                font-size: 13px;
+                line-height: 1.05;
+                font-weight: 800;
+                letter-spacing: -.015em;
+            }
             .player-role {
-                margin-top: 8px;
-                padding: 4px 8px;
+                margin-top: 3px;
+                padding: 3px 7px;
                 border-radius: 4px;
                 font-size: 8px;
+                line-height: 1;
                 font-weight: 800;
             }
             .player-country {
-                margin-top: 6px;
+                margin-top: 2px;
                 font-size: 8px;
+                line-height: 1.05;
                 font-weight: 700;
             }
             .player-links {
-                margin-top: auto;
-                padding-top: 12px;
-                gap: 6px;
+                margin-top: 7px;
+                padding-top: 7px;
+                gap: 5px;
                 border-top: 1px solid #1f1f1f;
             }
             .player-links a {
-                min-height: 28px;
-                padding: 6px 5px;
+                min-height: 24px;
+                padding: 5px 5px;
                 border-radius: 4px;
                 background: #080808;
                 border: 1px solid #2a2a2a;
                 font-size: 8px;
+                line-height: 1;
                 font-weight: 800;
             }
             .player-links a:hover { background: #111; border-color: #444; transform: translateY(-1px); }
 
             /* PLAYER PROFILE */
             #playerPage .player-profile-avatar,
-            #playerPage .player-profile-avatar img {
-                border-radius: 14px !important;
-            }
+            #playerPage .player-profile-avatar img { border-radius: 14px !important; }
             #playerPage .player-profile-avatar { overflow: hidden; }
 
             #playerPage .player-profile-actions {
@@ -204,8 +213,8 @@
                 #teams .hero p { font-size: 12px; }
                 #grid .team-card { width: 100%; }
                 .player-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
-                .player-card { min-height: 230px; padding: 14px 12px 12px; }
-                .player-avatar { width: 58px; height: 58px; flex-basis: 58px; }
+                .player-card { min-height: 192px; padding: 11px 10px 8px; }
+                .player-avatar { width: 52px; height: 52px; flex-basis: 52px; margin-bottom: 8px; }
                 #playerPage .player-profile-avatar { width: 150px; height: 150px; border-radius: 13px !important; }
                 #playerPage .player-profile-avatar img { border-radius: 13px !important; }
                 #playerPage .player-profile-actions { gap: 8px; }
