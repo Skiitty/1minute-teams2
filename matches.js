@@ -121,9 +121,7 @@
                 </div>
                 <a href="#matches" class="om-all-matches">ВСЕ МАТЧИ →</a>
             </div>
-            <div class="om-match-list">
-                ${MATCHES.map(m => matchCard(m)).join("")}
-            </div>
+            <div class="om-match-list">${MATCHES.map(m => matchCard(m)).join("")}</div>
         `;
         roster.insertAdjacentElement("afterend", section);
     }
@@ -135,52 +133,27 @@
         if (!list) return;
         const signature = JSON.stringify(MATCHES);
         if (list.dataset.oneMinuteAllMatches === "1" && allMatchesSignature === signature) return;
-
         allMatchesSignature = signature;
         list.dataset.oneMinuteAllMatches = "1";
         list.innerHTML = `
             <section class="all-matches-page">
                 <div class="om-section-head">
-                    <div class="om-section-title-wrap">
-                        <span class="om-yellow-dot"></span>
-                        <h2>ВСЕ МАТЧИ (${MATCHES.length})</h2>
-                    </div>
+                    <div class="om-section-title-wrap"><span class="om-yellow-dot"></span><h2>ВСЕ МАТЧИ (${MATCHES.length})</h2></div>
                 </div>
-                <div class="om-match-list">
-                    ${MATCHES.map(m => matchCard(m)).join("")}
-                </div>
+                <div class="om-match-list">${MATCHES.map(m => matchCard(m)).join("")}</div>
             </section>
         `;
     }
 
     window.renderAllOneMinuteMatches = renderAll;
 
-    function showAllMatches(event) {
-        const link = event.target.closest(".om-all-matches");
-        if (!link) return;
-        event.preventDefault();
-        history.pushState({}, "", "#matches");
-        window.dispatchEvent(new Event("hashchange"));
-    }
-
     function boot() {
         styles();
         renderRecent();
         renderAll();
-        document.addEventListener("click", showAllMatches);
-
-        const bodyObserver = new MutationObserver(function () {
-            renderRecent();
-            if (!document.getElementById("matches")?.classList.contains("hidden")) {
-                renderAll();
-            }
-        });
-        bodyObserver.observe(document.body, { childList: true, subtree: true });
+        // No MutationObserver here: the profile/app has its own rendering lifecycle.
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", boot, { once: true });
-    } else {
-        boot();
-    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+    else boot();
 })();
