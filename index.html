@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="overrides.css">
     <link rel="stylesheet" href="login-fix.css">
+    <link rel="stylesheet" href="mobile-menu-fix.css">
 </head>
 <body>
 <div class="glow glow-a"></div>
@@ -23,7 +24,7 @@
         <a href="#tournaments">Турниры</a>
     </nav>
     <button class="login" type="button" onclick="openLoginModal()">Войти</button>
-    <button class="mobile-menu" type="button" onclick="document.body.classList.toggle('menu-open')">☰</button>
+    <button class="mobile-menu" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="document.body.classList.toggle('menu-open'); this.setAttribute('aria-expanded', document.body.classList.contains('menu-open'))">☰</button>
 </header>
 <main>
     <section id="teams" class="screen">
