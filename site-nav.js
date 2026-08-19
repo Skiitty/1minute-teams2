@@ -19,6 +19,7 @@
 
         nav.innerHTML = `
             <a href="#teams" data-nav="home">ГЛАВНАЯ</a>
+            <a href="#teams-list" data-nav="teams" class="nav-with-count">TEAMS <b>55</b></a>
             <a href="#matches" data-nav="matches">ВСЕ МАТЧИ</a>
             <a href="#tournaments" data-nav="tournaments">TOURNAMENTS</a>
         `;
