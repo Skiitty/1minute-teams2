@@ -17,8 +17,6 @@
         `;
         document.head.appendChild(style);
 
-        function spaceSubstitutes() {}
-
         nav.innerHTML = `
             <a href="#teams" data-nav="home">ГЛАВНАЯ</a>
             <a href="#teams-list" data-nav="teams" class="nav-with-count">TEAMS <b>55</b></a>
@@ -64,9 +62,10 @@
             if (target === "matches") {
                 document.querySelectorAll("main > .screen").forEach(section => section.classList.add("hidden"));
                 renderAllMatchesPage();
-                document.getElementById("matches")?.classList.remove("hidden");
+                const matches = document.getElementById("matches");
+                matches?.classList.remove("hidden");
                 injectBackButton("matches");
-                document.getElementById("matches")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                document.getElementById("matchesList")?.scrollIntoView({ behavior: "smooth", block: "start" });
                 nav.querySelectorAll("a").forEach(link => link.classList.toggle("active", link.dataset.nav === "matches"));
                 document.body.classList.remove("menu-open");
                 return;
@@ -91,8 +90,32 @@
             const link = event.target.closest("a[data-nav]");
             if (!link) return;
             event.preventDefault();
+            history.pushState({}, "", link.getAttribute("href"));
             navigateTo(link.dataset.nav, true);
         });
+
+        document.addEventListener("click", function (event) {
+            const recentMatchesLink = event.target.closest(".om-all-matches");
+            if (recentMatchesLink) {
+                event.preventDefault();
+                history.pushState({}, "", "#matches");
+                navigateTo("matches", true);
+            }
+        });
+
+        function handleRouteFromHash() {
+            const hash = (window.location.hash || "").replace(/^#/, "");
+            if (hash === "matches") {
+                navigateTo("matches", false);
+            } else if (hash === "tournaments") {
+                navigateTo("tournaments", false);
+            } else if (hash === "teams" || hash === "teams-list" || !hash) {
+                navigateTo("home", false);
+            }
+        }
+
+        window.addEventListener("hashchange", handleRouteFromHash);
+        window.addEventListener("popstate", handleRouteFromHash);
 
         document.addEventListener("pointerdown", function (event) {
             const target = event.target.closest("button, .primary, .secondary, .player-card, .team-card, .back");
@@ -102,9 +125,11 @@
             setTimeout(() => target.classList.remove("is-pressed"), 180);
         }, { passive: true });
 
-        const observer = new MutationObserver(spaceSubstitutes);
-        observer.observe(document.body, { childList: true, subtree: true });
+        window.renderAllOneMinuteMatches = window.renderAllOneMinuteMatches || function () {};
+
         nav.querySelector('[data-nav="home"]')?.classList.add("active");
+
+        setTimeout(handleRouteFromHash, 0);
     }
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
