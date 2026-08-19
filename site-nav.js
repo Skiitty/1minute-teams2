@@ -53,6 +53,21 @@
                 text-align: left;
             }
 
+            /* Extra spacing before the substitutes section */
+            #teamPage .roster-section + .roster-section,
+            #teamPage .roster-group + .roster-group,
+            #teamPage .roster-block + .roster-block,
+            #teamPage .substitutes,
+            #teamPage .substitute-section,
+            #teamPage .substitutes-section {
+                margin-top: 42px !important;
+            }
+            #teamPage .substitutes .section-title,
+            #teamPage .substitute-section .section-title,
+            #teamPage .substitutes-section .section-title {
+                margin-top: 0 !important;
+            }
+
             .player-grid {
                 grid-template-columns: repeat(5, minmax(0, 1fr));
                 gap: 16px;
