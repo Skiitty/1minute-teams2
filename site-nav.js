@@ -7,6 +7,10 @@
         const nav = topbar?.querySelector("nav");
         if (!topbar || !nav) return;
 
+        const mobileStyle = document.createElement("style");
+        mobileStyle.textContent = `@media(max-width:760px){body.menu-open .topbar nav{position:absolute;left:0;right:0;top:62px;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:8px 14px;background:rgba(5,5,5,.98);border-bottom:1px solid #252525;box-shadow:0 20px 50px rgba(0,0,0,.5);backdrop-filter:blur(16px)}body.menu-open .topbar nav a{height:42px;padding:0 14px;border-radius:5px}body.menu-open .topbar nav a:after{left:0;right:auto;top:8px;bottom:8px;width:2px;height:auto;transform:scaleY(0)}body.menu-open .topbar nav a.active:after{transform:scaleY(1)}}`;
+        document.head.appendChild(mobileStyle);
+
         nav.innerHTML = `
             <a href="#teams" data-nav="home">ГЛАВНАЯ</a>
             <a href="#teams-list" data-nav="teams" class="nav-with-count">TEAMS <b>55</b></a>
@@ -31,9 +35,7 @@
         function showPage(target) {
             const targets = {home:"teams",teams:"teams",players:"players",rating:"rating",tournaments:"tournaments",matches:"matches"};
             const id = targets[target] || "teams";
-
             document.querySelectorAll("main > .screen").forEach(s => s.classList.add("hidden"));
-
             if (target === "home" || target === "teams") {
                 document.getElementById("teams")?.classList.remove("hidden");
                 document.getElementById("teams-list")?.scrollIntoView({behavior:"smooth",block:"start"});
@@ -41,7 +43,6 @@
                 document.getElementById(id)?.classList.remove("hidden");
                 document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"});
             }
-
             nav.querySelectorAll("a").forEach(a => a.classList.toggle("active", a.dataset.nav === target));
             document.body.classList.remove("menu-open");
         }
