@@ -1,4 +1,5 @@
 /* Final visual overrides */
+/* Substitutes header: exactly one yellow dot, never blue/purple. */
 .roster .substitutes .section-head::before{
     content:"" !important;
     display:block !important;
@@ -9,11 +10,21 @@
     align-self:center !important;
     border-radius:50% !important;
     background:#ffc21c !important;
-    box-shadow:0 0 12px rgba(255,194,28,.35) !important;
+    background-color:#ffc21c !important;
+    box-shadow:0 0 12px rgba(255,194,28,.28) !important;
+    color:transparent !important;
+    border:0 !important;
 }
-#teamPage .substitutes-title-spacer.substitutes-has-dot::before{
+.roster .substitutes .section-head > *::before,
+.roster .substitutes .section-head > *::after{
     content:none !important;
     display:none !important;
+}
+#teamPage .substitutes-title-spacer.substitutes-has-dot::before,
+#teamPage .substitutes-title-spacer.substitutes-has-dot::after{
+    content:none !important;
+    display:none !important;
+    background:none !important;
 }
 .roster .substitutes .section-head::after{
     content:"ЗАМЕНА" !important;
