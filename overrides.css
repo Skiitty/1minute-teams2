@@ -1,4 +1,7 @@
 /* Final visual overrides */
+/* Hide legacy league subtitle under the top-left brand. */
+.brand:after{display:none !important;content:none !important;}
+
 /* Substitutes header: exactly one yellow dot, never blue/purple. */
 .roster .substitutes .section-head::before{
     content:"" !important;
@@ -15,16 +18,16 @@
     color:transparent !important;
     border:0 !important;
 }
-.roster .substitutes .section-head > *::before,
-.roster .substitutes .section-head > *::after{
-    content:none !important;
-    display:none !important;
-}
 #teamPage .substitutes-title-spacer.substitutes-has-dot::before,
 #teamPage .substitutes-title-spacer.substitutes-has-dot::after{
     content:none !important;
     display:none !important;
     background:none !important;
+}
+.roster .substitutes .section-head > *::before,
+.roster .substitutes .section-head > *::after{
+    content:none !important;
+    display:none !important;
 }
 .roster .substitutes .section-head::after{
     content:"ЗАМЕНА" !important;
