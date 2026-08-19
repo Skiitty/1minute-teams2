@@ -1,4 +1,4 @@
-/* 1Minute — recent matches block */
+/* 1Minute — recent + all matches block */
 (function () {
     "use strict";
 
@@ -18,6 +18,33 @@
             .replace(/'/g, "&#039;");
     }
 
+    function matchInner(m) {
+        return `
+            <div class="om-match-top">
+                <div class="om-match-date">${esc(m[0])}<span>•</span>${esc(m[1])}</div>
+                <div class="om-match-status">${esc(m[2])}</div>
+            </div>
+            <div class="om-match-divider"></div>
+            <div class="om-match-main">
+                <div class="om-opponent">
+                    <div class="om-opponent-logo"><span>${esc(m[4])}</span></div>
+                    <div class="om-opponent-name">
+                        <span>VS ${esc(m[4])}</span>
+                        <strong>${esc(m[3])}</strong>
+                    </div>
+                </div>
+                <div class="om-score ${m[2] === "UPCOMING" ? "om-score-upcoming" : ""}">${esc(m[5])}</div>
+            </div>
+        `;
+    }
+
+    function matchCard(m, extraClass = "") {
+        const cls = `om-match-card om-${m[6]} ${extraClass}`.trim();
+        return m[7]
+            ? `<a class="${cls}" href="${esc(m[7])}" target="_blank" rel="noopener noreferrer">${matchInner(m)}</a>`
+            : `<article class="${cls}">${matchInner(m)}</article>`;
+    }
+
     function styles() {
         if (document.getElementById("oneMinuteRecentMatchesStyles")) return;
         const s = document.createElement("style");
@@ -28,7 +55,8 @@
             .om-section-title-wrap{display:flex;align-items:center;gap:9px;min-width:0}
             .om-section-title-wrap h2{margin:0;color:#aeb5bd;font-size:12px;line-height:1;font-weight:650;letter-spacing:-.01em;text-transform:uppercase}
             .om-yellow-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#ffc21c}
-            .om-all-matches{color:#ffc21c;text-decoration:none;font-size:9px;font-weight:800;white-space:nowrap}
+            .om-all-matches{color:#ffc21c;text-decoration:none;font-size:9px;font-weight:800;white-space:nowrap;cursor:pointer}
+            .om-all-matches:hover{color:#fff}
             .om-match-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;overflow-x:auto}
             .om-match-card{display:block;text-decoration:none;color:inherit;min-width:0;padding:12px 13px;border:1px solid #242a30;border-radius:9px;background:#090c0f;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;cursor:pointer}
             .om-match-card:hover{transform:translateY(-2px);border-color:#414951;box-shadow:0 12px 30px rgba(0,0,0,.18)}
@@ -54,8 +82,12 @@
             .om-opponent-name strong{color:#f3f5f7;font-size:10px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
             .om-score{min-width:62px;padding:8px 7px;border:1px solid #292e33;border-radius:7px;background:#151719;color:#f5f6f7;text-align:center;font-size:14px;line-height:1;font-weight:900;white-space:nowrap}
             .om-score-upcoming{min-width:47px}
+            #matches .all-matches-page{margin-top:0}
+            #matches .all-matches-page .om-match-list{grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;gap:12px}
+            #matches .all-matches-page .om-match-card{min-height:110px}
             @media(max-width:950px){
                 .om-match-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+                #matches .all-matches-page .om-match-list{grid-template-columns:1fr}
             }
             @media(max-width:700px){
                 .one-minute-recent-matches{margin-top:18px;padding:14px 12px;border-radius:10px}
@@ -72,18 +104,15 @@
         document.head.appendChild(s);
     }
 
-    function render() {
+    function renderRecent() {
         const profile = document.getElementById("teamProfile");
         if (!profile) return;
-
         const roster = profile.querySelector(".roster");
         if (!roster) return;
-
         if (profile.querySelector(".one-minute-recent-matches")) return;
 
         const section = document.createElement("section");
         section.className = "one-minute-recent-matches";
-
         section.innerHTML = `
             <div class="om-section-head">
                 <div class="om-section-title-wrap">
@@ -93,42 +122,51 @@
                 <a href="#matches" class="om-all-matches">ВСЕ МАТЧИ →</a>
             </div>
             <div class="om-match-list">
-                ${MATCHES.map(m => {
-                    const inner = `
-                        <div class="om-match-top">
-                            <div class="om-match-date">${esc(m[0])}<span>•</span>${esc(m[1])}</div>
-                            <div class="om-match-status">${esc(m[2])}</div>
-                        </div>
-                        <div class="om-match-divider"></div>
-                        <div class="om-match-main">
-                            <div class="om-opponent">
-                                <div class="om-opponent-logo"><span>${esc(m[4])}</span></div>
-                                <div class="om-opponent-name">
-                                    <span>VS ${esc(m[4])}</span>
-                                    <strong>${esc(m[3])}</strong>
-                                </div>
-                            </div>
-                            <div class="om-score ${m[2] === "UPCOMING" ? "om-score-upcoming" : ""}">${esc(m[5])}</div>
-                        </div>
-                    `;
-                    return m[7]
-                        ? `<a class="om-match-card om-${m[6]}" href="${esc(m[7])}" target="_blank" rel="noopener noreferrer">${inner}</a>`
-                        : `<article class="om-match-card om-${m[6]}">${inner}</article>`;
-                }).join("")}
+                ${MATCHES.map(m => matchCard(m)).join("")}
             </div>
         `;
-
         roster.insertAdjacentElement("afterend", section);
+    }
+
+    function renderAll() {
+        const list = document.getElementById("matchesList");
+        if (!list || list.dataset.oneMinuteAllMatches === "1") return;
+        list.dataset.oneMinuteAllMatches = "1";
+        list.innerHTML = `
+            <section class="all-matches-page">
+                <div class="om-section-head">
+                    <div class="om-section-title-wrap">
+                        <span class="om-yellow-dot"></span>
+                        <h2>ВСЕ МАТЧИ (${MATCHES.length})</h2>
+                    </div>
+                </div>
+                <div class="om-match-list">
+                    ${MATCHES.map(m => matchCard(m)).join("")}
+                </div>
+            </section>
+        `;
+    }
+
+    function showAllMatches(event) {
+        const link = event.target.closest(".om-all-matches");
+        if (!link) return;
+        event.preventDefault();
+        renderAll();
+        document.querySelectorAll("main > .screen").forEach(section => section.classList.add("hidden"));
+        document.getElementById("matches")?.classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function boot() {
         styles();
-        render();
+        renderRecent();
+        renderAll();
+        document.addEventListener("click", showAllMatches);
 
         const bodyObserver = new MutationObserver(function () {
-            render();
+            renderRecent();
+            renderAll();
         });
-
         bodyObserver.observe(document.body, { childList: true, subtree: true });
     }
 
