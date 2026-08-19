@@ -12,7 +12,6 @@
             .topbar nav { gap: 10px; }
             .topbar nav a { min-width: 0; }
             #teams-list .filters { display: none !important; }
-
             #teams .hero { min-height: 520px; max-width: 1180px; margin: 0 auto; padding: 70px 20px 90px; text-align: center; align-items: center; }
             #teams .hero .eyebrow, #teams .hero h1, #teams .hero p { width: 100%; text-align: center; }
             #teams .hero h1 { max-width: 1120px; margin: 16px auto 22px; font-size: clamp(50px, 7.2vw, 94px); line-height: .91; letter-spacing: -.075em; }
@@ -22,12 +21,10 @@
             #teams-list > div:first-child { width: 100%; text-align: center; }
             #grid.team-grid { width: 100%; display: flex; justify-content: center; align-items: center; }
             #grid .team-card { width: min(920px, 100%); min-height: 170px; text-align: left; }
-
             #teamPage .substitutes-title-spacer { margin-top: 44px !important; padding-top: 2px !important; }
             #teamPage .substitutes-title-spacer.substitutes-has-dot { display: flex !important; align-items: center; gap: 9px; }
             #teamPage .substitutes-title-spacer.substitutes-has-dot::before { content: ""; width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: #ffc21c; }
             #teamPage .substitutes-title-spacer .substitutes-label::before, #teamPage .substitutes-title-spacer .substitutes-label::after { content: none !important; display: none !important; }
-
             .player-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
             .player-card { min-height: 205px; height: auto; padding: 12px 13px 9px; border: 1px solid #242424; border-radius: 9px; background: #090909; box-shadow: none; font-weight: 500; }
             .player-card:hover { transform: translateY(-4px); border-color: #3a3a3a; box-shadow: 0 14px 36px rgba(0,0,0,.28); }
@@ -38,8 +35,6 @@
             .player-links { margin-top: 7px; padding-top: 7px; gap: 5px; border-top: 1px solid #1f1f1f; }
             .player-links a { min-height: 24px; padding: 5px 5px; border-radius: 4px; background: #080808; border: 1px solid #2a2a2a; font-size: 8px; line-height: 1; font-weight: 800; }
             .player-links a:hover { background: #111; border-color: #444; transform: translateY(-1px); }
-
-            /* Login modal — compact vertical form */
             #loginModal .login-card { width: min(420px, calc(100vw - 32px)) !important; padding: 22px 24px !important; }
             #loginModal .login-card h2 { margin: 8px 0 6px !important; font-size: 22px !important; }
             #loginModal .login-card > p#loginStatus { margin: 4px 0 16px !important; font-size: 11px !important; line-height: 1.45 !important; }
@@ -49,7 +44,6 @@
             #loginModal #loginForm .primary.save { width: 100% !important; min-width: 0; height: 36px; min-height: 36px; padding: 0 14px !important; border-radius: 7px !important; font-size: 10px !important; white-space: nowrap; margin: 0 !important; }
             #loginModal .login-icon { width: 34px !important; height: 34px !important; font-size: 15px !important; margin-bottom: 2px !important; }
             #loginModal #logoutButton { width: 100% !important; min-height: 34px !important; padding: 8px 12px !important; border-radius: 7px !important; font-size: 10px !important; }
-
             #playerPage .player-profile-avatar, #playerPage .player-profile-avatar img { border-radius: 14px !important; }
             #playerPage .player-profile-avatar { overflow: hidden; }
             #playerPage .player-profile-actions { display: flex !important; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 24px !important; }
@@ -59,7 +53,6 @@
             #playerPage .back { display: inline-flex !important; align-items: center; justify-content: center; min-height: 36px; padding: 8px 13px !important; border: 1px solid #292929 !important; border-radius: 8px !important; background: #0d0d0d !important; color: #aaa !important; text-decoration: none !important; transition: transform .18s ease, background .2s ease, border-color .2s ease, color .2s ease; }
             #playerPage .back:hover { background: #151515 !important; border-color: #414141 !important; color: #fff !important; transform: translateX(-2px); }
             .is-pressed { transform: scale(.965) !important; }
-
             @media (max-width: 1050px) { .topbar nav a { padding: 0 9px; font-size: 10px; } .player-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
             @media (max-width: 760px) {
                 #teams .hero { min-height: 440px; padding: 55px 6px 70px; }
@@ -95,9 +88,8 @@
                         if (child === el) return;
                         const rect = child.getBoundingClientRect();
                         const cs = getComputedStyle(child);
-                        const radius = cs.borderRadius;
                         const isTiny = rect.width > 0 && rect.width <= 20 && rect.height > 0 && rect.height <= 20;
-                        const isCircle = /50%/.test(radius) || Math.abs(rect.width - rect.height) <= 2;
+                        const isCircle = /50%/.test(cs.borderRadius) || Math.abs(rect.width - rect.height) <= 2;
                         const isColoredDot = cs.backgroundColor !== "rgba(0, 0, 0, 0)" && cs.backgroundColor !== "transparent";
                         if (isTiny && isCircle && isColoredDot) child.remove();
                     });
@@ -108,10 +100,27 @@
         nav.innerHTML = `
             <a href="#teams" data-nav="home">ГЛАВНАЯ</a>
             <a href="#teams-list" data-nav="teams" class="nav-with-count">TEAMS <b>55</b></a>
+            <a href="#matches" data-nav="matches">ВСЕ МАТЧИ</a>
             <a href="#tournaments" data-nav="tournaments">TOURNAMENTS</a>
         `;
 
+        function renderAllMatchesPage() {
+            if (typeof window.renderAllOneMinuteMatches === "function") {
+                window.renderAllOneMinuteMatches();
+            }
+            const matches = document.getElementById("matches");
+            if (matches) matches.classList.remove("hidden");
+        }
+
         function showPage(target) {
+            if (target === "matches") {
+                document.querySelectorAll("main > .screen").forEach(section => section.classList.add("hidden"));
+                renderAllMatchesPage();
+                document.getElementById("matches")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                nav.querySelectorAll("a").forEach(link => link.classList.toggle("active", link.dataset.nav === "matches"));
+                document.body.classList.remove("menu-open");
+                return;
+            }
             const id = target === "tournaments" ? "tournaments" : "teams";
             document.querySelectorAll("main > .screen").forEach(section => section.classList.add("hidden"));
             document.getElementById(id)?.classList.remove("hidden");
